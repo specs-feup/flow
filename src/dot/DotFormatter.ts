@@ -27,7 +27,7 @@ abstract class DotFormatter {
             .map((node) => {
                 const { id, attrs } = this.formatNode(node);
                 const formattedAttrs = this.#formatAttrs(Object.entries(attrs));
-                return `${id} [${formattedAttrs}];\n`;
+                return `"${id}" [${formattedAttrs}];\n`;
             })
             .join("");
 
@@ -36,7 +36,7 @@ abstract class DotFormatter {
                 const { source, target, attrs } = this.formatEdge(edge);
                 const formattedAttrs = this.#formatAttrs(Object.entries(attrs));
 
-                return `${source} -> ${target} [${formattedAttrs}];\n`;
+                return `"${source}" -> "${target}" [${formattedAttrs}];\n`;
             })
             .join("");
 

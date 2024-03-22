@@ -58,24 +58,24 @@ export default class FlowGraphBuilder {
     }
 
     processJp($jp: Joinpoint) {
-        if ($jp instanceof Program || $jp instanceof FileJp) {
-            for (const $function of Query.searchFrom($jp, "function")) {
-                this.processJp($function as Joinpoint);
-            }
-        } else if ($jp instanceof FunctionJp) {
-            let prevNode = this.#graph.addNode($jp.name);
+        // if ($jp instanceof Program || $jp instanceof FileJp) {
+        //     for (const $function of Query.searchFrom($jp, "function")) {
+        //         this.processJp($function as Joinpoint);
+        //     }
+        // } else if ($jp instanceof FunctionJp) {
+        //     let prevNode = this.#graph.addNode($jp.name);
 
-            for (const param of $jp.params) {
-                const currNode = this.#graph.addNode(param.name);
-                this.#graph.addEdge(prevNode, currNode);
-                prevNode = currNode;
-            }
+        //     for (const param of $jp.params) {
+        //         const currNode = this.#graph.addNode(param.name);
+        //         this.#graph.addEdge(prevNode, currNode);
+        //         prevNode = currNode;
+        //     }
 
-            const currNode = this.#graph.addNode($jp.body.code);
-            this.#graph.addEdge(prevNode, currNode);
-        } else {
-            throw new Error(`Cannot build graph for joinpoint "${$jp.joinPointType}"`);
-        }
+        //     const currNode = this.#graph.addNode($jp.body.code);
+        //     this.#graph.addEdge(prevNode, currNode);
+        // } else {
+        //     throw new Error(`Cannot build graph for joinpoint "${$jp.joinPointType}"`);
+        // }
     }
 
     /**

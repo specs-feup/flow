@@ -4,9 +4,13 @@ import Node from "clava-flow/graph/Node";
 import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
 import Io from "lara-js/api/lara/Io.js";
 import { JavaClasses } from "lara-js/api/lara/util/JavaTypes.js";
+import WithId from "clava-flow/graph/WithId";
 
 
-class Graph {
+class Graph<
+    D extends Graph.Data = Graph.Data,
+    S extends Graph.ScratchData = Graph.ScratchData,
+> {
     static scratchNamespace = "_clava_flow";
 
     #graph: cytoscape.Core;
@@ -15,37 +19,41 @@ class Graph {
         this.#graph = graph ?? cytoscape({});
     }
 
-    get data(): Graph.Data {
+    get data(): D {
         return this.#graph.data();
     }
 
-    updateData(data: Record<string, unknown>) {
-        this.#graph.data(data);
-    }
-
-    get scratchData(): Graph.ScratchData {
+    get scratchData(): S {
         return this.#graph.scratch(Graph.scratchNamespace);
     }
 
-    updateScratchData(data: Record<string, unknown>) {
-        this.#graph.scratch(Graph.scratchNamespace, data);
+    addNode<
+        D extends Node.Data,
+        S extends Node.ScratchData,
+        N extends Node<WithId<D>, S>,
+        >(node: Node.Builder<D, S, N>): N {
+        const newNode = this.#graph.add({ group: "nodes", data: node.data });
+        newNode.scratch(Graph.scratchNamespace, node.scratchData);
+        return new node.className(this, newNode);
     }
 
-    addNode(node: Node.Builder): Node {
-        return new Node(this, this.#graph.add({ group: "nodes", data: node.data }));
-    }
-
-    addEdge(edge: Edge.Builder): Edge {
-        return new Edge(this, this.#graph.add({ group: "edges", data: edge.data }));
+    addEdge<
+        D extends Edge.Data,
+        S extends Edge.ScratchData,
+        E extends Edge<WithId<D>, S>,
+        >(edge: Edge.Builder<D, S, E>): E {
+        const newEdge = this.#graph.add({ group: "edges", data: edge.data });
+        newEdge.scratch(Graph.scratchNamespace, edge.scratchData);
+        return new edge.className(this, newEdge);
     }
 
     // TODO
-    get nodes() {
+    get nodes(): Node[] {
         return this.#graph.nodes().map((node) => new Node(this, node));
     }
 
     // TODO
-    get edges() {
+    get edges(): Edge[] {
         return this.#graph.edges().map((edge) => new Edge(this, edge));
     }
 
@@ -63,13 +71,9 @@ class Graph {
 }
 
 namespace Graph {
-    export interface Data {
-        [key: string]: unknown;
-    }
+    export interface Data {}
 
-    export interface ScratchData {
-        [key: string]: unknown;
-    }
+    export interface ScratchData {}
 }
 
 export default Graph;

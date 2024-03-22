@@ -11,15 +11,15 @@ export default class FlowGraph extends Graph {
         return new FlowGraphBuilder($jp).build();
     }
 
-    /**
-     * Returns the graph node where the given statement belongs.
-     *
-     * @param $stmt - A statement join point, or a string with the astId of the join point
-     */
-    getNode($stmt: Statement | string) {
-        // If string, assume it is astId
-        const astId: string = typeof $stmt === "string" ? $stmt : $stmt.astId;
+    // /**
+    //  * Returns the graph node where the given statement belongs.
+    //  *
+    //  * @param $stmt - A statement join point, or a string with the astId of the join point
+    //  */
+    // getNode($stmt: Statement | string) {
+    //     // If string, assume it is astId
+    //     const astId: string = typeof $stmt === "string" ? $stmt : $stmt.astId;
 
-        return this.#nodes.get(astId);
-    }
+    //     return this.#nodes.get(astId);
+    // }
 }
