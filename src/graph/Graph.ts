@@ -6,7 +6,6 @@ import Io from "lara-js/api/lara/Io.js";
 import { JavaClasses } from "lara-js/api/lara/util/JavaTypes.js";
 import WithId from "clava-flow/graph/WithId";
 
-
 class Graph<
     D extends Graph.Data = Graph.Data,
     S extends Graph.ScratchData = Graph.ScratchData,
@@ -31,7 +30,7 @@ class Graph<
         D extends Node.Data,
         S extends Node.ScratchData,
         N extends Node<WithId<D>, S>,
-        >(node: Node.Builder<D, S, N>): N {
+    >(node: Node.Builder<D, S, N>): N {
         const newNode = this.#graph.add({ group: "nodes", data: node.data });
         newNode.scratch(Graph.scratchNamespace, node.scratchData);
         return new node.className(this, newNode);
@@ -41,7 +40,7 @@ class Graph<
         D extends Edge.Data,
         S extends Edge.ScratchData,
         E extends Edge<WithId<D>, S>,
-        >(edge: Edge.Builder<D, S, E>): E {
+    >(edge: Edge.Builder<D, S, E>): E {
         const newEdge = this.#graph.add({ group: "edges", data: edge.data });
         newEdge.scratch(Graph.scratchNamespace, edge.scratchData);
         return new edge.className(this, newEdge);
@@ -61,7 +60,11 @@ class Graph<
         return dotFormatter.format(this, label);
     }
 
-    toDotFile(dotFormatter: DotFormatter, filename: string, label?: string): JavaClasses.File {
+    toDotFile(
+        dotFormatter: DotFormatter,
+        filename: string,
+        label?: string,
+    ): JavaClasses.File {
         return Io.writeFile(filename, this.toDot(dotFormatter, label));
     }
 

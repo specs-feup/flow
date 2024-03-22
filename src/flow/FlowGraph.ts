@@ -1,12 +1,12 @@
-import FlowGraphBuilder from "clava-flow/flow/FlowGraphBuilder";
+
+import FlowGraphBuilder from "clava-flow/flow/builder/FlowGraphBuilder";
 import Graph from "clava-flow/graph/Graph";
 import { Joinpoint, Statement } from "clava-js/api/Joinpoints.js";
 
-export default class FlowGraph extends Graph {
-    constructor(graph?: Graph) {
-        super(graph?.toCy());
-    }
-
+class FlowGraph<
+    D extends FlowGraph.Data = FlowGraph.Data,
+    S extends FlowGraph.ScratchData = FlowGraph.ScratchData,
+> extends Graph<D, S> {
     static build($jp: Joinpoint): FlowGraph {
         return new FlowGraphBuilder($jp).build();
     }
@@ -23,3 +23,11 @@ export default class FlowGraph extends Graph {
     //     return this.#nodes.get(astId);
     // }
 }
+
+namespace FlowGraph {
+    export interface Data {}
+
+    export interface ScratchData {}
+}
+
+export default FlowGraph;

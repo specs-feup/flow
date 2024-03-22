@@ -1,9 +1,7 @@
 import FlowGraph from "clava-flow/flow/FlowGraph";
-import Graph from "clava-flow/graph/Graph";
+import Edge from "clava-flow/graph/Edge";
+import Node from "clava-flow/graph/Node";
 import { FunctionJp, Joinpoint, Program, FileJp } from "clava-js/api/Joinpoints.js";
-import { debug } from "lara-js/api/lara/core/LaraCore.js";
-import Graphs from "lara-js/api/lara/graphs/Graphs.js";
-import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
 import Query from "lara-js/api/weaver/Query.js";
 
 
@@ -58,24 +56,24 @@ export default class FlowGraphBuilder {
     }
 
     processJp($jp: Joinpoint) {
-        // if ($jp instanceof Program || $jp instanceof FileJp) {
-        //     for (const $function of Query.searchFrom($jp, "function")) {
-        //         this.processJp($function as Joinpoint);
-        //     }
-        // } else if ($jp instanceof FunctionJp) {
-        //     let prevNode = this.#graph.addNode($jp.name);
+        if ($jp instanceof Program || $jp instanceof FileJp) {
+            for (const $function of Query.searchFrom($jp, "function")) {
+                this.processJp($function as Joinpoint);
+            }
+        } else if ($jp instanceof FunctionJp) {
+            let prevNode = this.#graph.addNode(Node.build($jp.name));
 
-        //     for (const param of $jp.params) {
-        //         const currNode = this.#graph.addNode(param.name);
-        //         this.#graph.addEdge(prevNode, currNode);
-        //         prevNode = currNode;
-        //     }
+            for (const param of $jp.params) {
+                const currNode = this.#graph.addNode(Node.build(param.name));
+                this.#graph.addEdge(Edge.build(prevNode, currNode));
+                prevNode = currNode;
+            }
 
-        //     const currNode = this.#graph.addNode($jp.body.code);
-        //     this.#graph.addEdge(prevNode, currNode);
-        // } else {
-        //     throw new Error(`Cannot build graph for joinpoint "${$jp.joinPointType}"`);
-        // }
+            const currNode = this.#graph.addNode(Node.build($jp.body.code));
+            this.#graph.addEdge(Edge.build(prevNode, currNode));
+        } else {
+            throw new Error(`Cannot build graph for joinpoint "${$jp.joinPointType}"`);
+        }
     }
 
     /**

@@ -15,6 +15,7 @@ class Edge<
         this.#edge = edge;
     }
 
+    // Override in subclasses
     static build(
         source: Node,
         target: Node,
