@@ -29,7 +29,7 @@ class Graph<
     addNode<
         D extends Node.Data,
         S extends Node.ScratchData,
-        N extends Node<WithId<D>, S>,
+        N extends Node.Class<WithId<D>, S>,
     >(node: Node.Builder<D, S, N>): N {
         const newNode = this.#graph.add({ group: "nodes", data: node.data });
         newNode.scratch(Graph.scratchNamespace, node.scratchData);
@@ -47,8 +47,8 @@ class Graph<
     }
 
     // TODO
-    get nodes(): Node[] {
-        return this.#graph.nodes().map((node) => new Node(this, node));
+    get nodes(): Node.Class[] {
+        return this.#graph.nodes().map((node) => new Node.Class(this, node));
     }
 
     // TODO

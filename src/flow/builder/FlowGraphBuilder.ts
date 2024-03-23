@@ -1,4 +1,5 @@
 import FlowGraph from "clava-flow/flow/FlowGraph";
+import InstructionFlowNode from "clava-flow/flow/node/instruction/InstructionFlowNode";
 import Edge from "clava-flow/graph/Edge";
 import Node from "clava-flow/graph/Node";
 import { FunctionJp, Joinpoint, Program, FileJp } from "clava-js/api/Joinpoints.js";
@@ -61,16 +62,21 @@ export default class FlowGraphBuilder {
                 this.processJp($function as Joinpoint);
             }
         } else if ($jp instanceof FunctionJp) {
-            let prevNode = this.#graph.addNode(Node.build($jp.name));
-
+            let prevNode = this.#graph.addNode(InstructionFlowNode.build($jp, InstructionFlowNode.Type.FUNCTION_ENTRY, "entry"));
+            
             for (const param of $jp.params) {
-                const currNode = this.#graph.addNode(Node.build(param.name));
+                const currNode = this.#graph.addNode(InstructionFlowNode.build(param, InstructionFlowNode.Type.STATEMENT, param.code));
                 this.#graph.addEdge(Edge.build(prevNode, currNode));
                 prevNode = currNode;
             }
 
             const currNode = this.#graph.addNode(Node.build($jp.body.code));
             this.#graph.addEdge(Edge.build(prevNode, currNode));
+
+            let exitNode = this.#graph.addNode(
+                InstructionFlowNode.build($jp, InstructionFlowNode.Type.FUNCTION_EXIT, "exit"),
+            );
+            this.#graph.addEdge(Edge.build(currNode, exitNode));
         } else {
             throw new Error(`Cannot build graph for joinpoint "${$jp.joinPointType}"`);
         }

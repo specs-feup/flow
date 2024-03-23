@@ -1,7 +1,4 @@
-// Replace FlowNode with node class name
-
 import Edge from "clava-flow/graph/Edge";
-import Node from "clava-flow/graph/Node";
 import WithId from "clava-flow/graph/WithId";
 
 class FlowEdge<

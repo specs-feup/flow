@@ -17,8 +17,8 @@ class Edge<
 
     // Override in subclasses
     static build(
-        source: Node,
-        target: Node,
+        source: Node.Class,
+        target: Node.Class,
         id?: string,
     ): Edge.Builder<Edge.Data, Edge.ScratchData, Edge> {
         return {
@@ -44,19 +44,19 @@ class Edge<
         return this.#edge.id();
     }
 
-    get source(): Node {
-        return new Node(this.#graph, this.#edge.source());
+    get source(): Node.Class {
+        return new Node.Class(this.#graph, this.#edge.source());
     }
 
-    set source(node: Node) {
+    set source(node: Node.Class) {
         this.#edge.move({ source: node.id });
     }
 
-    get target(): Node {
-        return new Node(this.#graph, this.#edge.target());
+    get target(): Node.Class {
+        return new Node.Class(this.#graph, this.#edge.target());
     }
 
-    set target(node: Node) {
+    set target(node: Node.Class) {
         this.#edge.move({ target: node.id });
     }
 

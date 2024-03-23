@@ -6,7 +6,7 @@ import Node from "clava-flow/graph/Node";
 abstract class DotFormatter {
     static defaultGraphName: string = "clava_graph";
 
-    abstract formatNode(node: Node): DotFormatter.Node;
+    abstract formatNode(node: Node.Class): DotFormatter.Node;
 
     abstract formatEdge(edge: Edge): DotFormatter.Edge;
 
