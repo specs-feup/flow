@@ -7,6 +7,10 @@ import Graph from "clava-flow/graph/Graph";
 import Node from "clava-flow/graph/Node";
 import Edge from "clava-flow/graph/Edge";
 import FlowGraphBuilder from "clava-flow/flow/builder/FlowGraphBuilder";
+import FlowNode from "clava-flow/flow/node/FlowNode";
+import InstructionNode from "clava-flow/flow/node/instruction/InstructionNode";
+import WithId from "clava-flow/graph/WithId";
+import ConditionNode from "clava-flow/flow/node/condition/ConditionNode";
 
 const graph = new FlowGraphBuilder(Query.root() as Joinpoint).build();
 
@@ -14,6 +18,12 @@ graph.toDotFile(new DefaultDotFormatter, "out/woven_code/sandbox/graph.dot");
 
 const node = graph.nodes[0];
 
+if (node.is(InstructionNode.TypeGuard)) {
+    const instructionNode = node.as(InstructionNode.Class);
+    console.log(instructionNode.data.instructionFlowNodeType);
+} else {
+    
+}
 
 
 // const graph = new Graph();

@@ -1,3 +1,4 @@
+import IsSuperclass from "clava-flow/IsSuperclass";
 import Edge from "clava-flow/graph/Edge";
 import Graph from "clava-flow/graph/Graph";
 import WithId from "clava-flow/graph/WithId";
@@ -27,6 +28,31 @@ namespace Node {
 
         get id(): string {
             return this.#node.id();
+        }
+
+        is<Dn extends Data, Sn extends ScratchData>(
+            N: TypeGuarder<Dn, Sn>,
+        ): this is Node.Class<WithId<Dn>, Sn> {
+            const data = this.data;
+            const scratchData = this.scratchData;
+            const result =
+                N.isDataCompatible(data) && N.isScratchDataCompatible(scratchData);
+
+            // Have typescript statically check that the types are correct
+            // in the implementation of this function.
+            result && (data satisfies WithId<Dn>) && (scratchData satisfies Sn);
+
+            return result;
+        }
+
+        as<N extends Node.Class<WithId<Data>, ScratchData>>(
+            Supernode: Constructor<
+                WithId<Data>,
+                ScratchData,
+                IsSuperclass<N, Node.Class<D, S>>
+            >,
+        ): N {
+            return new Supernode(this.#graph, this.#node);
         }
 
         // get incomers(): Edge[] {
@@ -82,13 +108,24 @@ namespace Node {
     }
 
     // Override in subclasses
-    export function build(id?: string): Builder<Data, ScratchData, Node.Class> {
+    export function build(id?: string): Builder<Data, ScratchData, Class> {
         return {
             data: { id },
             scratchData: {},
-            className: Node.Class,
+            className: Class,
         };
     }
+
+    // Override in subclasses
+    export const TypeGuard: Node.TypeGuarder<Data, ScratchData> = {
+        isDataCompatible(data: WithId<Node.Data>): data is WithId<Data> {
+            return true;
+        },
+
+        isScratchDataCompatible(scratchData: Node.ScratchData): scratchData is ScratchData {
+            return true;
+        },
+    };
 
     // Override in subclasses
     export interface Data {
@@ -96,8 +133,8 @@ namespace Node {
     }
 
     // Override in subclasses
-    export interface ScratchData { }
-    
+    export interface ScratchData {}
+
     // ------------------------------------------------------------
 
     export interface Builder<
@@ -107,7 +144,7 @@ namespace Node {
     > {
         data: D;
         scratchData: S;
-        className: new (graph: Graph, node: cytoscape.NodeSingular) => N;
+        className: Constructor<D, S, N>;
     }
 
     export interface AbstractBuilder<
@@ -117,7 +154,24 @@ namespace Node {
     > {
         data: D;
         scratchData: S;
-        className: abstract new (graph: Graph, node: cytoscape.NodeSingular) => N;
+        className: AbstractConstructor<D, S, N>;
+    }
+
+    export type Constructor<
+        D extends Data,
+        S extends ScratchData,
+        N extends Node.Class<WithId<D>, S>,
+    > = new (graph: Graph, node: cytoscape.NodeSingular) => N;
+
+    export type AbstractConstructor<
+        D extends Data,
+        S extends ScratchData,
+        N extends Node.Class<WithId<D>, S>,
+    > = abstract new (graph: Graph, node: cytoscape.NodeSingular) => N;
+
+    export interface TypeGuarder<D extends Data, S extends ScratchData> {
+        isDataCompatible(data: WithId<Data>): data is WithId<D>;
+        isScratchDataCompatible(scratchData: ScratchData): scratchData is S;
     }
 }
 
