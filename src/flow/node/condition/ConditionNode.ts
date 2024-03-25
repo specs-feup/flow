@@ -1,8 +1,7 @@
 import FlowNode from "clava-flow/flow/node/FlowNode";
-import Node from "clava-flow/graph/Node";
+import BaseNode from "clava-flow/graph/Node";
 import WithId from "clava-flow/graph/WithId";
 import { Joinpoint } from "clava-js/api/Joinpoints.js";
-
 
 namespace ConditionNode {
     export class Class<
@@ -13,7 +12,7 @@ namespace ConditionNode {
     export function build(
         $jp: Joinpoint,
         id?: string,
-    ): Node.Builder<Data, ScratchData, ConditionNode.Class> {
+    ): BaseNode.Builder<Data, ScratchData, ConditionNode.Class> {
         const s = FlowNode.build($jp, FlowNode.Type.CONDITION, id);
         return {
             data: {
@@ -28,9 +27,9 @@ namespace ConditionNode {
     }
 
     export interface Data extends FlowNode.Data {
-        // trueEdgeId: string;
+        trueEdgeId: string;
         // falseEdgeId: string;
-        flowNodeType: FlowNode.Type.CONDITION;
+        // flowNodeType: FlowNode.Type.CONDITION;
     }
 
     export interface ScratchData extends FlowNode.ScratchData {}

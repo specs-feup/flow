@@ -1,20 +1,19 @@
-import Node from "clava-flow/graph/Node";
+import BaseNode from "clava-flow/graph/BaseNode";
 import WithId from "clava-flow/graph/WithId";
 import { Joinpoint } from "clava-js/api/Joinpoints.js";
-
 
 namespace FlowNode {
     export class Class<
         D extends WithId<Data> = WithId<Data>,
         S extends ScratchData = ScratchData,
-    > extends Node.Class<D, S> {}
+    > extends BaseNode.Class<D, S> {}
 
     export function build(
         $jp: Joinpoint,
         type: Type,
         id?: string,
-    ): Node.AbstractBuilder<Data, ScratchData, FlowNode.Class> {
-        const s = Node.build(id);
+    ): BaseNode.AbstractBuilder<Data, ScratchData, FlowNode.Class> {
+        const s = BaseNode.build(id);
         return {
             data: {
                 ...s.data,
@@ -28,29 +27,29 @@ namespace FlowNode {
         };
     }
 
-    export const TypeGuard: Node.TypeGuarder<Data, ScratchData> = {
-        isDataCompatible(data: WithId<Node.Data>): data is WithId<Data> {
-            if (!Node.TypeGuard.isDataCompatible(data)) return false;
+    export const TypeGuard: NodeTypeGuard<Data, ScratchData> = {
+        isDataCompatible(data: WithId<BaseNode.Data>): data is WithId<Data> {
+            if (!BaseNode.TypeGuard.isDataCompatible(data)) return false;
             const d = data as WithId<Data>;
             if (!(d.flowNodeType in Type)) return false;
             return true;
         },
 
         isScratchDataCompatible(
-            scratchData: Node.ScratchData,
+            scratchData: BaseNode.ScratchData,
         ): scratchData is ScratchData {
-            if (!Node.TypeGuard.isScratchDataCompatible(scratchData)) return false;
+            if (!BaseNode.TypeGuard.isScratchDataCompatible(scratchData)) return false;
             const s = scratchData as ScratchData;
             if (!(s.$jp instanceof Joinpoint)) return false;
             return true;
         },
     };
 
-    export interface Data extends Node.Data {
+    export interface Data extends BaseNode.Data {
         flowNodeType: Type;
     }
 
-    export interface ScratchData extends Node.ScratchData {
+    export interface ScratchData extends BaseNode.ScratchData {
         $jp: Joinpoint;
     }
 

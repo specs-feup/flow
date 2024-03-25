@@ -1,10 +1,9 @@
 import FlowGraph from "clava-flow/flow/FlowGraph";
 import InstructionNode from "../../../out/src/flow/node/instruction/InstructionNode.js";
 import Edge from "clava-flow/graph/Edge";
-import Node from "clava-flow/graph/Node";
+import BaseNode from "clava-flow/graph/Node";
 import { FunctionJp, Joinpoint, Program, FileJp } from "clava-js/api/Joinpoints.js";
 import Query from "lara-js/api/weaver/Query.js";
-
 
 export default class FlowGraphBuilder {
     /**
@@ -62,15 +61,23 @@ export default class FlowGraphBuilder {
                 this.processJp($function as Joinpoint);
             }
         } else if ($jp instanceof FunctionJp) {
-            let prevNode = this.#graph.addNode(InstructionNode.build($jp, InstructionNode.Type.FUNCTION_ENTRY, "entry"));
-            
+            let prevNode = this.#graph.addNode(
+                InstructionNode.build($jp, InstructionNode.Type.FUNCTION_ENTRY, "entry"),
+            );
+
             for (const param of $jp.params) {
-                const currNode = this.#graph.addNode(InstructionNode.build(param, InstructionNode.Type.STATEMENT, param.code));
+                const currNode = this.#graph.addNode(
+                    InstructionNode.build(
+                        param,
+                        InstructionNode.Type.STATEMENT,
+                        param.code,
+                    ),
+                );
                 this.#graph.addEdge(Edge.build(prevNode, currNode));
                 prevNode = currNode;
             }
 
-            const currNode = this.#graph.addNode(Node.build($jp.body.code));
+            const currNode = this.#graph.addNode(BaseNode.build($jp.body.code));
             this.#graph.addEdge(Edge.build(prevNode, currNode));
 
             let exitNode = this.#graph.addNode(

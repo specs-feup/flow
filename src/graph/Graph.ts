@@ -1,10 +1,10 @@
 import DotFormatter from "clava-flow/dot/DotFormatter";
 import Edge from "clava-flow/graph/Edge";
-import Node from "clava-flow/graph/Node";
 import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
 import Io from "lara-js/api/lara/Io.js";
 import { JavaClasses } from "lara-js/api/lara/util/JavaTypes.js";
 import WithId from "clava-flow/graph/WithId";
+import BaseNode from "clava-flow/graph/BaseNode";
 
 class Graph<
     D extends Graph.Data = Graph.Data,
@@ -26,14 +26,9 @@ class Graph<
         return this.#graph.scratch(Graph.scratchNamespace);
     }
 
-    addNode<
-        D extends Node.Data,
-        S extends Node.ScratchData,
-        N extends Node.Class<WithId<D>, S>,
-    >(node: Node.Builder<D, S, N>): N {
-        const newNode = this.#graph.add({ group: "nodes", data: node.data });
-        newNode.scratch(Graph.scratchNamespace, node.scratchData);
-        return new node.className(this, newNode);
+    addNode(id?: string): BaseNode.Class {
+        const newNode = this.#graph.add({ group: "nodes", data: { id } });
+        return new BaseNode.Class(this, newNode);
     }
 
     addEdge<
@@ -47,8 +42,8 @@ class Graph<
     }
 
     // TODO
-    get nodes(): Node.Class[] {
-        return this.#graph.nodes().map((node) => new Node.Class(this, node));
+    get nodes(): BaseNode.Class[] {
+        return this.#graph.nodes().map((node) => new BaseNode.Class(this, node));
     }
 
     // TODO

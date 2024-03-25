@@ -1,12 +1,11 @@
 import Edge from "clava-flow/graph/Edge";
 import Graph from "clava-flow/graph/Graph";
-import Node from "clava-flow/graph/Node";
-
+import BaseNode from "clava-flow/graph/Node";
 
 abstract class DotFormatter {
     static defaultGraphName: string = "clava_graph";
 
-    abstract formatNode(node: Node.Class): DotFormatter.Node;
+    abstract formatNode(node: BaseNode.Class): DotFormatter.Node;
 
     abstract formatEdge(edge: Edge): DotFormatter.Edge;
 

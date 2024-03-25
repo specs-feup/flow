@@ -1,5 +1,5 @@
 import Graph from "clava-flow/graph/Graph";
-import Node from "clava-flow/graph/Node";
+import BaseNode from "clava-flow/graph/Node";
 import WithId from "clava-flow/graph/WithId";
 import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
 
@@ -17,8 +17,8 @@ class Edge<
 
     // Override in subclasses
     static build(
-        source: Node.Class,
-        target: Node.Class,
+        source: BaseNode.Class,
+        target: BaseNode.Class,
         id?: string,
     ): Edge.Builder<Edge.Data, Edge.ScratchData, Edge> {
         return {
@@ -44,19 +44,19 @@ class Edge<
         return this.#edge.id();
     }
 
-    get source(): Node.Class {
-        return new Node.Class(this.#graph, this.#edge.source());
+    get source(): BaseNode.Class {
+        return new BaseNode.Class(this.#graph, this.#edge.source());
     }
 
-    set source(node: Node.Class) {
+    set source(node: BaseNode.Class) {
         this.#edge.move({ source: node.id });
     }
 
-    get target(): Node.Class {
-        return new Node.Class(this.#graph, this.#edge.target());
+    get target(): BaseNode.Class {
+        return new BaseNode.Class(this.#graph, this.#edge.target());
     }
 
-    set target(node: Node.Class) {
+    set target(node: BaseNode.Class) {
         this.#edge.move({ target: node.id });
     }
 
