@@ -1,36 +1,45 @@
 import BaseNode from "clava-flow/graph/BaseNode";
-import WithId from "clava-flow/graph/WithId";
+import { NodeBuilder, NodeConstructor, NodeTypeGuard } from "clava-flow/graph/Node";
 import { Joinpoint } from "clava-js/api/Joinpoints.js";
 
 namespace FlowNode {
     export class Class<
-        D extends WithId<Data> = WithId<Data>,
+        D extends Data = Data,
         S extends ScratchData = ScratchData,
     > extends BaseNode.Class<D, S> {}
 
-    export function build(
-        $jp: Joinpoint,
-        type: Type,
-        id?: string,
-    ): BaseNode.AbstractBuilder<Data, ScratchData, FlowNode.Class> {
-        const s = BaseNode.build(id);
-        return {
-            data: {
-                ...s.data,
-                flowNodeType: type,
-            },
-            scratchData: {
-                ...s.scratchData,
-                $jp: $jp,
-            },
-            className: FlowNode.Class,
-        };
+    export abstract class Builder
+        extends BaseNode.Builder
+        implements NodeBuilder<Data, ScratchData>
+    {
+        #$jp: Joinpoint;
+        #flowNodeType: Type;
+
+        constructor($jp: Joinpoint, type: Type) {
+            super();
+            this.#$jp = $jp;
+            this.#flowNodeType = type;
+        }
+
+        override buildData(data: BaseNode.Data): Data {
+            return {
+                ...super.buildData(data),
+                flowNodeType: this.#flowNodeType,
+            };
+        }
+
+        override buildScratchData(scratchData: BaseNode.ScratchData): ScratchData {
+            return {
+                ...super.buildScratchData(scratchData),
+                $jp: this.#$jp,
+            };
+        }
     }
 
     export const TypeGuard: NodeTypeGuard<Data, ScratchData> = {
-        isDataCompatible(data: WithId<BaseNode.Data>): data is WithId<Data> {
+        isDataCompatible(data: BaseNode.Data): data is Data {
             if (!BaseNode.TypeGuard.isDataCompatible(data)) return false;
-            const d = data as WithId<Data>;
+            const d = data as Data;
             if (!(d.flowNodeType in Type)) return false;
             return true;
         },

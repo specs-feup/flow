@@ -1,81 +1,131 @@
 Boilerplate to extend a Node:
 
 ```typescript
-// Replace SUBNODE with node class name
-// Replace SUPERNODE with parent node class name
-class SUBNODE<
-    D extends WithId<SUBNODE.Data> = WithId<SUBNODE.Data>,
-    S extends SUBNODE.ScratchData = SUBNODE.ScratchData,
-> extends SUPERNODE<D, S> {
-    // If this is an "abstract" Node type with subtypes, you may ommit the `build` method
-    static build(/* build arguments */): Node.Builder<SUBNODE.Data, SUBNODE.ScratchData, SUBNODE> {
-        const s = super.build(/* superclass build arguments */);
-        return {
-            data: {
-                ...s.data,
-                // Add fields here
-            },
-            scratchData: {
-                ...s.scratchData,
-                // Add fields here
-            },
-            className: this,
-        };
+namespace __SUB_NODE__ {
+    export class Class<
+        D extends Data = Data,
+        S extends ScratchData = ScratchData,
+    > extends __SUPER_NODE__.Class<D, S> {
+        /* Add methods here */
     }
 
-    // Add utility methods here - it is encouraged to add methods to manipulate the node's data
-    // so that the use of `.data()` can be avoided
+    export class Builder
+        extends __SUPER_NODE__.Builder
+        implements NodeBuilder<Data, ScratchData>
+    {
+        constructor(/* ... */) {
+            super(/* ... */);
+            /* ... */
+        }
+
+        buildData(data: BaseNode.Data): Data {
+            return {
+                ...super.buildData(data),
+                /* Build data fields here */
+            };
+        }
+
+        buildScratchData(scratchData: BaseNode.ScratchData): ScratchData {
+            return {
+                ...super.buildScratchData(scratchData),
+                /* Build scratch data fields here */
+            };
+        }
+    }
+
+    export const TypeGuard: NodeTypeGuard<Data, ScratchData> = {
+        isDataCompatible(data: BaseNode.Data): data is Data {
+            if (!__SUPER_NODE__.TypeGuard.isDataCompatible(data)) return false;
+            const d = data as Data;
+            /* Add data checks here */
+            return true;
+        },
+
+        isScratchDataCompatible(
+            scratchData: BaseNode.ScratchData,
+        ): scratchData is ScratchData {
+            if (!__SUPER_NODE__.TypeGuard.isScratchDataCompatible(scratchData)) return false;
+            const s = scratchData as ScratchData;
+            /* Add scratch data checks here */
+            return true;
+        },
+    };
+
+    export interface Data extends __SUPER_NODE__.Data {
+        /* Add data fields here */
+    }
+
+    export interface ScratchData extends __SUPER_NODE__.ScratchData {
+        /* Add scratch data fields here */
+    }
 }
 
-namespace SUBNODE {
-    export interface Data extends Node.Data {
-        // Add fields here
-    }
-
-    export interface ScratchData extends Node.ScratchData {
-        // Add fields here
-    }
-}
+export default __SUB_NODE__;
 ```
 
 Boilerplate to extend an Edge:
     
 ```typescript
-// Replace SUBEDGE with edge class name
-// Replace SUPERNODE with parent node class name
-class SUBEDGE<
-    D extends Edge.WithId<SUBEDGE.Data> = Edge.WithId<SUBEDGE.Data>,
-    S extends Edge.ScratchData = Edge.ScratchData,
-> extends SUPEREDGE<D, S> {
-    // If this is an "abstract" Edge type with subtypes, you may ommit the `build` method
-    static build(/* build arguments */): Edge.Builder<SUBEDGE.Data, SUBEDGE.ScratchData, SUBEDGE> {
-        const s = super.build(/* superclass build arguments */);
-        return {
-            data: {
-                ...s.data,
-                // Add fields here
-            },
-            scratchData: {
-                ...s.scratchData,
-                // Add fields here
-            },
-            className: this,
-        };
+namespace __SUB_EDGE__ {
+    export class Class<
+        D extends Data = Data,
+        S extends ScratchData = ScratchData,
+    > extends __SUPER_EDGE__.Class<D, S> {
+        /* Add methods here */
     }
 
-    // Add utility methods here - it is encouraged to add methods to manipulate the edge's data
-    // so that the use of `.data()` can be avoided
+    export class Builder
+        extends __SUPER_EDGE__.Builder
+        implements EdgeBuilder<Data, ScratchData>
+    {
+        constructor(/* ... */) {
+            super(/* ... */);
+            /* ... */
+        }
+
+        buildData(data: BaseEdge.Data): Data {
+            return {
+                ...super.buildData(data),
+                /* Build data fields here */
+            };
+        }
+
+        buildScratchData(scratchData: BaseEdge.ScratchData): ScratchData {
+            return {
+                ...super.buildScratchData(scratchData),
+                /* Build scratch data fields here */
+            };
+        }
+    }
+
+    export const TypeGuard: EdgeTypeGuard<Data, ScratchData> = {
+        isDataCompatible(data: BaseEdge.Data): data is Data {
+            if (!__SUPER_EDGE__.TypeGuard.isDataCompatible(data)) return false;
+            const d = data as Data;
+            /* Add data checks here */
+            return true;
+        },
+
+        isScratchDataCompatible(
+            scratchData: BaseEdge.ScratchData,
+        ): scratchData is ScratchData {
+            if (!__SUPER_EDGE__.TypeGuard.isScratchDataCompatible(scratchData)) return false;
+            const s = scratchData as ScratchData;
+            /* Add scratch data checks here */
+            return true;
+        },
+    };
+
+    export interface Data extends __SUPER_EDGE__.Data {
+        /* Add data fields here */
+    }
+
+    export interface ScratchData extends __SUPER_EDGE__.ScratchData {
+        /* Add scratch data fields here */
+    }
 }
 
-namespace SUBEDGE {
-    export interface Data extends Edge.Data {
-        // Add fields here
-    }
-
-    export interface ScratchData extends Edge.ScratchData {
-        // Add fields here
-    }
-}
+export default __SUB_EDGE__;
 ```
 
 Boilerplate to extend a Graph:

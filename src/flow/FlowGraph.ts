@@ -1,4 +1,4 @@
-import FlowGraphBuilder from "clava-flow/flow/builder/FlowGraphBuilder";
+import FlowGraphGenerator from "clava-flow/flow/builder/FlowGraphBuilder";
 import Graph from "clava-flow/graph/Graph";
 import { Joinpoint, Statement } from "clava-js/api/Joinpoints.js";
 
@@ -6,8 +6,8 @@ class FlowGraph<
     D extends FlowGraph.Data = FlowGraph.Data,
     S extends FlowGraph.ScratchData = FlowGraph.ScratchData,
 > extends Graph<D, S> {
-    static build($jp: Joinpoint): FlowGraph {
-        return new FlowGraphBuilder($jp).build();
+    static generate($jp: Joinpoint): FlowGraph {
+        return new FlowGraphGenerator($jp).build();
     }
 
     // /**

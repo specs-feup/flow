@@ -1,6 +1,6 @@
 import DotFormatter from "clava-flow/dot/DotFormatter";
-import Edge from "clava-flow/graph/Edge";
-import BaseNode from "clava-flow/graph/Node";
+import BaseEdge from "clava-flow/graph/BaseEdge";
+import BaseNode from "clava-flow/graph/BaseNode";
 
 export default class DefaultDotFormatter extends DotFormatter {
     override formatNode(node: BaseNode.Class): DotFormatter.Node {
@@ -13,7 +13,7 @@ export default class DefaultDotFormatter extends DotFormatter {
         };
     }
 
-    override formatEdge(edge: Edge): DotFormatter.Edge {
+    override formatEdge(edge: BaseEdge.Class): DotFormatter.Edge {
         return {
             source: edge.source.id,
             target: edge.target.id,

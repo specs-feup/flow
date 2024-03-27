@@ -3,8 +3,8 @@ import Edge from "clava-flow/graph/Edge";
 import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
 import Io from "lara-js/api/lara/Io.js";
 import { JavaClasses } from "lara-js/api/lara/util/JavaTypes.js";
-import WithId from "clava-flow/graph/WithId";
 import BaseNode from "clava-flow/graph/BaseNode";
+import BaseEdge from "clava-flow/graph/BaseEdge";
 
 class Graph<
     D extends Graph.Data = Graph.Data,
@@ -14,6 +14,7 @@ class Graph<
 
     #graph: cytoscape.Core;
 
+    // TODO: change; add .is .as .init; create static Graph.new() method to create new graph; create Graph.fromCy() method to create graph from cytoscape.Core
     constructor(graph?: cytoscape.Core) {
         this.#graph = graph ?? cytoscape({});
     }
@@ -27,18 +28,19 @@ class Graph<
     }
 
     addNode(id?: string): BaseNode.Class {
-        const newNode = this.#graph.add({ group: "nodes", data: { id } });
+        const newNode = this.#graph.add({
+            group: "nodes",
+            data: { id },
+        });
         return new BaseNode.Class(this, newNode);
     }
 
-    addEdge<
-        D extends Edge.Data,
-        S extends Edge.ScratchData,
-        E extends Edge<WithId<D>, S>,
-    >(edge: Edge.Builder<D, S, E>): E {
-        const newEdge = this.#graph.add({ group: "edges", data: edge.data });
-        newEdge.scratch(Graph.scratchNamespace, edge.scratchData);
-        return new edge.className(this, newEdge);
+    addEdge(source: BaseNode.Class, target: BaseNode.Class, id?: string): BaseEdge.Class {
+        const newEdge = this.#graph.add({
+            group: "edges",
+            data: { id, source: source.id, target: target.id },
+        });
+        return new BaseEdge.Class(this, newEdge);
     }
 
     // TODO

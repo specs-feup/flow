@@ -48,11 +48,12 @@ namespace BaseNode {
             return new NodeType(this.#graph, this.#node, this.data, this.scratchData);
         }
 
-        // TODO
-        init(builder: NodeBuilder<N>): N {
-            builder.buildData(this.data);
-            builder.buildScratchData(this.scratchData);
-            return builder.Class(this.#graph, this.#node);
+        init<D2 extends BaseNode.Data, S2 extends BaseNode.ScratchData>(builder: NodeBuilder<D2, S2>): BaseNode.Class<D2, S2> {
+            const initedData = builder.buildData(this.data);
+            const initedScratchData = builder.buildScratchData(this.scratchData);
+            this.#node.data(initedData);
+            this.#node.scratch(Graph.scratchNamespace, initedScratchData);
+            return new BaseNode.Class(this.#graph, this.#node, initedData, initedScratchData);
         }
 
         toCy(): cytoscape.NodeSingular {
@@ -60,7 +61,15 @@ namespace BaseNode {
         }
     }
 
-    export class Builder extends NodeBuilder {}
+    export class Builder implements NodeBuilder<Data, ScratchData> {
+        buildData(data: BaseNode.Data): Data {
+            return data;
+        }
+
+        buildScratchData(scratchData: BaseNode.ScratchData): ScratchData {
+            return scratchData;
+        }
+    }
 
     export const TypeGuard: NodeTypeGuard<Data, ScratchData> = {
         isDataCompatible(data: BaseNode.Data): data is Data {

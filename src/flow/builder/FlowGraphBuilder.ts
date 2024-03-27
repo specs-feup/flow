@@ -5,7 +5,7 @@ import BaseNode from "clava-flow/graph/Node";
 import { FunctionJp, Joinpoint, Program, FileJp } from "clava-js/api/Joinpoints.js";
 import Query from "lara-js/api/weaver/Query.js";
 
-export default class FlowGraphBuilder {
+export default class FlowGraphGenerator {
     /**
      * AST node to process
      */

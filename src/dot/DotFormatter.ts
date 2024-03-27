@@ -1,13 +1,13 @@
-import Edge from "clava-flow/graph/Edge";
+import BaseEdge from "clava-flow/graph/BaseEdge";
+import BaseNode from "clava-flow/graph/BaseNode";
 import Graph from "clava-flow/graph/Graph";
-import BaseNode from "clava-flow/graph/Node";
 
 abstract class DotFormatter {
     static defaultGraphName: string = "clava_graph";
 
     abstract formatNode(node: BaseNode.Class): DotFormatter.Node;
 
-    abstract formatEdge(edge: Edge): DotFormatter.Edge;
+    abstract formatEdge(edge: BaseEdge.Class): DotFormatter.Edge;
 
     static #sanitizeDotLabel(label: string) {
         return label.replaceAll("\n", "\\l").replaceAll("\r", "");
