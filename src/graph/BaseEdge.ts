@@ -1,3 +1,4 @@
+import BaseGraph from "clava-flow/graph/BaseGraph";
 import BaseNode from "clava-flow/graph/BaseNode";
 import { EdgeBuilder, EdgeConstructor, EdgeTypeGuard } from "clava-flow/graph/Edge";
 import Graph from "clava-flow/graph/Graph";
@@ -5,13 +6,13 @@ import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
 
 namespace BaseEdge {
     export class Class<D extends Data = Data, S extends ScratchData = ScratchData> {
-        #graph: Graph;
+        #graph: BaseGraph.Class;
         #edge: cytoscape.EdgeSingular;
 
         // _d and _sd are a hack to force typescript to typecheck
         // D and S in .as() method.
         constructor(
-            graph: Graph,
+            graph: BaseGraph.Class,
             edge: cytoscape.EdgeSingular,
             _d: D = {} as any,
             _sd: S = {} as any,

@@ -131,23 +131,59 @@ export default __SUB_EDGE__;
 Boilerplate to extend a Graph:
 
 ```typescript
-// Replace SUBEDGE with edge class name
-// Replace SUPERNODE with parent node class name
-class SUBGRAPH<
-    D extends SUBGRAPH.Data = SUBGRAPH.Data,
-    S extends SUBGRAPH.ScratchData = SUBGRAPH.ScratchData,
-> extends SUPERGRAPH<D, S> {
-    // Add utility methods here - it is encouraged to add methods to manipulate the edge's data
-    // so that the use of `.data()` can be avoided
-}
-
-namespace SUBGRAPH {
-    export interface Data {
-        // Add fields here
+namespace __SUB_GRAPH__ {
+    export class Class<
+        D extends Data = Data, 
+        S extends ScratchData = ScratchData
+    >  extends __SUPER_GRAPH__.Class<D, S> {
+        /* Add methods here */
     }
 
-    export interface ScratchData {
-        // Add fields here
+    export class Builder extends __SUPER_GRAPH__.Builder implements GraphBuilder<Data, ScratchData> {
+        constructor(/* ... */) {
+            super(/* ... */);
+            /* ... */
+        }
+
+        override buildData(data: BaseGraph.Data): Data {
+            return {
+                ...super.buildData(data),
+                /* Build data fields here */
+            };
+        }
+
+        override buildScratchData(scratchData: BaseGraph.ScratchData): ScratchData {
+            return {
+                ...super.buildScratchData(scratchData),
+                /* Build scratch data fields here */
+            };
+        }
+    }
+
+    export const TypeGuard: GraphTypeGuard<Data, ScratchData> = {
+        isDataCompatible(data: BaseGraph.Data): data is Data {
+            if (!__SUPER_GRAPH__.TypeGuard.isDataCompatible(data)) return false;
+            const d = data as Data;
+            /* Add data checks here */
+            return true;
+        },
+
+        isScratchDataCompatible(sData: BaseGraph.ScratchData): sData is ScratchData {
+            if (!__SUPER_GRAPH__.TypeGuard.isScratchDataCompatible(sData)) return false;
+            const s = scratchData as ScratchData;
+            /* Add scratch data checks here */
+            return true;
+        },
+    };
+
+    export interface Data extends __SUPER_GRAPH__.Data {
+        /* Add data fields here */
+    }
+
+    export interface ScratchData extends __SUPER_GRAPH__.Data {
+        /* Add scratch data fields here */
     }
 }
+
+export default __SUB_GRAPH__;
 ```

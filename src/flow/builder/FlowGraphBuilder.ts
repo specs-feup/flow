@@ -1,58 +1,26 @@
 import FlowGraph from "clava-flow/flow/FlowGraph";
-import InstructionNode from "../../../out/src/flow/node/instruction/InstructionNode.js";
-import Edge from "clava-flow/graph/Edge";
-import BaseNode from "clava-flow/graph/Node";
-import { FunctionJp, Joinpoint, Program, FileJp } from "clava-js/api/Joinpoints.js";
+import { FunctionJp, Joinpoint, Program, FileJp, Scope } from "clava-js/api/Joinpoints.js";
 import Query from "lara-js/api/weaver/Query.js";
+import BaseNode from "clava-flow/graph/BaseNode";
+import InstructionNode from "clava-flow/flow/node/instruction/InstructionNode";
+import ControlFlowEdge from "clava-flow/flow/edge/ControlFlowEdge";
+
 
 export default class FlowGraphGenerator {
-    /**
-     * AST node to process
-     */
     #$jp: Joinpoint;
-
-    /**
-     * Graph being built
-     */
-    #graph: FlowGraph;
-
-    /**
-     * Maps the astId to the corresponding temporary statement
-     */
-    // #temporaryJpBuilder: TemporaryJoinpointsBuilder;
-
-    /**
-     * Type is class with a next method that returns a string
-     */
+    #graph: FlowGraph.Class;
     // #idGenerator: IdGenerator;
 
-    /**
-     * Calculates what node is unconditionally executed after a given statement
-     */
-    // #nextNodes: NextCfgNode;
-
-    /**
-     * Creates a new instance of the CfgBuilder class
-     * @param $jp -
-     * @param splitInstList - If true, statements of each instruction list must be split
-     * @param deterministicIds - If true, uses deterministic ids for the graph ids (e.g. id_0, id_1...). Otherwise, uses $jp.astId whenever possible
-     */
     constructor(
         $jp: Joinpoint,
+        graph: FlowGraph.Class,
         // deterministicIds: boolean = false,
     ) {
         this.#$jp = $jp;
+        this.#graph = graph;
         // this.#idGenerator = deterministicIds
         //     ? new SequentialIdGenerator()
         //     : new UndefinedGenerator();
-
-        // this.dataFactory = new DataFactory(this.jp);
-        this.#graph = new FlowGraph();
-        // this.#graph.addNode({ id: "start" }); // TODO put type CfgNodeType.START
-        // this.#graph.addNode({ id: "end" }); // TODO put type CfgNodeType.END
-
-        // this.#temporaryJpBuilder = new TemporaryJoinpointsBuilder();
-        // this.#nextNodes = new NextCfgNode(this.#$jp, this.nodes, this.#endNode);
     }
 
     processJp($jp: Joinpoint) {
@@ -61,39 +29,27 @@ export default class FlowGraphGenerator {
                 this.processJp($function as Joinpoint);
             }
         } else if ($jp instanceof FunctionJp) {
-            let prevNode = this.#graph.addNode(
-                InstructionNode.build($jp, InstructionNode.Type.FUNCTION_ENTRY, "entry"),
-            );
+            let prevNode = this.#graph.addNode("entry").init(new InstructionNode.Builder($jp, InstructionNode.Type.FUNCTION_ENTRY));
 
             for (const param of $jp.params) {
-                const currNode = this.#graph.addNode(
-                    InstructionNode.build(
-                        param,
-                        InstructionNode.Type.STATEMENT,
-                        param.code,
-                    ),
-                );
-                this.#graph.addEdge(Edge.build(prevNode, currNode));
+                const currNode = this.#graph.addNode(param.code).init(new InstructionNode.Builder(param, InstructionNode.Type.STATEMENT));
+                
                 prevNode = currNode;
             }
 
-            const currNode = this.#graph.addNode(BaseNode.build($jp.body.code));
-            this.#graph.addEdge(Edge.build(prevNode, currNode));
+            const currNode = this.#graph.addNode($jp.body.code).init(new BaseNode.Builder);
+            this.#graph.addEdge(prevNode, currNode).init(new ControlFlowEdge.Builder());
 
-            let exitNode = this.#graph.addNode(
-                InstructionNode.build($jp, InstructionNode.Type.FUNCTION_EXIT, "exit"),
-            );
-            this.#graph.addEdge(Edge.build(currNode, exitNode));
+            const exitNode = this.#graph.addNode("exit").init(new InstructionNode.Builder($jp, InstructionNode.Type.FUNCTION_EXIT));
+            this.#graph.addEdge(currNode, exitNode).init(new ControlFlowEdge.Builder());
+        } else if ($jp instanceof Scope) { 
+            
         } else {
             throw new Error(`Cannot build graph for joinpoint "${$jp.joinPointType}"`);
         }
     }
 
-    /**
-     * Builds the control flow graph
-     * @returns An array that includes the built graph, the nodes, the start and end nodes
-     */
-    build(): FlowGraph {
+    build(): FlowGraph.Class {
         this.processJp(this.#$jp);
 
         // this.#addScopeAuxComments();
