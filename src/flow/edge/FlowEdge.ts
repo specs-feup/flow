@@ -1,14 +1,13 @@
 import BaseEdge from "clava-flow/graph/BaseEdge";
 import { EdgeBuilder, EdgeTypeGuard } from "clava-flow/graph/Edge";
 
-
 namespace FlowEdge {
     export class Class<
         D extends Data = Data,
         S extends ScratchData = ScratchData,
     > extends BaseEdge.Class<D, S> {}
 
-    export class Builder
+    export abstract class Builder
         extends BaseEdge.Builder
         implements EdgeBuilder<Data, ScratchData>
     {
@@ -37,15 +36,14 @@ namespace FlowEdge {
         isDataCompatible(data: BaseEdge.Data): data is Data {
             if (!BaseEdge.TypeGuard.isDataCompatible(data)) return false;
             const d = data as Data;
-            if (!(d.flowEdgeType in Type)) return false;
+            if (!Object.values(Type).includes(d.flowEdgeType as Type)) return false;
             return true;
         },
 
         isScratchDataCompatible(
             scratchData: BaseEdge.ScratchData,
         ): scratchData is ScratchData {
-            if (!BaseEdge.TypeGuard.isScratchDataCompatible(scratchData))
-                return false;
+            if (!BaseEdge.TypeGuard.isScratchDataCompatible(scratchData)) return false;
             return true;
         },
     };

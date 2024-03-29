@@ -84,6 +84,10 @@ namespace BaseEdge {
             );
         }
 
+        get graph(): BaseGraph.Class {
+            return this.#graph;
+        }
+
         toCy(): cytoscape.EdgeSingular {
             return this.#edge;
         }

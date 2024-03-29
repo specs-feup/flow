@@ -1,10 +1,27 @@
 import FlowGraph from "clava-flow/flow/FlowGraph";
-import { FunctionJp, Joinpoint, Program, FileJp, Scope } from "clava-js/api/Joinpoints.js";
+import {
+    FunctionJp,
+    Joinpoint,
+    Program,
+    FileJp,
+    Scope,
+    WrapperStmt,
+    DeclStmt,
+    Empty,
+    EmptyStmt,
+    ExprStmt,
+    If,
+    Loop,
+    Switch,
+    Case,
+    ReturnStmt,
+    Break,
+    Continue,
+    GotoStmt,
+    LabelStmt,
+} from "clava-js/api/Joinpoints.js";
 import Query from "lara-js/api/weaver/Query.js";
-import BaseNode from "clava-flow/graph/BaseNode";
-import InstructionNode from "clava-flow/flow/node/instruction/InstructionNode";
-import ControlFlowEdge from "clava-flow/flow/edge/ControlFlowEdge";
-
+import UnknownInstructionNode from "clava-flow/flow/node/instruction/UnknownInstructionNode";
 
 export default class FlowGraphGenerator {
     #$jp: Joinpoint;
@@ -23,34 +40,74 @@ export default class FlowGraphGenerator {
         //     : new UndefinedGenerator();
     }
 
-    processJp($jp: Joinpoint) {
+    #processJp($jp: Joinpoint) {
         if ($jp instanceof Program || $jp instanceof FileJp) {
-            for (const $function of Query.searchFrom($jp, "function")) {
-                this.processJp($function as Joinpoint);
+            for (const $function of Query.searchFrom($jp, "function", {
+                isImplementation: true,
+            })) {
+                this.#processJp($function as Joinpoint);
             }
         } else if ($jp instanceof FunctionJp) {
-            let prevNode = this.#graph.addNode("entry").init(new InstructionNode.Builder($jp, InstructionNode.Type.FUNCTION_ENTRY));
+            const [function_entry, function_exit] = this.#graph.addFunctionPair($jp);
 
             for (const param of $jp.params) {
-                const currNode = this.#graph.addNode(param.code).init(new InstructionNode.Builder(param, InstructionNode.Type.STATEMENT));
-                
-                prevNode = currNode;
+                // TODO not UnknownInstructionNode
+                const param_node = this.#graph
+                    .addNode()
+                    .init(new UnknownInstructionNode.Builder(param))
+                    .as(UnknownInstructionNode.Class);
+                function_exit.insertBefore(param_node);
             }
 
-            const currNode = this.#graph.addNode($jp.body.code).init(new BaseNode.Builder);
-            this.#graph.addEdge(prevNode, currNode).init(new ControlFlowEdge.Builder());
+            // TODO
+            this.#processJp($jp.body);
+            // const currNode = this.#graph.addNode($jp.body.code).init(new BaseNode.Builder);
+        } else if ($jp instanceof Scope) {
+            const [scope_start, scope_end] = this.#graph.addScopePair($jp);
+            console.log($jp.dump);
+            for (const child of $jp.children) {
+                
+                const node = this.#graph.addNode().init(new UnknownInstructionNode.Builder(child)).as(UnknownInstructionNode.Class);
+                scope_end.insertBefore(node);
+            }
+        } else if ($jp instanceof WrapperStmt) {
+            if ($jp.kind === "comment") {
 
-            const exitNode = this.#graph.addNode("exit").init(new InstructionNode.Builder($jp, InstructionNode.Type.FUNCTION_EXIT));
-            this.#graph.addEdge(currNode, exitNode).init(new ControlFlowEdge.Builder());
-        } else if ($jp instanceof Scope) { 
+            } else if ($jp.kind === "pragma") {
+
+            }
+        } else if ($jp instanceof DeclStmt) {
+
+        } else if ($jp instanceof EmptyStmt) {
+        } else if ($jp instanceof LabelStmt) {
+
+        } else if ($jp instanceof ExprStmt) {
+        } else if ($jp instanceof If) {
+
+        } else if ($jp instanceof Loop) {
+        
+        } else if ($jp instanceof Switch) {
+
+        } else if ($jp instanceof Case) {
+
+        } else if ($jp instanceof ReturnStmt) {
+
+        } else if ($jp instanceof Break) {
+
+        } else if ($jp instanceof Continue) {
+
+        } else if ($jp instanceof GotoStmt) {
+
+        
             
         } else {
+            // TODO maybe be silent when inside recursive calls?
             throw new Error(`Cannot build graph for joinpoint "${$jp.joinPointType}"`);
         }
     }
 
     build(): FlowGraph.Class {
-        this.processJp(this.#$jp);
+        this.#processJp(this.#$jp);
 
         // this.#addScopeAuxComments();
         // this.#createNodes();

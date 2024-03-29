@@ -1,11 +1,33 @@
 import FlowGraphGenerator from "clava-flow/flow/builder/FlowGraphBuilder";
+import ControlFlowEdge from "clava-flow/flow/edge/ControlFlowEdge";
+import FunctionEntryNode from "clava-flow/flow/node/instruction/FunctionEntryNode";
+import FunctionExitNode from "clava-flow/flow/node/instruction/FunctionExitNode";
+import ScopeEndNode from "clava-flow/flow/node/instruction/ScopeEndNode";
+import ScopeStartNode from "clava-flow/flow/node/instruction/ScopeStartNode";
 import BaseGraph from "clava-flow/graph/BaseGraph";
 import Graph, { GraphBuilder, GraphTypeGuard } from "clava-flow/graph/Graph";
-import { Joinpoint, Statement } from "clava-js/api/Joinpoints.js";
+import { FunctionJp, Joinpoint, Scope, Statement } from "clava-js/api/Joinpoints.js";
 
 
 namespace FlowGraph {
-    export class Class<D extends Data = Data, S extends ScratchData = ScratchData>  extends BaseGraph.Class<D, S> {
+    export class Class<D extends Data = Data, S extends ScratchData = ScratchData> extends BaseGraph.Class<D, S> {
+        
+        addFunctionPair($jp: FunctionJp): [FunctionEntryNode.Class, FunctionExitNode.Class] {
+            const function_entry = this.addNode().init(new FunctionEntryNode.Builder($jp)).as(FunctionEntryNode.Class);
+            const function_exit = this.addNode().init(new FunctionExitNode.Builder($jp)).as(FunctionExitNode.Class);
+            this.addEdge(function_entry, function_exit).init(new ControlFlowEdge.Builder);
+            
+            return [function_entry, function_exit];
+        }
+
+        addScopePair($jp: Scope): [ScopeStartNode.Class, ScopeEndNode.Class] {
+            const scope_start = this.addNode().init(new ScopeStartNode.Builder($jp)).as(ScopeStartNode.Class);
+            const scope_end = this.addNode().init(new ScopeEndNode.Builder($jp)).as(ScopeEndNode.Class);
+            this.addEdge(scope_start, scope_end).init(new ControlFlowEdge.Builder);
+
+            return [scope_start, scope_end];
+        }
+
         // /**
         //  * Returns the graph node where the given statement belongs.
         //  *
@@ -52,7 +74,7 @@ namespace FlowGraph {
     // ---------------------
 
     export function generate($jp: Joinpoint, graph?: BaseGraph.Class): FlowGraph.Class {
-        const flowGraph = (graph ?? Graph.create()).init(new FlowGraph.Builder);
+        const flowGraph = (graph ?? Graph.create()).init(new FlowGraph.Builder).as(FlowGraph.Class);
         return new FlowGraphGenerator($jp, flowGraph).build();
     }
 }

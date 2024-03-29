@@ -1,3 +1,4 @@
+import ControlFlowEdge from "clava-flow/flow/edge/ControlFlowEdge";
 import BaseNode from "clava-flow/graph/BaseNode";
 import { NodeBuilder, NodeConstructor, NodeTypeGuard } from "clava-flow/graph/Node";
 import { Joinpoint } from "clava-js/api/Joinpoints.js";
@@ -6,16 +7,28 @@ namespace FlowNode {
     export class Class<
         D extends Data = Data,
         S extends ScratchData = ScratchData,
-    > extends BaseNode.Class<D, S> {}
+    > extends BaseNode.Class<D, S> {
+        insertBefore(node: BaseNode.Class) {
+            this.incomers.forEach((edge) => {
+                edge.target = node;
+            });
+
+            this.graph.addEdge(node, this).init(new ControlFlowEdge.Builder());
+        }
+
+        get jp(): Joinpoint | undefined {
+            return this.scratchData.$jp;
+        }
+    }
 
     export abstract class Builder
         extends BaseNode.Builder
         implements NodeBuilder<Data, ScratchData>
     {
-        #$jp: Joinpoint;
+        #$jp: Joinpoint | undefined;
         #flowNodeType: Type;
 
-        constructor($jp: Joinpoint, type: Type) {
+        constructor(type: Type, $jp: Joinpoint | undefined) {
             super();
             this.#$jp = $jp;
             this.#flowNodeType = type;
@@ -40,7 +53,7 @@ namespace FlowNode {
         isDataCompatible(data: BaseNode.Data): data is Data {
             if (!BaseNode.TypeGuard.isDataCompatible(data)) return false;
             const d = data as Data;
-            if (!(d.flowNodeType in Type)) return false;
+            if (!Object.values(Type).includes(d.flowNodeType as Type)) return false;
             return true;
         },
 
@@ -49,7 +62,7 @@ namespace FlowNode {
         ): scratchData is ScratchData {
             if (!BaseNode.TypeGuard.isScratchDataCompatible(scratchData)) return false;
             const s = scratchData as ScratchData;
-            if (!(s.$jp instanceof Joinpoint)) return false;
+            if (s.$jp !== undefined && !(s.$jp instanceof Joinpoint)) return false;
             return true;
         },
     };
@@ -59,7 +72,7 @@ namespace FlowNode {
     }
 
     export interface ScratchData extends BaseNode.ScratchData {
-        $jp: Joinpoint;
+        $jp: Joinpoint | undefined;
     }
 
     // ------------------------------------------------------------

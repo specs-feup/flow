@@ -34,7 +34,7 @@ namespace ControlFlowEdge {
         isDataCompatible(data: BaseEdge.Data): data is Data {
             if (!FlowEdge.TypeGuard.isDataCompatible(data)) return false;
             const d = data as Data;
-            if (!(d.flowEdgeType !== FlowEdge.Type.CONTROL_FLOW)) return false;
+            if (d.flowEdgeType !== FlowEdge.Type.CONTROL_FLOW) return false;
             return true;
         },
 

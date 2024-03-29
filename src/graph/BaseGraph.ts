@@ -10,7 +10,6 @@ import Io from "lara-js/api/lara/Io.js";
 namespace BaseGraph {
     export class Class<D extends Data = Data, S extends ScratchData = ScratchData> {
         #graph: cytoscape.Core;
-        
 
         // _d and _sd are a hack to force typescript to typecheck
         // D and S in .as() method.
@@ -44,6 +43,24 @@ namespace BaseGraph {
                 data: { id, source: source.id, target: target.id },
             });
             return new BaseEdge.Class(this, newEdge);
+        }
+
+        getNodeById(id: string): BaseNode.Class | undefined {
+            const node = this.#graph.getElementById(id);
+            if (node.isNode()) {
+                return new BaseNode.Class(this, node);
+            }
+
+            return undefined;
+        }
+
+        getEdgeById(id: string): BaseEdge.Class | undefined {
+            const edge = this.#graph.getElementById(id);
+            if (edge.isEdge()) {
+                return new BaseEdge.Class(this, edge);
+            }
+
+            return undefined;
         }
 
         // TODO
@@ -83,11 +100,7 @@ namespace BaseGraph {
             const initedScratchData = builder.buildScratchData(this.scratchData);
             this.#graph.data(initedData);
             this.#graph.scratch(Graph.scratchNamespace, initedScratchData);
-            return new BaseGraph.Class(
-                this.#graph,
-                initedData,
-                initedScratchData,
-            );
+            return new BaseGraph.Class(this.#graph, initedData, initedScratchData);
         }
 
         toDot(dotFormatter: DotFormatter, label?: string): string {

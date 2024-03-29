@@ -2,6 +2,7 @@ import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
 import Graph from "clava-flow/graph/Graph";
 import { NodeBuilder, NodeConstructor, NodeTypeGuard } from "clava-flow/graph/Node";
 import BaseGraph from "clava-flow/graph/BaseGraph";
+import BaseEdge from "clava-flow/graph/BaseEdge";
 
 namespace BaseNode {
     export class Class<D extends Data = Data, S extends ScratchData = ScratchData> {
@@ -25,6 +26,14 @@ namespace BaseNode {
 
         get id(): string {
             return this.#node.id();
+        }
+
+        get incomers(): BaseEdge.Class[] {
+            return this.#node.incomers().edges().map((edge) => new BaseEdge.Class(this.#graph, edge));
+        }
+
+        get outgoers(): BaseEdge.Class[] {
+            return this.#node.outgoers().edges().map((edge) => new BaseEdge.Class(this.#graph, edge));
         }
 
         is<D2 extends Data, S2 extends ScratchData>(
@@ -55,6 +64,10 @@ namespace BaseNode {
             this.#node.data(initedData);
             this.#node.scratch(Graph.scratchNamespace, initedScratchData);
             return new BaseNode.Class(this.#graph, this.#node, initedData, initedScratchData);
+        }
+
+        get graph(): BaseGraph.Class {
+            return this.#graph;
         }
 
         toCy(): cytoscape.NodeSingular {

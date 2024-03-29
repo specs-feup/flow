@@ -1,6 +1,6 @@
 import BaseEdge from "clava-flow/graph/BaseEdge";
+import BaseGraph from "clava-flow/graph/BaseGraph";
 import BaseNode from "clava-flow/graph/BaseNode";
-import Graph from "clava-flow/graph/Graph";
 
 abstract class DotFormatter {
     static defaultGraphName: string = "clava_graph";
@@ -10,7 +10,7 @@ abstract class DotFormatter {
     abstract formatEdge(edge: BaseEdge.Class): DotFormatter.Edge;
 
     static #sanitizeDotLabel(label: string) {
-        return label.replaceAll("\n", "\\l").replaceAll("\r", "");
+        return label.replaceAll("\n", "\\l").replaceAll("\r", "").replaceAll('"', '\\"');
     }
 
     #formatAttrs(attrs: [string, string][]): string {
@@ -19,7 +19,7 @@ abstract class DotFormatter {
             .join(" ");
     }
 
-    format(graph: Graph, label?: string): string {
+    format(graph: BaseGraph.Class, label?: string): string {
         const graphName = label ?? DotFormatter.defaultGraphName;
 
         const nodes = graph.nodes
@@ -63,7 +63,6 @@ namespace DotFormatter {
         source: string;
         target: string;
         attrs: {
-            label: string;
             [key: string]: string;
         };
     }
