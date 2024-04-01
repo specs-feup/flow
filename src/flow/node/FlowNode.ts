@@ -9,11 +9,17 @@ namespace FlowNode {
         S extends ScratchData = ScratchData,
     > extends BaseNode.Class<D, S> {
         insertBefore(node: BaseNode.Class) {
+            this.insertSubgraphBefore(node, [node]);
+        }
+
+        insertSubgraphBefore(head: BaseNode.Class, tail: BaseNode.Class[]) {
             this.incomers.forEach((edge) => {
-                edge.target = node;
+                edge.target = head;
             });
 
-            this.graph.addEdge(node, this).init(new ControlFlowEdge.Builder());
+            for (const tailNode of tail) {
+                this.graph.addEdge(tailNode, this).init(new ControlFlowEdge.Builder());
+            }
         }
 
         get jp(): Joinpoint | undefined {

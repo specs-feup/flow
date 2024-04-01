@@ -41,7 +41,7 @@ namespace ConditionNode {
         }
     }
 
-    export abstract class Builder
+    export class Builder
         extends FlowNode.Builder
         implements NodeBuilder<Data, ScratchData>
     {

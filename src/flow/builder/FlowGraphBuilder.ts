@@ -19,39 +19,73 @@ import {
     Continue,
     GotoStmt,
     LabelStmt,
+    Comment,
 } from "clava-js/api/Joinpoints.js";
 import Query from "lara-js/api/weaver/Query.js";
 import UnknownInstructionNode from "clava-flow/flow/node/instruction/UnknownInstructionNode";
+import CommentNode from "clava-flow/flow/node/instruction/CommentNode";
+import FlowNode from "clava-flow/flow/node/FlowNode";
+import ConditionNode from "clava-flow/flow/node/condition/ConditionNode";
+import BaseNode from "clava-flow/graph/BaseNode";
+
+interface ProcessJpResult {
+    headNode: FlowNode.Class;
+    tailNodes: FlowNode.Class[];
+}
+
+interface ProcessJpContext {
+    continueNode?: FlowNode.Class;
+    breakNode?: FlowNode.Class;
+    caseNodes?: FlowNode.Class[];
+    returnNode?: FlowNode.Class;
+}
+
+function newProcessJpResult(
+    headNode: FlowNode.Class,
+    tailNodes?: FlowNode.Class[],
+): ProcessJpResult {
+    if (tailNodes === undefined) {
+        tailNodes = [headNode];
+    }
+    return { headNode, tailNodes };
+}
 
 export default class FlowGraphGenerator {
     #$jp: Joinpoint;
     #graph: FlowGraph.Class;
+    #temporaryNodes: UnknownInstructionNode.Class[];
     // #idGenerator: IdGenerator;
 
     constructor(
-        $jp: Joinpoint,
+        $jp: Program | FileJp | FunctionJp,
         graph: FlowGraph.Class,
         // deterministicIds: boolean = false,
     ) {
         this.#$jp = $jp;
         this.#graph = graph;
+        this.#temporaryNodes = [];
         // this.#idGenerator = deterministicIds
         //     ? new SequentialIdGenerator()
         //     : new UndefinedGenerator();
     }
 
-    #processJp($jp: Joinpoint) {
-        if ($jp instanceof Program || $jp instanceof FileJp) {
-            for (const $function of Query.searchFrom($jp, "function", {
-                isImplementation: true,
-            })) {
-                this.#processJp($function as Joinpoint);
-            }
-        } else if ($jp instanceof FunctionJp) {
+    #createTemporaryNode(): UnknownInstructionNode.Class {
+        const node = this.#graph
+            .addNode()
+            .init(new UnknownInstructionNode.Builder())
+            .as(UnknownInstructionNode.Class);
+        this.#temporaryNodes.push(node);
+        return node;
+    }
+
+    #processJp($jp: Joinpoint, context?: ProcessJpContext): ProcessJpResult {
+        if ($jp instanceof FunctionJp) {
+            // TODO instead of this create an "addFunction" that accepts parameters and body
+            //      same for scope
             const [function_entry, function_exit] = this.#graph.addFunctionPair($jp);
 
             for (const param of $jp.params) {
-                // TODO not UnknownInstructionNode
+                // TODO VarDeclNode
                 const param_node = this.#graph
                     .addNode()
                     .init(new UnknownInstructionNode.Builder(param))
@@ -59,47 +93,164 @@ export default class FlowGraphGenerator {
                 function_exit.insertBefore(param_node);
             }
 
-            // TODO
-            this.#processJp($jp.body);
-            // const currNode = this.#graph.addNode($jp.body.code).init(new BaseNode.Builder);
+            const body = this.#processJp($jp.body, { returnNode: function_exit });
+            // TODO not good to insert before, due to returns
+            function_exit.insertSubgraphBefore(body.headNode, body.tailNodes);
+
+            return newProcessJpResult(function_entry, [function_exit]);
         } else if ($jp instanceof Scope) {
             const [scope_start, scope_end] = this.#graph.addScopePair($jp);
-            console.log($jp.dump);
             for (const child of $jp.children) {
-                
-                const node = this.#graph.addNode().init(new UnknownInstructionNode.Builder(child)).as(UnknownInstructionNode.Class);
-                scope_end.insertBefore(node);
+                const processedChild = this.#processJp(child as Joinpoint, context);
+                scope_end.insertSubgraphBefore(
+                    processedChild.headNode,
+                    processedChild.tailNodes,
+                );
             }
+
+            return newProcessJpResult(scope_start, [scope_end]);
         } else if ($jp instanceof WrapperStmt) {
             if ($jp.kind === "comment") {
+                const node = this.#graph
+                    .addNode()
+                    .init(new CommentNode.Builder($jp.content as Comment))
+                    .as(CommentNode.Class);
 
+                return newProcessJpResult(node);
             } else if ($jp.kind === "pragma") {
+                // TODO PragmaNode
+                const node = this.#graph
+                    .addNode()
+                    .init(new UnknownInstructionNode.Builder($jp.content))
+                    .as(UnknownInstructionNode.Class);
 
+                return newProcessJpResult(node);
+            } else {
+                throw new Error(
+                    `Cannot build graph for wrapper statement "${$jp.joinPointType}:${$jp.kind}"`,
+                );
             }
         } else if ($jp instanceof DeclStmt) {
+            // TODO VarDeclNode
+            const node = this.#graph
+                .addNode()
+                .init(new UnknownInstructionNode.Builder($jp))
+                .as(UnknownInstructionNode.Class);
 
+            return newProcessJpResult(node);
         } else if ($jp instanceof EmptyStmt) {
+            // TODO not Unknown
+            const node = this.#graph
+                .addNode()
+                .init(new UnknownInstructionNode.Builder($jp))
+                .as(UnknownInstructionNode.Class);
+
+            return newProcessJpResult(node);
         } else if ($jp instanceof LabelStmt) {
+            // TODO not Unknown
+            const node = this.#graph
+                .addNode()
+                .init(new UnknownInstructionNode.Builder($jp))
+                .as(UnknownInstructionNode.Class);
 
+            return newProcessJpResult(node);
         } else if ($jp instanceof ExprStmt) {
+            // TODO not Unknown
+            const node = this.#graph
+                .addNode()
+                .init(new UnknownInstructionNode.Builder($jp))
+                .as(UnknownInstructionNode.Class);
+
+            return newProcessJpResult(node);
         } else if ($jp instanceof If) {
+            const $cond = $jp.cond;
+            const $iftrue = $jp.then as Scope;
+            // Type conversion necessary because the return type is incorrect
+            const $iffalse = $jp.else as Scope | undefined;
 
+            const iftrue = this.#processJp($iftrue, context);
+
+            let iffalse: ProcessJpResult;
+            if ($iffalse !== undefined) {
+                iffalse = this.#processJp($iffalse, context);
+            } else {
+                iffalse = newProcessJpResult(this.#createTemporaryNode());
+            }
+
+            const node = this.#graph.addCondition($jp, iftrue.headNode, iffalse.headNode);
+
+            return newProcessJpResult(node, [...iftrue.tailNodes, ...iffalse.tailNodes]);
         } else if ($jp instanceof Loop) {
-        
+            const continueNode = this.#createTemporaryNode();
+            const breakNode = this.#createTemporaryNode();
+            const body = this.#processJp($jp.body, {
+                ...context,
+                breakNode,
+                continueNode,
+            });
+
+            // TODO
+            // if ($jp.kind !== "foreach") {
+            //     const cond = this.#processJp($jp.cond, context);
+            // }
+
+            const node = this.#graph.addLoop(
+                $jp,
+                body.headNode,
+                body.tailNodes,
+                breakNode,
+            );
+
+            let head: FlowNode.Class;
+            if ($jp.kind === "for") {
+                const init = this.#processJp($jp.init, context);
+                const step = this.#processJp($jp.step, context);
+                continueNode.insertBefore(init.headNode);
+                node.insertBefore(step.headNode);
+
+                head = init.headNode;
+            } else if ($jp.kind == "dowhile") {
+                head = body.headNode;
+            } else if ($jp.kind == "while") {
+                head = continueNode;
+            } else {
+                // TODO perguntar ao stor como fazer com o foreach
+                throw new Error(`Unsupported loop kind "${$jp.kind}"`);
+            }
+
+            node.insertBefore(continueNode);
+
+            return newProcessJpResult(head, [breakNode]);
         } else if ($jp instanceof Switch) {
+            const $cond = $jp.condition;
+            const $body = $jp.getChild(1);
 
+            const node = this.#graph
+                .addNode()
+                .init(new UnknownInstructionNode.Builder($jp))
+                .as(UnknownInstructionNode.Class);
+
+            // TODO process cases
+
+            const body = this.#processJp($body);
+            body.headNode.insertBefore(node);
+            return newProcessJpResult(node, body.tailNodes);
         } else if ($jp instanceof Case) {
+            // TODO not Unknown
+            const node = this.#graph
+                .addNode()
+                .init(new UnknownInstructionNode.Builder($jp))
+                .as(UnknownInstructionNode.Class);
 
+            return newProcessJpResult(node);
         } else if ($jp instanceof ReturnStmt) {
-
+            return newProcessJpResult({} as any, []);
         } else if ($jp instanceof Break) {
-
+            return newProcessJpResult({} as any, []);
         } else if ($jp instanceof Continue) {
-
+            return newProcessJpResult({} as any, []);
         } else if ($jp instanceof GotoStmt) {
-
-        
-            
+            return newProcessJpResult({} as any, []);
         } else {
             // TODO maybe be silent when inside recursive calls?
             throw new Error(`Cannot build graph for joinpoint "${$jp.joinPointType}"`);
@@ -107,7 +258,15 @@ export default class FlowGraphGenerator {
     }
 
     build(): FlowGraph.Class {
-        this.#processJp(this.#$jp);
+        if (this.#$jp instanceof Program || this.#$jp instanceof FileJp) {
+            for (const $function of Query.searchFrom(this.#$jp, "function", {
+                isImplementation: true,
+            })) {
+                this.#processJp($function as Joinpoint);
+            }
+        } else if (this.#$jp instanceof FunctionJp) {
+            this.#processJp(this.#$jp);
+        }
 
         // this.#addScopeAuxComments();
         // this.#createNodes();
@@ -535,195 +694,5 @@ export default class FlowGraphGenerator {
     //     }
 
     //     this.addEdge(node, afterNode, CfgEdgeType.UNCONDITIONAL);
-    // }
-
-    // /**
-    //  * Connects the leader statement nodes according to their type
-    //  */
-    // #connectNodes() {
-    //     // Connect start
-    //     let $firstStatement = this.#$jp;
-
-    //     if (!($firstStatement instanceof Statement)) {
-    //         throw new Error(
-    //             "Not defined how to connect the Start node to an AST node of type " +
-    //                 this.#$jp.joinPointType,
-    //         );
-    //     }
-
-    //     const firstStatementNode = this.nodes.get($firstStatement.astId);
-
-    //     if (firstStatementNode === undefined) {
-    //         throw new Error(
-    //             "Node for first statement of scope is undefined: " + $firstStatement.astId,
-    //         );
-    //     }
-
-    //     // Add edge
-    //     this.#graph.addEdge(this.#startNode, firstStatementNode);
-
-    //     for (const astId of this.nodes.keys()) {
-    //         const node = this.nodes.get(astId);
-
-    //         if (node === undefined) {
-    //             throw new Error("Node is undefined for astId " + astId);
-    //         }
-
-    //         const nodeData = node.data() as CfgNodeData;
-    //         const nodeStmt = nodeData.nodeStmt;
-
-    //         if (nodeStmt === undefined) {
-    //             throw new Error("Node statement is undefined");
-    //         }
-
-    //         // Only add connections for astIds of leader statements
-    //         if (nodeStmt.astId !== astId) {
-    //             continue;
-    //         }
-
-    //         const nodeType = nodeData.type;
-
-    //         if (nodeType === undefined) {
-    //             throw new Error("Node type is undefined: ");
-    //         }
-
-    //         switch (nodeType) {
-    //             case CfgNodeType.IF:
-    //                 this.#connectIfNode(node);
-    //                 break;
-    //             case CfgNodeType.LOOP:
-    //                 this.#connectLoopNode(node);
-    //                 break;
-    //             case CfgNodeType.COND:
-    //                 this.#connectCondNode(node);
-    //                 break;
-    //             case CfgNodeType.BREAK:
-    //                 this.#connectBreakNode(node);
-    //                 break;
-    //             case CfgNodeType.CONTINUE:
-    //                 this.#connectContinueNode(node);
-    //                 break;
-    //             case CfgNodeType.SWITCH:
-    //                 this.#connectSwitchNode(node);
-    //                 break;
-    //             case CfgNodeType.CASE:
-    //                 this.#connectCaseNode(node);
-    //                 break;
-    //             case CfgNodeType.INIT:
-    //                 this.#connectInitNode(node);
-    //                 break;
-    //             case CfgNodeType.STEP:
-    //                 this.#connectStepNode(node);
-    //                 break;
-    //             case CfgNodeType.INST_LIST:
-    //                 this.#connectInstListNode(node);
-    //                 break;
-    //             case CfgNodeType.RETURN:
-    //                 this.#connectReturnNode(node);
-    //                 break;
-    //             case CfgNodeType.SCOPE:
-    //             case CfgNodeType.THEN:
-    //             case CfgNodeType.ELSE:
-    //                 this.#connectScopeNode(node);
-    //                 break;
-    //         }
-    //     }
-    // }
-
-    // #clean() {
-    //     // Remove temporary instructions from the code
-    //     for (const stmtId in this.#temporaryStmts) {
-    //         this.#temporaryStmts[stmtId].detach();
-    //     }
-
-    //     // Remove temporary instructions from the instList nodes and this.#nodes
-    //     for (const node of this.nodes.values()) {
-    //         const nodeData = node.data() as InstListNodeData;
-
-    //         // Only inst lists need to be cleaned
-    //         if (nodeData.type !== CfgNodeType.INST_LIST) {
-    //             const tempStmts = nodeData.stmts.filter(
-    //                 ($stmt) => this.#temporaryStmts[$stmt.astId] !== undefined,
-    //             );
-    //             if (tempStmts.length > 0) {
-    //                 console.log(
-    //                     "Node '" +
-    //                         nodeData.type.toString() +
-    //                         "' has temporary stmts: " +
-    //                         tempStmts.toString(),
-    //                 );
-    //             }
-    //             continue;
-    //         }
-
-    //         // Filter stmts that are temporary statements
-
-    //         const filteredStmts = [];
-    //         for (const $stmt of nodeData.stmts) {
-    //             // If not a temporary stmt, add to filtered list
-    //             if (this.#temporaryStmts[$stmt.astId] === undefined) {
-    //                 filteredStmts.push($stmt);
-    //             }
-    //             // Otherwise, remove from this.#nodes
-    //             else {
-    //                 this.nodes.delete($stmt.astId);
-    //             }
-    //         }
-
-    //         if (filteredStmts.length !== nodeData.stmts.length) {
-    //             nodeData.stmts = filteredStmts;
-    //         }
-    //     }
-
-    //     // Remove empty instList CFG nodes
-    //     for (const node of this.#graph.nodes()) {
-    //         const nodeData = node.data() as CfgNodeData;
-
-    //         // Only nodes that are inst lists
-    //         if (nodeData.type !== CfgNodeType.INST_LIST) {
-    //             continue;
-    //         }
-
-    //         // Only empty nodes
-    //         if (nodeData.stmts.length > 0) {
-    //             continue;
-    //         }
-
-    //         // Remove node, replacing the connections with a new connection of the same type and the incoming edge
-    //         // of the node being removed
-    //         Graphs.removeNode(
-    //             this.#graph,
-    //             node,
-    //             (incoming) => new CfgEdge((incoming.data() as CfgEdge).type),
-    //         );
-    //     }
-
-    //     // Remove nodes that have no incoming edge and are not start
-    //     for (const node of this.#graph.nodes()) {
-    //         const nodeData = node.data() as CfgNodeData;
-
-    //         // Only nodes that are not start
-    //         if (nodeData.type === CfgNodeType.START) {
-    //             continue;
-    //         }
-
-    //         // Ignore nodes with incoming edges
-    //         if (node.incomers().length > 0) {
-    //             continue;
-    //         }
-
-    //         // Remove node
-    //         debug(
-    //             "[CfgBuilder] Removing statement that is not executed (e.g. is after a return): " +
-    //                 nodeData.stmts.toString(),
-    //         );
-
-    //         // Removes nodes. As there are no incoming edges, the edge handler is a dummy as it is not called
-    //         Graphs.removeNode(
-    //             this.#graph,
-    //             node,
-    //             () => new CfgEdge(CfgEdgeType.UNCONDITIONAL),
-    //         );
-    //     }
     // }
 }
