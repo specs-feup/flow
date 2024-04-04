@@ -3,12 +3,13 @@ import ControlFlowEdge from "clava-flow/flow/edge/ControlFlowEdge";
 import ConditionNode from "clava-flow/flow/node/condition/ConditionNode";
 import FunctionEntryNode from "clava-flow/flow/node/instruction/FunctionEntryNode";
 import FunctionExitNode from "clava-flow/flow/node/instruction/FunctionExitNode";
+import InstructionNode from "clava-flow/flow/node/instruction/InstructionNode";
 import ScopeEndNode from "clava-flow/flow/node/instruction/ScopeEndNode";
 import ScopeStartNode from "clava-flow/flow/node/instruction/ScopeStartNode";
 import BaseGraph from "clava-flow/graph/BaseGraph";
 import BaseNode from "clava-flow/graph/BaseNode";
 import Graph, { GraphBuilder, GraphTypeGuard } from "clava-flow/graph/Graph";
-import { FileJp, FunctionJp, If, Loop, Program, Scope } from "clava-js/api/Joinpoints.js";
+import { Case, FileJp, FunctionJp, If, Loop, Program, Scope } from "clava-js/api/Joinpoints.js";
 
 namespace FlowGraph {
     export class Class<
@@ -24,9 +25,7 @@ namespace FlowGraph {
             const function_exit = this.addNode()
                 .init(new FunctionExitNode.Builder($jp))
                 .as(FunctionExitNode.Class);
-            this.addEdge(function_entry, function_exit).init(
-                new ControlFlowEdge.Builder(),
-            );
+            function_exit.insertBefore(function_entry);
 
             return [function_entry, function_exit];
         }
@@ -38,13 +37,13 @@ namespace FlowGraph {
             const scope_end = this.addNode()
                 .init(new ScopeEndNode.Builder($jp))
                 .as(ScopeEndNode.Class);
-            this.addEdge(scope_start, scope_end).init(new ControlFlowEdge.Builder());
+            scope_end.insertBefore(scope_start);
 
             return [scope_start, scope_end];
         }
 
         addCondition(
-            $jp: If | Loop,
+            $jp: If | Loop | Case | undefined,
             iftrue: BaseNode.Class,
             iffalse: BaseNode.Class,
         ): ConditionNode.Class {
@@ -56,19 +55,19 @@ namespace FlowGraph {
                 new ControlFlowEdge.Builder(),
             );
             return ifnode
-                .init(new ConditionNode.Builder($jp, iftrueEdge, iffalseEdge))
+                .init(new ConditionNode.Builder(iftrueEdge, iffalseEdge, $jp))
                 .as(ConditionNode.Class);
         }
 
         addLoop(
             $jp: Loop,
             bodyHead: BaseNode.Class,
-            bodyTail: BaseNode.Class[],
+            bodyTail: InstructionNode.Class[],
             afterLoop: BaseNode.Class,
         ): ConditionNode.Class {
             const loopNode = this.addCondition($jp, bodyHead, afterLoop);
             for (const tailNode of bodyTail) {
-                this.addEdge(tailNode, loopNode).init(new ControlFlowEdge.Builder());
+                tailNode.nextNode = loopNode;
             }
 
             return loopNode;

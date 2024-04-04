@@ -1,4 +1,6 @@
 import ControlFlowEdge from "clava-flow/flow/edge/ControlFlowEdge";
+import InstructionNode from "clava-flow/flow/node/instruction/InstructionNode";
+import BaseEdge from "clava-flow/graph/BaseEdge";
 import BaseNode from "clava-flow/graph/BaseNode";
 import { NodeBuilder, NodeConstructor, NodeTypeGuard } from "clava-flow/graph/Node";
 import { Joinpoint } from "clava-js/api/Joinpoints.js";
@@ -8,17 +10,43 @@ namespace FlowNode {
         D extends Data = Data,
         S extends ScratchData = ScratchData,
     > extends BaseNode.Class<D, S> {
-        insertBefore(node: BaseNode.Class) {
+        insertBefore(node: InstructionNode.Class) {
             this.insertSubgraphBefore(node, [node]);
         }
 
-        insertSubgraphBefore(head: BaseNode.Class, tail: BaseNode.Class[]) {
+        insertSubgraphBefore(head: BaseNode.Class, tail: InstructionNode.Class[]) {
             this.incomers.forEach((edge) => {
                 edge.target = head;
             });
 
             for (const tailNode of tail) {
-                this.graph.addEdge(tailNode, this).init(new ControlFlowEdge.Builder());
+                tailNode.nextNode = this;
+            }
+        }
+        
+        removeFromFlow() {
+            // TODO improve ergonomics with Collection class
+            const incomers = this.incomers
+                .filter((edge) => edge.is(ControlFlowEdge.TypeGuard));
+            
+            const outgoers = this.outgoers
+                .filter((edge) => edge.is(ControlFlowEdge.TypeGuard));
+            
+            if (incomers.length === 0 || outgoers.length === 0) {
+                for (const edge of incomers) {
+                    edge.remove();
+                }
+                for (const edge of outgoers) {
+                    edge.remove();
+                }
+            } else if (outgoers.length === 1) {
+                for (const edge of incomers) {
+                    edge.target = outgoers[0].target;
+                }
+
+                outgoers[0].remove();
+            } else {
+                throw new Error("Cannot remove node with at least one incomer and multiple outgoers.");
             }
         }
 

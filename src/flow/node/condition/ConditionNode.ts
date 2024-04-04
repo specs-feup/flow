@@ -3,7 +3,7 @@ import FlowNode from "clava-flow/flow/node/FlowNode";
 import BaseEdge from "clava-flow/graph/BaseEdge";
 import BaseNode from "clava-flow/graph/BaseNode";
 import { NodeBuilder, NodeTypeGuard } from "clava-flow/graph/Node";
-import { Joinpoint } from "clava-js/api/Joinpoints.js";
+import { Case, If, Joinpoint, Loop } from "clava-js/api/Joinpoints.js";
 
 namespace ConditionNode {
     export class Class<
@@ -23,6 +23,10 @@ namespace ConditionNode {
             return this.trueEdge.target;
         }
 
+        set trueNode(node: BaseNode.Class) {
+            this.trueEdge.target = node;
+        }
+
         get falseEdge(): ControlFlowEdge.Class {
             // Data and scratchdata should be ControlFlowEdge
             const edge = this.graph.getEdgeById(this.data.falseEdgeId)! as BaseEdge.Class<
@@ -36,19 +40,24 @@ namespace ConditionNode {
             return this.falseEdge.target;
         }
 
-        override get jp(): Joinpoint {
+        set falseNode(node: BaseNode.Class) {
+            this.falseEdge.target = node;
+        }
+
+        override get jp(): If | Loop | Case | undefined {
             return this.scratchData.$jp;
         }
     }
 
-    export class Builder
-        extends FlowNode.Builder
-        implements NodeBuilder<Data, ScratchData>
-    {
+    export class Builder extends FlowNode.Builder implements NodeBuilder<Data, ScratchData> {
         #truePath: ControlFlowEdge.Class;
         #falsePath: ControlFlowEdge.Class;
 
-        constructor($jp: Joinpoint, truePath: ControlFlowEdge.Class, falsePath: ControlFlowEdge.Class) {
+        constructor(
+            truePath: ControlFlowEdge.Class,
+            falsePath: ControlFlowEdge.Class,
+            $jp?: If | Loop | Case,
+        ) {
             super(FlowNode.Type.CONDITION, $jp);
             this.#truePath = truePath;
             this.#falsePath = falsePath;
@@ -66,7 +75,9 @@ namespace ConditionNode {
 
         buildScratchData(scratchData: BaseNode.ScratchData): ScratchData {
             return {
-                ...super.buildScratchData(scratchData) as FlowNode.ScratchData & { $jp: Joinpoint },
+                ...(super.buildScratchData(scratchData) as FlowNode.ScratchData & {
+                    $jp: If | Loop | Case | undefined;
+                }),
             };
         }
     }
@@ -83,7 +94,6 @@ namespace ConditionNode {
 
         isScratchDataCompatible(scratchData: BaseNode.ScratchData): scratchData is ScratchData {
             if (!FlowNode.TypeGuard.isScratchDataCompatible(scratchData)) return false;
-            if (!(scratchData.$jp instanceof Joinpoint)) return false;
             return true;
         },
     };
@@ -95,7 +105,7 @@ namespace ConditionNode {
     }
 
     export interface ScratchData extends FlowNode.ScratchData {
-        $jp: Joinpoint;
+        $jp: If | Loop | Case | undefined;
     }
 }
 

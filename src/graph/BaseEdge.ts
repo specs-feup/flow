@@ -84,6 +84,10 @@ namespace BaseEdge {
             );
         }
 
+        remove() {
+            this.#edge.remove();
+        }
+
         get graph(): BaseGraph.Class {
             return this.#graph;
         }

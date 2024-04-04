@@ -27,27 +27,31 @@ import CommentNode from "clava-flow/flow/node/instruction/CommentNode";
 import FlowNode from "clava-flow/flow/node/FlowNode";
 import ConditionNode from "clava-flow/flow/node/condition/ConditionNode";
 import BaseNode from "clava-flow/graph/BaseNode";
+import ScopeStartNode from "clava-flow/flow/node/instruction/ScopeStartNode";
+import InstructionNode from "clava-flow/flow/node/instruction/InstructionNode";
+import ScopeEndNode from "clava-flow/flow/node/instruction/ScopeEndNode";
 
 interface ProcessJpResult {
     headNode: FlowNode.Class;
-    tailNodes: FlowNode.Class[];
+    tailNodes: InstructionNode.Class[];
 }
 
 interface ProcessJpContext {
     continueNode?: FlowNode.Class;
     breakNode?: FlowNode.Class;
-    caseNodes?: FlowNode.Class[];
+    caseNodes?: UnknownInstructionNode.Class[];
     returnNode?: FlowNode.Class;
 }
 
 function newProcessJpResult(
     headNode: FlowNode.Class,
-    tailNodes?: FlowNode.Class[],
+    tailNodes: InstructionNode.Class[],
 ): ProcessJpResult {
-    if (tailNodes === undefined) {
-        tailNodes = [headNode];
-    }
     return { headNode, tailNodes };
+}
+
+function newSingleNodeProcessJpResult(node: InstructionNode.Class): ProcessJpResult {
+    return newProcessJpResult(node, [node]);
 }
 
 export default class FlowGraphGenerator {
@@ -69,10 +73,10 @@ export default class FlowGraphGenerator {
         //     : new UndefinedGenerator();
     }
 
-    #createTemporaryNode(): UnknownInstructionNode.Class {
+    #createTemporaryNode($jp?: Joinpoint): UnknownInstructionNode.Class {
         const node = this.#graph
             .addNode()
-            .init(new UnknownInstructionNode.Builder())
+            .init(new UnknownInstructionNode.Builder($jp))
             .as(UnknownInstructionNode.Class);
         this.#temporaryNodes.push(node);
         return node;
@@ -83,6 +87,7 @@ export default class FlowGraphGenerator {
             // TODO instead of this create an "addFunction" that accepts parameters and body
             //      same for scope
             const [function_entry, function_exit] = this.#graph.addFunctionPair($jp);
+            const returnNode = this.#createTemporaryNode($jp.body);
 
             for (const param of $jp.params) {
                 // TODO VarDeclNode
@@ -93,7 +98,12 @@ export default class FlowGraphGenerator {
                 function_exit.insertBefore(param_node);
             }
 
-            const body = this.#processJp($jp.body, { returnNode: function_exit });
+            const body = this.#processJp($jp.body, { returnNode });
+
+            for (const tailNode of body.tailNodes) {
+                tailNode.insertBefore(returnNode);
+            }
+            
             // TODO not good to insert before, due to returns
             function_exit.insertSubgraphBefore(body.headNode, body.tailNodes);
 
@@ -116,7 +126,7 @@ export default class FlowGraphGenerator {
                     .init(new CommentNode.Builder($jp.content as Comment))
                     .as(CommentNode.Class);
 
-                return newProcessJpResult(node);
+                return newSingleNodeProcessJpResult(node);
             } else if ($jp.kind === "pragma") {
                 // TODO PragmaNode
                 const node = this.#graph
@@ -124,7 +134,7 @@ export default class FlowGraphGenerator {
                     .init(new UnknownInstructionNode.Builder($jp.content))
                     .as(UnknownInstructionNode.Class);
 
-                return newProcessJpResult(node);
+                return newSingleNodeProcessJpResult(node);
             } else {
                 throw new Error(
                     `Cannot build graph for wrapper statement "${$jp.joinPointType}:${$jp.kind}"`,
@@ -137,7 +147,7 @@ export default class FlowGraphGenerator {
                 .init(new UnknownInstructionNode.Builder($jp))
                 .as(UnknownInstructionNode.Class);
 
-            return newProcessJpResult(node);
+            return newSingleNodeProcessJpResult(node);
         } else if ($jp instanceof EmptyStmt) {
             // TODO not Unknown
             const node = this.#graph
@@ -145,7 +155,7 @@ export default class FlowGraphGenerator {
                 .init(new UnknownInstructionNode.Builder($jp))
                 .as(UnknownInstructionNode.Class);
 
-            return newProcessJpResult(node);
+            return newSingleNodeProcessJpResult(node);
         } else if ($jp instanceof LabelStmt) {
             // TODO not Unknown
             const node = this.#graph
@@ -153,7 +163,7 @@ export default class FlowGraphGenerator {
                 .init(new UnknownInstructionNode.Builder($jp))
                 .as(UnknownInstructionNode.Class);
 
-            return newProcessJpResult(node);
+            return newSingleNodeProcessJpResult(node);
         } else if ($jp instanceof ExprStmt) {
             // TODO not Unknown
             const node = this.#graph
@@ -161,7 +171,7 @@ export default class FlowGraphGenerator {
                 .init(new UnknownInstructionNode.Builder($jp))
                 .as(UnknownInstructionNode.Class);
 
-            return newProcessJpResult(node);
+            return newSingleNodeProcessJpResult(node);
         } else if ($jp instanceof If) {
             const $cond = $jp.cond;
             const $iftrue = $jp.then as Scope;
@@ -174,15 +184,15 @@ export default class FlowGraphGenerator {
             if ($iffalse !== undefined) {
                 iffalse = this.#processJp($iffalse, context);
             } else {
-                iffalse = newProcessJpResult(this.#createTemporaryNode());
+                iffalse = newSingleNodeProcessJpResult(this.#createTemporaryNode());
             }
 
             const node = this.#graph.addCondition($jp, iftrue.headNode, iffalse.headNode);
 
             return newProcessJpResult(node, [...iftrue.tailNodes, ...iffalse.tailNodes]);
         } else if ($jp instanceof Loop) {
-            const continueNode = this.#createTemporaryNode();
-            const breakNode = this.#createTemporaryNode();
+            const continueNode = this.#createTemporaryNode($jp);
+            const breakNode = this.#createTemporaryNode($jp);
             const body = this.#processJp($jp.body, {
                 ...context,
                 breakNode,
@@ -205,8 +215,17 @@ export default class FlowGraphGenerator {
             if ($jp.kind === "for") {
                 const init = this.#processJp($jp.init, context);
                 const step = this.#processJp($jp.step, context);
-                continueNode.insertBefore(init.headNode);
-                node.insertBefore(step.headNode);
+
+                if (!init.headNode.is(InstructionNode.TypeGuard)) {
+                    throw new Error("Init must be an instruction node");
+                }
+
+                if (!step.headNode.is(InstructionNode.TypeGuard)) {
+                    throw new Error("Step must be an instruction node");
+                }
+
+                continueNode.insertBefore(init.headNode.as(InstructionNode.Class));
+                node.insertBefore(step.headNode.as(InstructionNode.Class));
 
                 head = init.headNode;
             } else if ($jp.kind == "dowhile") {
@@ -224,31 +243,143 @@ export default class FlowGraphGenerator {
         } else if ($jp instanceof Switch) {
             const $cond = $jp.condition;
             const $body = $jp.getChild(1);
+            const breakNode = this.#createTemporaryNode($body);
 
             const node = this.#graph
                 .addNode()
                 .init(new UnknownInstructionNode.Builder($jp))
                 .as(UnknownInstructionNode.Class);
 
-            // TODO process cases
+            const caseNodes: UnknownInstructionNode.Class[] = [];
+            const body = this.#processJp($body, { ...context, breakNode, caseNodes });
 
-            const body = this.#processJp($body);
+            if (!body.headNode.is(ScopeStartNode.TypeGuard)) {
+                throw new Error("Switch body must start with a scope");
+            }
+
+            if (
+                body.tailNodes.length !== 1 ||
+                !body.tailNodes[0].is(ScopeEndNode.TypeGuard)
+            ) {
+                throw new Error("Switch body must end with a scope");
+            }
+
             body.headNode.insertBefore(node);
+            for (const tailNode of body.tailNodes) {
+                tailNode.insertBefore(breakNode);
+            }
+            // breakNode.insertSubgraphBefore(node, body.tailNodes);
+
+            const scopeStart = body.headNode.as(ScopeStartNode.Class);
+            const scopeEnd = body.tailNodes[0];
+
+            let previousCase: ConditionNode.Class | undefined = undefined;
+            for (const tempCaseNode of caseNodes) {
+                const currentCase = this.#graph.addCondition(
+                    tempCaseNode.jp as Case,
+                    tempCaseNode.nextNode!,
+                    tempCaseNode, // False node doesn't matter for now, since it will change
+                );
+
+                if (previousCase === undefined) {
+                    scopeStart.nextNode = currentCase;
+                } else {
+                    previousCase.falseNode = currentCase;
+                }
+
+                for (const incomer of tempCaseNode.incomers) {
+                    incomer.target = tempCaseNode.nextNode!;
+                }
+
+                previousCase = currentCase;
+            }
+
+            if (previousCase === undefined) {
+                scopeStart.nextNode = scopeEnd;
+            } else {
+                previousCase.falseNode = scopeEnd;
+            }
+
             return newProcessJpResult(node, body.tailNodes);
         } else if ($jp instanceof Case) {
+            const node = this.#createTemporaryNode($jp);
+            context?.caseNodes?.push(node);
+            return newSingleNodeProcessJpResult(node);
+        } else if ($jp instanceof ReturnStmt) {
+            const node = this.#graph
+                .addNode()
+                .init(new UnknownInstructionNode.Builder($jp))
+                .as(UnknownInstructionNode.Class);
+            
+            let exitNode: InstructionNode.Class = node;
+
+            const returnNode = context!.returnNode!;
+            const breakNodeScopeId = returnNode.jp!.currentRegion.astId;
+
+            while (exitNode.jp!.currentRegion.astId !== breakNodeScopeId) {
+                const endScope = this.#graph
+                    .addNode()
+                    .init(new ScopeEndNode.Builder(exitNode.jp!.currentRegion as Scope))
+                    .as(ScopeEndNode.Class);
+
+                exitNode.nextNode = endScope;
+                exitNode = endScope;
+            }
+
+            exitNode.nextNode = returnNode;
+
+            return newProcessJpResult(node, []);
+        } else if ($jp instanceof Break) {
+            // TODO not Unknown
+            const node = this.#graph
+                .addNode()
+                .init(new UnknownInstructionNode.Builder($jp))
+                .as(UnknownInstructionNode.Class);
+            
+            let exitNode: InstructionNode.Class = node;
+
+            const breakNode = context!.breakNode!;
+            const breakNodeScopeId = breakNode.jp!.currentRegion.astId;
+
+            while (exitNode.jp!.currentRegion.astId !== breakNodeScopeId) {
+                const $jp = exitNode.jp! instanceof Scope ? exitNode.jp!.parentRegion : exitNode.jp!.currentRegion;
+                const endScope = this.#graph
+                    .addNode()
+                    .init(new ScopeEndNode.Builder($jp as Scope))
+                    .as(ScopeEndNode.Class);
+                
+                exitNode.nextNode = endScope;
+                exitNode = endScope;
+            }
+
+            exitNode.nextNode = breakNode;
+
+            return newProcessJpResult(node, []);
+        } else if ($jp instanceof Continue) {
             // TODO not Unknown
             const node = this.#graph
                 .addNode()
                 .init(new UnknownInstructionNode.Builder($jp))
                 .as(UnknownInstructionNode.Class);
 
-            return newProcessJpResult(node);
-        } else if ($jp instanceof ReturnStmt) {
-            return newProcessJpResult({} as any, []);
-        } else if ($jp instanceof Break) {
-            return newProcessJpResult({} as any, []);
-        } else if ($jp instanceof Continue) {
-            return newProcessJpResult({} as any, []);
+            let exitNode: InstructionNode.Class = node;
+
+            const continueNode = context!.continueNode!;
+            const breakNodeScopeId = continueNode.jp!.currentRegion.astId;
+
+            while (exitNode.jp!.currentRegion.astId !== breakNodeScopeId) {
+                const endScope = this.#graph
+                    .addNode()
+                    .init(new ScopeEndNode.Builder(exitNode.jp!.currentRegion as Scope))
+                    .as(ScopeEndNode.Class);
+
+                exitNode.nextNode = endScope;
+                exitNode = endScope;
+            }
+
+            exitNode.nextNode = continueNode;
+
+            return newProcessJpResult(node, []);
         } else if ($jp instanceof GotoStmt) {
             return newProcessJpResult({} as any, []);
         } else {
@@ -268,18 +399,10 @@ export default class FlowGraphGenerator {
             this.#processJp(this.#$jp);
         }
 
-        // this.#addScopeAuxComments();
-        // this.#createNodes();
-
-        // this._fillNodes();
-        // this.#connectNodes();
-
-        // this.#clean();
-
-        // TODO: Check graph invariants
-        // 1. Each node has either one unconditional outgoing edge,
-        // or two outgoing edges that must be a pair true/false,
-        // or if there is no outgoing edge must be the end node
+        for (const node of this.#temporaryNodes) {
+            // node.removeFromFlow();
+            // node.remove();
+        }
 
         return this.#graph;
     }

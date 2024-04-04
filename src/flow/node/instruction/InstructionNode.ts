@@ -18,7 +18,7 @@ namespace InstructionNode {
             const edge = this.graph.getEdgeById(this.data.nextEdgeId);
 
             if (edge === undefined) {
-                this.data.nextEdgeId = undefined;
+                // this.data.nextEdgeId = undefined;
                 return undefined;
             }
 
@@ -27,20 +27,24 @@ namespace InstructionNode {
             ).as(ControlFlowEdge.Class);
         }
 
-        set nextEdge(edge: ControlFlowEdge.Class | undefined) {}
-
         get nextNode(): BaseNode.Class | undefined {
             return this.nextEdge?.target;
         }
 
         set nextNode(node: BaseNode.Class | undefined) {
-            if (this.nextEdge === undefined && node === undefined) {
-            } else if (this.nextEdge === undefined && node !== undefined) {
-                this.nextEdge = this.graph
+            const edge = this.nextEdge;
+
+            if (edge !== undefined && node !== undefined) {
+                edge.target = node;
+            } else if (edge !== undefined && node === undefined) {
+                edge.remove();
+                this.data.nextEdgeId = undefined;
+            } else if (edge === undefined && node !== undefined) {
+                const newEdge = this.graph
                     .addEdge(this, node)
                     .init(new ControlFlowEdge.Builder());
-            } else if (this.nextEdge !== undefined && node === undefined) {
-            } else {
+                
+                this.data.nextEdgeId = newEdge.id;
             }
         }
     }

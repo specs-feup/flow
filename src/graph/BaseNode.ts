@@ -66,6 +66,10 @@ namespace BaseNode {
             return new BaseNode.Class(this.#graph, this.#node, initedData, initedScratchData);
         }
 
+        remove() {
+            this.#node.remove();
+        }
+
         get graph(): BaseGraph.Class {
             return this.#graph;
         }
@@ -99,7 +103,7 @@ namespace BaseNode {
         id: string;
     }
 
-    export interface ScratchData {}
+    export interface ScratchData { }
 }
 
 export default BaseNode;
