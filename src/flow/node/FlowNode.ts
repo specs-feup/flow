@@ -1,8 +1,7 @@
 import ControlFlowEdge from "clava-flow/flow/edge/ControlFlowEdge";
 import InstructionNode from "clava-flow/flow/node/instruction/InstructionNode";
-import BaseEdge from "clava-flow/graph/BaseEdge";
 import BaseNode from "clava-flow/graph/BaseNode";
-import { NodeBuilder, NodeConstructor, NodeTypeGuard } from "clava-flow/graph/Node";
+import { NodeBuilder, NodeTypeGuard } from "clava-flow/graph/Node";
 import { Joinpoint } from "clava-js/api/Joinpoints.js";
 
 namespace FlowNode {

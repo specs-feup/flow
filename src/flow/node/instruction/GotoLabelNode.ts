@@ -1,14 +1,14 @@
 import InstructionNode from "clava-flow/flow/node/instruction/InstructionNode";
 import BaseNode from "clava-flow/graph/BaseNode";
 import { NodeBuilder, NodeTypeGuard } from "clava-flow/graph/Node";
-import { Statement } from "clava-js/api/Joinpoints.js";
+import { LabelStmt } from "clava-js/api/Joinpoints.js";
 
-namespace StatementNode {
+namespace GotoLabelNode {
     export class Class<
         D extends Data = Data,
         S extends ScratchData = ScratchData,
     > extends InstructionNode.Class<D, S> {
-        override get jp(): Statement {
+        override get jp(): LabelStmt {
             return this.scratchData.$jp;
         }
     }
@@ -17,19 +17,23 @@ namespace StatementNode {
         extends InstructionNode.Builder
         implements NodeBuilder<Data, ScratchData>
     {
-        constructor($jp: Statement) {
-            super(InstructionNode.Type.STATEMENT, $jp);
+        constructor($jp: LabelStmt) {
+            super(InstructionNode.Type.GOTO_LABEL, $jp);
         }
 
         buildData(data: BaseNode.Data): Data {
             return {
-                ...super.buildData(data) as InstructionNode.Data & { instructionFlowNodeType: InstructionNode.Type.STATEMENT },
+                ...(super.buildData(data) as InstructionNode.Data & {
+                    instructionFlowNodeType: InstructionNode.Type.GOTO_LABEL;
+                }),
             };
         }
 
         buildScratchData(scratchData: BaseNode.ScratchData): ScratchData {
             return {
-                ...super.buildScratchData(scratchData) as InstructionNode.Data & { $jp: Statement },
+                ...(super.buildScratchData(scratchData) as InstructionNode.Data & {
+                    $jp: LabelStmt;
+                }),
             };
         }
     }
@@ -38,25 +42,27 @@ namespace StatementNode {
         isDataCompatible(data: BaseNode.Data): data is Data {
             if (!InstructionNode.TypeGuard.isDataCompatible(data)) return false;
             const d = data as Data;
-            if (d.instructionFlowNodeType !== InstructionNode.Type.STATEMENT) return false;
+            if (d.instructionFlowNodeType !== InstructionNode.Type.GOTO_LABEL)
+                return false;
             return true;
         },
 
         isScratchDataCompatible(
             scratchData: BaseNode.ScratchData,
         ): scratchData is ScratchData {
-            if (!InstructionNode.TypeGuard.isScratchDataCompatible(scratchData)) return false;
+            if (!InstructionNode.TypeGuard.isScratchDataCompatible(scratchData))
+                return false;
             return true;
         },
     };
 
     export interface Data extends InstructionNode.Data {
-        instructionFlowNodeType: InstructionNode.Type.STATEMENT;
+        instructionFlowNodeType: InstructionNode.Type.GOTO_LABEL;
     }
 
     export interface ScratchData extends InstructionNode.ScratchData {
-        $jp: Statement;
+        $jp: LabelStmt;
     }
 }
 
-export default StatementNode;
+export default GotoLabelNode;

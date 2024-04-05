@@ -27,11 +27,11 @@ namespace InstructionNode {
             ).as(ControlFlowEdge.Class);
         }
 
-        get nextNode(): BaseNode.Class | undefined {
-            return this.nextEdge?.target;
+        get nextNode(): FlowNode.Class | undefined {
+            return this.nextEdge?.target as FlowNode.Class | undefined;
         }
 
-        set nextNode(node: BaseNode.Class | undefined) {
+        set nextNode(node: FlowNode.Class | undefined) {
             const edge = this.nextEdge;
 
             if (edge !== undefined && node !== undefined) {
@@ -43,7 +43,7 @@ namespace InstructionNode {
                 const newEdge = this.graph
                     .addEdge(this, node)
                     .init(new ControlFlowEdge.Builder());
-                
+
                 this.data.nextEdgeId = newEdge.id;
             }
         }
@@ -110,8 +110,17 @@ namespace InstructionNode {
         FUNCTION_EXIT = "function_exit",
         SCOPE_START = "scope_start",
         SCOPE_END = "scope_end",
-        STATEMENT = "statement",
         COMMENT = "comment",
+        PRAGMA = "pragma",
+        VAR_DECLARATION = "var_declaration",
+        EMPTY_STATEMENT = "empty_statement",
+        EXPRESSION = "expression",
+        SWITCH = "switch",
+        RETURN = "return",
+        BREAK = "break",
+        CONTINUE = "continue",
+        GOTO_LABEL = "label",
+        GOTO = "goto",
         UNKNOWN = "unknown",
     }
 }

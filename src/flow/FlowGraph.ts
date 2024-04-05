@@ -1,13 +1,14 @@
-import FlowGraphGenerator from "clava-flow/flow/builder/FlowGraphBuilder";
+import FlowGraphGenerator from "clava-flow/flow/FlowGraphGenerator";
 import ControlFlowEdge from "clava-flow/flow/edge/ControlFlowEdge";
+import FlowNode from "clava-flow/flow/node/FlowNode";
 import ConditionNode from "clava-flow/flow/node/condition/ConditionNode";
 import FunctionEntryNode from "clava-flow/flow/node/instruction/FunctionEntryNode";
 import FunctionExitNode from "clava-flow/flow/node/instruction/FunctionExitNode";
 import InstructionNode from "clava-flow/flow/node/instruction/InstructionNode";
 import ScopeEndNode from "clava-flow/flow/node/instruction/ScopeEndNode";
 import ScopeStartNode from "clava-flow/flow/node/instruction/ScopeStartNode";
+import VarDeclarationNode from "clava-flow/flow/node/instruction/VarDeclarationNode";
 import BaseGraph from "clava-flow/graph/BaseGraph";
-import BaseNode from "clava-flow/graph/BaseNode";
 import Graph, { GraphBuilder, GraphTypeGuard } from "clava-flow/graph/Graph";
 import { Case, FileJp, FunctionJp, If, Loop, Program, Scope } from "clava-js/api/Joinpoints.js";
 
@@ -16,9 +17,12 @@ namespace FlowGraph {
         D extends Data = Data,
         S extends ScratchData = ScratchData,
     > extends BaseGraph.Class<D, S> {
-        addFunctionPair(
+        addFunction(
             $jp: FunctionJp,
-        ): [FunctionEntryNode.Class, FunctionExitNode.Class] {
+            bodyHead: FlowNode.Class,
+            bodyTail: InstructionNode.Class[],
+            params: VarDeclarationNode.Class[] = [],
+        ): [FunctionEntryNode.Class, FunctionExitNode.Class?] {
             const function_entry = this.addNode()
                 .init(new FunctionEntryNode.Builder($jp))
                 .as(FunctionEntryNode.Class);
@@ -27,25 +31,54 @@ namespace FlowGraph {
                 .as(FunctionExitNode.Class);
             function_exit.insertBefore(function_entry);
 
+            for (const param of params) {
+                function_exit.insertBefore(param);
+            }
+
+            function_exit.insertSubgraphBefore(bodyHead, bodyTail);
+
+            if (bodyTail.length === 0) {
+                function_exit.removeFromFlow();
+                function_exit.remove();
+                return [function_entry];
+            }
+
             return [function_entry, function_exit];
         }
 
-        addScopePair($jp: Scope): [ScopeStartNode.Class, ScopeEndNode.Class] {
+        addScope($jp: Scope, subGraphs: [FlowNode.Class, InstructionNode.Class[]][]): [ScopeStartNode.Class, ScopeEndNode.Class?] {
             const scope_start = this.addNode()
                 .init(new ScopeStartNode.Builder($jp))
                 .as(ScopeStartNode.Class);
+
+            let current_tail: InstructionNode.Class[] = [scope_start];
+
+            for (const [head, tail] of subGraphs) {
+                for (const tailNode of current_tail) {
+                    tailNode.nextNode = head;
+                }
+                current_tail = tail;
+            }
+
+            if (current_tail.length === 0) {
+                return [scope_start];
+            }
+            
             const scope_end = this.addNode()
                 .init(new ScopeEndNode.Builder($jp))
                 .as(ScopeEndNode.Class);
-            scope_end.insertBefore(scope_start);
+
+            for (const tailNode of current_tail) {
+                tailNode.nextNode = scope_end;
+            }
 
             return [scope_start, scope_end];
         }
 
         addCondition(
             $jp: If | Loop | Case | undefined,
-            iftrue: BaseNode.Class,
-            iffalse: BaseNode.Class,
+            iftrue: FlowNode.Class,
+            iffalse: FlowNode.Class,
         ): ConditionNode.Class {
             const ifnode = this.addNode();
             const iftrueEdge = this.addEdge(ifnode, iftrue).init(
@@ -61,9 +94,9 @@ namespace FlowGraph {
 
         addLoop(
             $jp: Loop,
-            bodyHead: BaseNode.Class,
+            bodyHead: FlowNode.Class,
             bodyTail: InstructionNode.Class[],
-            afterLoop: BaseNode.Class,
+            afterLoop: FlowNode.Class,
         ): ConditionNode.Class {
             const loopNode = this.addCondition($jp, bodyHead, afterLoop);
             for (const tailNode of bodyTail) {

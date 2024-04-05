@@ -1,6 +1,5 @@
 import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
 import Graph, { GraphBuilder, GraphConstructor, GraphTypeGuard } from "clava-flow/graph/Graph";
-import { NodeBuilder, NodeConstructor, NodeTypeGuard } from "clava-flow/graph/Node";
 import BaseNode from "clava-flow/graph/BaseNode";
 import BaseEdge from "clava-flow/graph/BaseEdge";
 import { JavaClasses } from "lara-js/api/lara/util/JavaTypes.js";
