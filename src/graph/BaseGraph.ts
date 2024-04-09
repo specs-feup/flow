@@ -1,5 +1,5 @@
 import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
-import Graph, { GraphBuilder, GraphConstructor, GraphTypeGuard } from "clava-flow/graph/Graph";
+import Graph, { GraphBuilder, GraphConstructor, GraphTransformation, GraphTypeGuard } from "clava-flow/graph/Graph";
 import BaseNode from "clava-flow/graph/BaseNode";
 import BaseEdge from "clava-flow/graph/BaseEdge";
 import { JavaClasses } from "lara-js/api/lara/util/JavaTypes.js";
@@ -100,6 +100,11 @@ namespace BaseGraph {
             this.#graph.data(initedData);
             this.#graph.scratch(Graph.scratchNamespace, initedScratchData);
             return new BaseGraph.Class(this.#graph, initedData, initedScratchData);
+        }
+
+        apply(transformation: GraphTransformation): this {
+            transformation.apply(this);
+            return this;
         }
 
         toDot(dotFormatter: DotFormatter, label?: string): string {

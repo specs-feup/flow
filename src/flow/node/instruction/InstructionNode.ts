@@ -28,7 +28,11 @@ namespace InstructionNode {
         }
 
         get nextNode(): FlowNode.Class | undefined {
-            return this.nextEdge?.target as FlowNode.Class | undefined;
+            const node = this.nextEdge?.target;
+            if (node === undefined || !node.is(FlowNode.TypeGuard)) {
+                return undefined;
+            }
+            return node.as(FlowNode.Class);
         }
 
         set nextNode(node: FlowNode.Class | undefined) {

@@ -64,6 +64,9 @@ export default class FlowGraphGenerator {
                 this.#processFunction($function as FunctionJp);
             }
         } else if (this.#$jp instanceof FunctionJp) {
+            if (!this.#$jp.isImplementation) {
+                throw new Error("Cannot build graph for function without implementation");
+            }
             this.#processFunction(this.#$jp);
         }
 
@@ -144,7 +147,7 @@ export default class FlowGraphGenerator {
     #processFunction(
         $jp: FunctionJp,
     ): [FunctionEntryNode.Class, FunctionExitNode.Class?] {
-        const returnNode = this.#createTemporaryNode($jp.body);
+        const returnNode = this.#createTemporaryNode($jp);
         const params = $jp.params.map(($p) =>
             this.#graph
                 .addNode()
@@ -159,8 +162,8 @@ export default class FlowGraphGenerator {
 
         let functionTail: InstructionNode.Class[] = [];
         if (bodyTail !== undefined) {
-            bodyTail.insertBefore(returnNode);
-            functionTail = [bodyTail];
+            returnNode.insertBefore(bodyTail);
+            functionTail = [returnNode];
         } else if (returnNode.incomers.length > 0) {
             functionTail = [returnNode];
         }
@@ -478,8 +481,6 @@ export default class FlowGraphGenerator {
     #connectArbitraryJump(from: InstructionNode.Class, to: FlowNode.Class) {
         const fromScopes = this.#getScopeList(from.jp!);
         const toScopes = this.#getScopeList(to.jp!);
-        console.log(fromScopes.map((s) => s.astId));
-        console.log(toScopes.map((s) => s.astId));
         let fromScopesIdx = fromScopes.length - 1;
         let toScopesIdx = toScopes.length - 1;
 

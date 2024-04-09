@@ -70,6 +70,40 @@ namespace BaseNode {
             this.#node.remove();
         }
 
+        // cytoscape's dfs is not flexible enough for clava-flow purposes
+        // at least as far as I can tell
+        // Returns a generator that yields [node, edge, index, depth]
+        bfs(propagate: (edge: BaseEdge.Class) => boolean): Generator<[BaseNode.Class, BaseEdge.Class | undefined, number, number]> {
+            function* inner(
+                root: BaseNode.Class,
+            ): Generator<[BaseNode.Class, BaseEdge.Class | undefined, number, number]> {
+                const toVisit: [BaseNode.Class, number, BaseEdge.Class?][] = [[root, 0]];
+                const visited = new Set();
+                let idx = 0;
+                let depth = 0;
+
+                while (toVisit.length > 0) {
+                    const [node, depth, edge] = toVisit.pop()!;
+                    if (visited.has(node)) {
+                        continue;
+                    }
+                    if (edge !== undefined && !propagate(edge)) {
+                        continue;
+                    }
+
+                    yield [node, edge, idx, depth];
+                    idx++;
+                    visited.add(node);
+
+                    for (const out of node.outgoers) {
+                        toVisit.push([out.target, depth + 1, out]);
+                    }
+                }
+            }
+
+            return inner(this);
+        }
+
         get graph(): BaseGraph.Class {
             return this.#graph;
         }

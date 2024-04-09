@@ -19,11 +19,15 @@ namespace ConditionNode {
             return edge.as(ControlFlowEdge.Class);
         }
 
-        get trueNode(): BaseNode.Class {
-            return this.trueEdge.target;
+        get trueNode(): FlowNode.Class {
+            const node = this.trueEdge.target as BaseNode.Class<
+                FlowNode.Data,
+                FlowNode.ScratchData
+            >;
+            return node.as(FlowNode.Class);
         }
 
-        set trueNode(node: BaseNode.Class) {
+        set trueNode(node: FlowNode.Class) {
             this.trueEdge.target = node;
         }
 
@@ -36,11 +40,15 @@ namespace ConditionNode {
             return edge.as(ControlFlowEdge.Class);
         }
 
-        get falseNode(): BaseNode.Class {
-            return this.falseEdge.target;
+        get falseNode(): FlowNode.Class {
+            const node = this.falseEdge.target as BaseNode.Class<
+                FlowNode.Data,
+                FlowNode.ScratchData
+            >;
+            return node.as(FlowNode.Class);
         }
 
-        set falseNode(node: BaseNode.Class) {
+        set falseNode(node: FlowNode.Class) {
             this.falseEdge.target = node;
         }
 

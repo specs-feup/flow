@@ -21,6 +21,10 @@ export interface GraphTypeGuard<
     isScratchDataCompatible(sData: BaseGraph.ScratchData): sData is S;
 }
 
+export interface GraphTransformation {
+    apply(graph: BaseGraph.Class): void;
+}
+
 namespace Graph {
     export const scratchNamespace = "_clava_flow";
 

@@ -61,7 +61,11 @@ export default class DefaultFlowGraphDotFormatter extends DotFormatter {
             label = `Pragma:\n${pragmaNode.jp.code}`;
         } else if (node.is(ReturnNode.TypeGuard)) {
             const returnNode = node.as(ReturnNode.Class);
-            label = `Return:\n${returnNode.jp.returnExpr.code}`;
+            if (returnNode.jp.returnExpr === undefined) {
+                label = `Return`;
+            } else {
+                label = `Return:\n${returnNode.jp.returnExpr.code}`;
+            }
         } else if (node.is(BreakNode.TypeGuard)) {
             label = `Break`;
         } else if (node.is(ContinueNode.TypeGuard)) {

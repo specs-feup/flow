@@ -26,6 +26,8 @@ namespace FlowGraph {
             const function_entry = this.addNode()
                 .init(new FunctionEntryNode.Builder($jp))
                 .as(FunctionEntryNode.Class);
+            this.data.functions.set($jp.name, function_entry.id);
+            
             const function_exit = this.addNode()
                 .init(new FunctionExitNode.Builder($jp))
                 .as(FunctionExitNode.Class);
@@ -106,6 +108,28 @@ namespace FlowGraph {
             return loopNode;
         }
 
+        getFunction(name: string): FunctionEntryNode.Class | undefined {
+            const id = this.data.functions.get(name);
+            if (id === undefined) return undefined;
+            const node = this.getNodeById(id);
+            if (node === undefined || !node.is(FunctionEntryNode.TypeGuard)) {
+                return undefined;
+            }
+            return node.as(FunctionEntryNode.Class);
+        }
+
+        get functions(): FunctionEntryNode.Class[] {
+            const nodes: FunctionEntryNode.Class[] = [];
+            for (const id of this.data.functions.values()) {
+                const node = this.getFunction(id);
+                if (node === undefined) {
+                    continue;
+                }
+                nodes.push(node);
+            }
+            return nodes;
+        }
+
         // /**
         //  * Returns the graph node where the given statement belongs.
         //  *
@@ -126,6 +150,7 @@ namespace FlowGraph {
         override buildData(data: BaseGraph.Data): Data {
             return {
                 ...super.buildData(data),
+                functions: new Map(),
             };
         }
 
@@ -148,7 +173,10 @@ namespace FlowGraph {
         },
     };
 
-    export interface Data extends BaseGraph.Data {}
+    export interface Data extends BaseGraph.Data {
+        // Maps function name to its entry node id
+        functions: Map<string, string>;
+    }
 
     export interface ScratchData extends BaseGraph.Data {}
 

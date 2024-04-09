@@ -1,4 +1,5 @@
 import ControlFlowEdge from "clava-flow/flow/edge/ControlFlowEdge";
+import ConditionNode from "clava-flow/flow/node/condition/ConditionNode";
 import InstructionNode from "clava-flow/flow/node/instruction/InstructionNode";
 import BaseNode from "clava-flow/graph/BaseNode";
 import { NodeBuilder, NodeTypeGuard } from "clava-flow/graph/Node";
@@ -46,6 +47,24 @@ namespace FlowNode {
                 outgoers[0].remove();
             } else {
                 throw new Error("Cannot remove node with at least one incomer and multiple outgoers.");
+            }
+        }
+
+        get reachableNodes(): FlowNode.Class[] {
+            if (this.is(InstructionNode.TypeGuard)) {
+                const thisAsInstruction = this.as(InstructionNode.Class);
+                const nextNode = thisAsInstruction.nextNode;
+                if (nextNode === undefined) {
+                    return [this];
+                }
+                return [this, ...nextNode.reachableNodes];
+            } else if (this.is(ConditionNode.TypeGuard)) {
+                const thisAsCondition = this.as(ConditionNode.Class);
+                const trueBranch = thisAsCondition.trueNode.reachableNodes;
+                const falseBranch = thisAsCondition.falseNode.reachableNodes;
+                return [this, ...trueBranch, ...falseBranch]
+            } else {
+                throw new Error("Unsupported node type.");
             }
         }
 
