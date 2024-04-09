@@ -72,31 +72,30 @@ namespace BaseNode {
 
         // cytoscape's dfs is not flexible enough for clava-flow purposes
         // at least as far as I can tell
-        // Returns a generator that yields [node, edge, index, depth]
-        bfs(propagate: (edge: BaseEdge.Class) => boolean): Generator<[BaseNode.Class, BaseEdge.Class | undefined, number, number]> {
+        // Returns a generator that yields [node, path, index]
+        bfs(propagate: (edge: BaseEdge.Class) => boolean): Generator<[BaseNode.Class, BaseEdge.Class[], number]> {
             function* inner(
                 root: BaseNode.Class,
-            ): Generator<[BaseNode.Class, BaseEdge.Class | undefined, number, number]> {
-                const toVisit: [BaseNode.Class, number, BaseEdge.Class?][] = [[root, 0]];
+            ): Generator<[BaseNode.Class, BaseEdge.Class[], number]> {
+                const toVisit: [BaseNode.Class, BaseEdge.Class[]][] = [[root, []]];
                 const visited = new Set();
                 let idx = 0;
-                let depth = 0;
 
                 while (toVisit.length > 0) {
-                    const [node, depth, edge] = toVisit.pop()!;
+                    const [node, path] = toVisit.pop()!;
                     if (visited.has(node)) {
                         continue;
                     }
-                    if (edge !== undefined && !propagate(edge)) {
+                    if (path.length > 0 && !propagate(path[path.length - 1])) {
                         continue;
                     }
 
-                    yield [node, edge, idx, depth];
+                    yield [node, path, idx];
                     idx++;
                     visited.add(node);
 
                     for (const out of node.outgoers) {
-                        toVisit.push([out.target, depth + 1, out]);
+                        toVisit.push([out.target, [...path, out]]);
                     }
                 }
             }

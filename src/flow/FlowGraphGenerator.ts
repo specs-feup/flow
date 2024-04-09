@@ -45,6 +45,7 @@ import GotoLabelNode from "clava-flow/flow/node/instruction/GotoLabelNode";
 import GotoNode from "clava-flow/flow/node/instruction/GotoNode";
 
 
+// TODO currentRegion and parentRegion don't work as I thought they would
 export default class FlowGraphGenerator {
     #$jp: Joinpoint;
     #graph: FlowGraph.Class;

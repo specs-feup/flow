@@ -10,7 +10,7 @@ abstract class DotFormatter {
     abstract formatEdge(edge: BaseEdge.Class): DotFormatter.Edge;
 
     static #sanitizeDotLabel(label: string) {
-        return label.replaceAll("\n", "\\l").replaceAll("\r", "").replaceAll('"', '\\"');
+        return label.replaceAll('"', '\\"');
     }
 
     #formatAttrs(attrs: [string, string][]): string {

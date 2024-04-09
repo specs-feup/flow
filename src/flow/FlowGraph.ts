@@ -121,11 +121,11 @@ namespace FlowGraph {
         get functions(): FunctionEntryNode.Class[] {
             const nodes: FunctionEntryNode.Class[] = [];
             for (const id of this.data.functions.values()) {
-                const node = this.getFunction(id);
-                if (node === undefined) {
+                const node = this.getNodeById(id);
+                if (node === undefined || !node.is(FunctionEntryNode.TypeGuard)) {
                     continue;
                 }
-                nodes.push(node);
+                nodes.push(node.as(FunctionEntryNode.Class));
             }
             return nodes;
         }

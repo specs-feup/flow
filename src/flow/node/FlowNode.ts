@@ -1,6 +1,7 @@
 import ControlFlowEdge from "clava-flow/flow/edge/ControlFlowEdge";
-import ConditionNode from "clava-flow/flow/node/condition/ConditionNode";
 import InstructionNode from "clava-flow/flow/node/instruction/InstructionNode";
+import ConditionNode from "clava-flow/flow/node/condition/ConditionNode";
+import BaseEdge from "clava-flow/graph/BaseEdge";
 import BaseNode from "clava-flow/graph/BaseNode";
 import { NodeBuilder, NodeTypeGuard } from "clava-flow/graph/Node";
 import { Joinpoint } from "clava-js/api/Joinpoints.js";
@@ -51,21 +52,43 @@ namespace FlowNode {
         }
 
         get reachableNodes(): FlowNode.Class[] {
-            if (this.is(InstructionNode.TypeGuard)) {
-                const thisAsInstruction = this.as(InstructionNode.Class);
-                const nextNode = thisAsInstruction.nextNode;
-                if (nextNode === undefined) {
-                    return [this];
+            const result: FlowNode.Class[] = [];
+            for (const [node] of this.bfs(e => e.is(ControlFlowEdge.TypeGuard))) {
+                if (node.is(FlowNode.TypeGuard)) {
+                    result.push(node.as(FlowNode.Class));
                 }
-                return [this, ...nextNode.reachableNodes];
-            } else if (this.is(ConditionNode.TypeGuard)) {
-                const thisAsCondition = this.as(ConditionNode.Class);
-                const trueBranch = thisAsCondition.trueNode.reachableNodes;
-                const falseBranch = thisAsCondition.falseNode.reachableNodes;
-                return [this, ...trueBranch, ...falseBranch]
-            } else {
-                throw new Error("Unsupported node type.");
             }
+            return result;
+        }
+        
+        get previousEdges(): ControlFlowEdge.Class[] {
+            return this.incomers
+                .filter((edge) => edge.is(ControlFlowEdge.TypeGuard))
+                .map((edge) => edge as BaseEdge.Class<ControlFlowEdge.Data, ControlFlowEdge.ScratchData>)
+                .map((edge) => edge.as(ControlFlowEdge.Class));
+        }
+
+        get previousNodes(): FlowNode.Class[] {
+            return this.previousEdges
+                .map((edge) => edge.source)
+                .filter((node) => node.is(FlowNode.TypeGuard))
+                .map((node) => node as BaseNode.Class<FlowNode.Data, FlowNode.ScratchData>)
+                .map((node) => node.as(FlowNode.Class));
+        }
+
+        get nextEdges(): ControlFlowEdge.Class[] {
+            return this.outgoers
+                .filter((edge) => edge.is(ControlFlowEdge.TypeGuard))
+                .map((edge) => edge as BaseEdge.Class<ControlFlowEdge.Data, ControlFlowEdge.ScratchData>)
+                .map((edge) => edge.as(ControlFlowEdge.Class));
+        }
+
+        get nextNodes(): FlowNode.Class[] {
+            return this.nextEdges
+                .map((edge) => edge.target)
+                .filter((node) => node.is(FlowNode.TypeGuard))
+                .map((node) => node as BaseNode.Class<FlowNode.Data, FlowNode.ScratchData>)
+                .map((node) => node.as(FlowNode.Class));
         }
 
         get jp(): Joinpoint | undefined {
