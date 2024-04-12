@@ -45,7 +45,6 @@ import GotoLabelNode from "clava-flow/flow/node/instruction/GotoLabelNode";
 import GotoNode from "clava-flow/flow/node/instruction/GotoNode";
 
 
-// TODO currentRegion and parentRegion don't work as I thought they would
 export default class FlowGraphGenerator {
     #$jp: Joinpoint;
     #graph: FlowGraph.Class;
@@ -455,23 +454,21 @@ export default class FlowGraphGenerator {
     ): [InstructionNode.Class] {
         const node = this.#graph.addNode().init(builder).as(InstructionNode.Class);
 
-        const jumpToScopeId = jumpTo.jp!.currentRegion.astId;
-
         let exitNode: InstructionNode.Class = node;
+        let $currentJp = node.jp!;
 
-        while (exitNode.jp!.currentRegion.astId !== jumpToScopeId) {
-            const $jp =
-                exitNode.jp! instanceof Scope
-                    ? exitNode.jp!.parentRegion
-                    : exitNode.jp!.currentRegion;
+        while ($currentJp.astId !== jumpTo.jp!.astId) {
+            if ($currentJp instanceof Scope) {
+                const endScope = this.#graph
+                    .addNode()
+                    .init(new ScopeEndNode.Builder($currentJp))
+                    .as(ScopeEndNode.Class);
 
-            const endScope = this.#graph
-                .addNode()
-                .init(new ScopeEndNode.Builder($jp as Scope))
-                .as(ScopeEndNode.Class);
-
-            exitNode.nextNode = endScope;
-            exitNode = endScope;
+                exitNode.nextNode = endScope;
+                exitNode = endScope;
+            }
+            
+            $currentJp = $currentJp.parent;
         }
 
         exitNode.nextNode = jumpTo;
@@ -520,12 +517,17 @@ export default class FlowGraphGenerator {
     }
 
     #getScopeList($jp: Joinpoint): Scope[] {
-        let $scopeNode = $jp.currentRegion as Scope | undefined;
         const result: Scope[] = [];
 
-        while ($scopeNode !== undefined) {
-            result.push($scopeNode);
-            $scopeNode = $scopeNode.parentRegion as Scope | undefined;
+        while (true) {
+            if ($jp instanceof Scope) {
+                result.push($jp);
+            }
+            if ($jp.hasParent) {
+                $jp = $jp.parent;
+            } else {
+                break;
+            }
         }
 
         return result;

@@ -83,7 +83,7 @@ namespace BaseNode {
 
                 while (toVisit.length > 0) {
                     const [node, path] = toVisit.pop()!;
-                    if (visited.has(node)) {
+                    if (visited.has(node.id)) {
                         continue;
                     }
                     if (path.length > 0 && !propagate(path[path.length - 1])) {
@@ -92,7 +92,7 @@ namespace BaseNode {
 
                     yield [node, path, idx];
                     idx++;
-                    visited.add(node);
+                    visited.add(node.id);
 
                     for (const out of node.outgoers) {
                         toVisit.push([out.target, [...path, out]]);
