@@ -44,7 +44,7 @@ export default class InferLiveness implements GraphTransformation {
                 const varDeclarationNode = node.as(VarDeclarationNode.Class);
                 const $varDecl = varDeclarationNode.jp;
                 if (varDeclarationNode.jp.hasInit) {
-                    nodeAsLiveness.defs.add($varDecl);
+                    nodeAsLiveness.addDef($varDecl);
                 }
                 this.#computeDefAndUse(nodeAsLiveness, $varDecl.init);
             } else if (node.is(ExpressionNode.TypeGuard)) {
@@ -81,7 +81,7 @@ export default class InferLiveness implements GraphTransformation {
 
             assignedVars.add($assignment.left.astId);
 
-            node.defs.add($vardecl);
+            node.addDef($vardecl);
         }
 
         const $varRefs = Query.searchFromInclusive($jp, "varref");
@@ -96,7 +96,7 @@ export default class InferLiveness implements GraphTransformation {
                 continue;
             }
 
-            node.uses.add($varRef.vardecl);
+            node.addUse($varRef.vardecl);
         }
     }
 
@@ -110,36 +110,20 @@ export default class InferLiveness implements GraphTransformation {
                 }
 
                 const nodeAsLiveness = node.as(LivenessNode.Class);
-                const def = nodeAsLiveness.defs;
-                const use = nodeAsLiveness.uses;
-                const oldLiveIn = nodeAsLiveness.liveIn;
-                const oldLiveOut = nodeAsLiveness.liveOut;
+                const oldLiveIn = new Set(nodeAsLiveness.liveIn.map(v => v.astId));
+                const oldLiveOut = new Set(nodeAsLiveness.liveOut.map((v) => v.astId));
 
-                nodeAsLiveness.liveIn = new Set(
-                    [...oldLiveOut]
-                        .filter((x) => !def.has(x))
-                        .concat([...use])
-                );
+                nodeAsLiveness.updateLiveIn();
+                nodeAsLiveness.updateLiveOut();
 
-                nodeAsLiveness.liveOut = new Set();
-                const children = node.outgoers
-                    .filter((edge) => edge.is(ControlFlowEdge.TypeGuard))
-                    .map((edge) => edge.target);
-                for (const child of children) {
-                    if (!child.is(LivenessNode.TypeGuard)) {
-                        continue;
-                    }
-                    const childLiveIn = child.as(LivenessNode.Class).liveIn;
-                    for (const $var of childLiveIn.values()) {
-                        nodeAsLiveness.liveOut.add($var);
-                    }
-                }
+                const newLiveIn = new Set(nodeAsLiveness.liveIn.map((v) => v.astId));
+                const newLiveOut = new Set(nodeAsLiveness.liveOut.map((v) => v.astId));
 
                 if (
-                    oldLiveIn.size !== nodeAsLiveness.liveIn.size
-                    || oldLiveOut.size !== nodeAsLiveness.liveOut.size
-                    || ![...oldLiveIn].every((e) => nodeAsLiveness.liveIn.has(e))
-                    || ![...oldLiveOut].every((e) => nodeAsLiveness.liveOut.has(e))
+                    oldLiveIn.size !== newLiveIn.size
+                    || oldLiveOut.size !== newLiveOut.size
+                    || ![...oldLiveIn].every((e) => newLiveIn.has(e))
+                    || ![...oldLiveOut].every((e) => newLiveOut.has(e))
                 ) {
                     liveChanged = true;
                 }

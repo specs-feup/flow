@@ -178,7 +178,7 @@ namespace FlowGraph {
         functions: Map<string, string>;
     }
 
-    export interface ScratchData extends BaseGraph.Data {}
+    export interface ScratchData extends BaseGraph.ScratchData {}
 
     // ---------------------
 

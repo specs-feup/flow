@@ -5,6 +5,8 @@ import BaseEdge from "clava-flow/graph/BaseEdge";
 import { JavaClasses } from "lara-js/api/lara/util/JavaTypes.js";
 import DotFormatter from "clava-flow/dot/DotFormatter";
 import Io from "lara-js/api/lara/Io.js";
+import EdgeIdGenerator from "clava-flow/graph/id/EdgeIdGenerator";
+import NodeIdGenerator from "clava-flow/graph/id/NodeIdGenerator";
 
 namespace BaseGraph {
     export class Class<D extends Data = Data, S extends ScratchData = ScratchData> {
@@ -24,7 +26,26 @@ namespace BaseGraph {
             return this.#graph.scratch(Graph.scratchNamespace);
         }
 
+        setNodeIdGenerator(generator: NodeIdGenerator | undefined): this {
+            this.#graph.scratch(Graph.scratchNamespace, {
+                ...this.scratchData,
+                nodeIdGenerator: generator,
+            });
+            return this;
+        }
+
+        setEdgeIdGenerator(generator: EdgeIdGenerator | undefined): this {
+            this.#graph.scratch(Graph.scratchNamespace, {
+                ...this.scratchData,
+                edgeIdGenerator: generator,
+            });
+            return this;
+        }
+
         addNode(id?: string): BaseNode.Class {
+            if (this.scratchData.nodeIdGenerator !== undefined) {
+                id = this.scratchData.nodeIdGenerator.newId(this);
+            }
             const newNode = this.#graph.add({
                 group: "nodes",
                 data: { id },
@@ -37,6 +58,9 @@ namespace BaseGraph {
             target: BaseNode.Class,
             id?: string,
         ): BaseEdge.Class {
+            if (this.scratchData.edgeIdGenerator !== undefined) {
+                id = this.scratchData.edgeIdGenerator.newId(this, source, target);
+            }
             const newEdge = this.#graph.add({
                 group: "edges",
                 data: { id, source: source.id, target: target.id },
@@ -140,13 +164,23 @@ namespace BaseGraph {
         },
 
         isScratchDataCompatible(sData: BaseGraph.ScratchData): sData is ScratchData {
+            // TODO if possible check that the newId signature is valid
+            if (sData.nodeIdGenerator !== undefined && typeof sData.nodeIdGenerator.newId !== "function") {
+                return false;
+            }
+            if (sData.edgeIdGenerator !== undefined && typeof sData.edgeIdGenerator.newId !== "function") {
+                return false;
+            }
             return true;
         },
     };
 
     export interface Data {}
 
-    export interface ScratchData {}
+    export interface ScratchData {
+        nodeIdGenerator: NodeIdGenerator | undefined;
+        edgeIdGenerator: EdgeIdGenerator | undefined;
+    }
 }
 
 export default BaseGraph;

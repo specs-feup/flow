@@ -45,6 +45,7 @@ import GotoLabelNode from "clava-flow/flow/node/instruction/GotoLabelNode";
 import GotoNode from "clava-flow/flow/node/instruction/GotoNode";
 
 
+// TODO make this a GraphTransformation
 export default class FlowGraphGenerator {
     #$jp: Joinpoint;
     #graph: FlowGraph.Class;
@@ -210,7 +211,7 @@ export default class FlowGraphGenerator {
 
                 tail = node;
             } else {
-                throw new Error("Unsupported declaration type");
+                throw new Error("Unsupported declaration type " + $decl.joinPointType);
             }
         }
 

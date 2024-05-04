@@ -9,37 +9,71 @@ namespace LivenessNode {
     export class Class<
         D extends Data = Data,
         S extends ScratchData = ScratchData,
-        > extends FlowNode.Class<D, S> {
-        get defs(): Set<Vardecl> {
-            return this.scratchData.liveness.defs;
+    > extends FlowNode.Class<D, S> {
+        get defs(): Vardecl[] {
+            return Array.from(this.scratchData.liveness.defs.values());
         }
 
-        set defs(defs: Set<Vardecl>) {
-            this.scratchData.liveness.defs = defs;
+        addDef(def: Vardecl): void {
+            this.scratchData.liveness.defs.set(def.astId, def);
         }
 
-        get uses(): Set<Vardecl> {
-            return this.scratchData.liveness.uses;
+        get uses(): Vardecl[] {
+            return Array.from(this.scratchData.liveness.uses.values());
         }
 
-        set uses(uses: Set<Vardecl>) {
-            this.scratchData.liveness.uses = uses;
+        addUse(use: Vardecl): void {
+            this.scratchData.liveness.uses.set(use.astId, use);
         }
 
-        get liveIn(): Set<Vardecl> {
-            return this.scratchData.liveness.liveIn;
+        get liveIn(): Vardecl[] {
+            return Array.from(this.scratchData.liveness.liveIn.values());
         }
 
-        set liveIn(liveIn: Set<Vardecl>) {
-            this.scratchData.liveness.liveIn = liveIn;
+        updateLiveIn(): void {
+            this.scratchData.liveness.liveIn = new Map();
+            const liveIn = this.scratchData.liveness.liveIn;
+            const liveOut = this.scratchData.liveness.liveOut;
+            const defs = this.scratchData.liveness.defs;
+            const uses = this.scratchData.liveness.uses;
+            
+            for (const [id, variable] of liveOut.entries()) {
+                if (!defs.has(id)) {
+                    liveIn.set(id, variable);
+                }
+            }
+
+            for (const [id, variable] of uses.entries()) {
+                liveIn.set(id, variable);
+            }
         }
 
-        get liveOut(): Set<Vardecl> {
-            return this.scratchData.liveness.liveOut;
+        get liveOut(): Vardecl[] {
+            return Array.from(this.scratchData.liveness.liveOut.values());
         }
 
-        set liveOut(liveOut: Set<Vardecl>) {
-            this.scratchData.liveness.liveOut = liveOut;
+        updateLiveOut(): void {
+            this.scratchData.liveness.liveOut = new Map();
+            const liveOut = this.scratchData.liveness.liveOut;
+            
+            const children = this.outgoers
+                .filter((edge) => edge.is(ControlFlowEdge.TypeGuard))
+                .map((edge) => edge.target);
+            
+            for (const child of children) {
+                if (!child.is(LivenessNode.TypeGuard)) {
+                    continue;
+                }
+
+                const childLiveIn = child
+                    .as(LivenessNode.Class)
+                    .scratchData
+                    .liveness
+                    .liveIn;
+                for (const [id, variable] of childLiveIn.entries()) {
+                    liveOut.set(id, variable);
+                }
+            }
         }
     }
 
@@ -67,10 +101,10 @@ namespace LivenessNode {
                 ...scratchData,
                 ...super.buildScratchData(scratchData),
                 liveness: {
-                    defs: new Set(),
-                    uses: new Set(),
-                    liveIn: new Set(),
-                    liveOut: new Set(),
+                    defs: new Map(),
+                    uses: new Map(),
+                    liveIn: new Map(),
+                    liveOut: new Map(),
                 },
             };
         }
@@ -88,10 +122,10 @@ namespace LivenessNode {
             if (!FlowNode.TypeGuard.isScratchDataCompatible(scratchData)) return false;
             const s = scratchData as ScratchData;
             if (s.liveness === undefined) return false;
-            if (!(s.liveness.defs instanceof Set)) return false;
-            if (!(s.liveness.uses instanceof Set)) return false;
-            if (!(s.liveness.liveIn instanceof Set)) return false;
-            if (!(s.liveness.liveOut instanceof Set)) return false;
+            if (!(s.liveness.defs instanceof Map)) return false;
+            if (!(s.liveness.uses instanceof Map)) return false;
+            if (!(s.liveness.liveIn instanceof Map)) return false;
+            if (!(s.liveness.liveOut instanceof Map)) return false;
             return true;
         },
     };
@@ -100,10 +134,10 @@ namespace LivenessNode {
 
     export interface ScratchData extends BaseNode.ScratchData, FlowNode.ScratchData {
         liveness: {
-            defs: Set<Vardecl>;
-            uses: Set<Vardecl>;
-            liveIn: Set<Vardecl>;
-            liveOut: Set<Vardecl>;
+            defs: Map<string, Vardecl>;
+            uses: Map<string, Vardecl>;
+            liveIn: Map<string, Vardecl>;
+            liveOut: Map<string, Vardecl>;
         };
     }
 }
