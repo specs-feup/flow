@@ -13,6 +13,13 @@ import { LaraJoinPoint } from "lara-js/api/LaraJoinPoint.js";
 import Query from "lara-js/api/weaver/Query.js";
 
 export default class InferLiveness implements GraphTransformation {
+    #customComputeDefsAndUses?: (node: LivenessNode.Class) => void;
+
+    customComputeDefsAndUses(callback: (node: LivenessNode.Class) => void): InferLiveness {
+        this.#customComputeDefsAndUses = callback;
+        return this;
+    }
+
     apply(graph: BaseGraph.Class): void {
         for (const node of graph.nodes) {
             if (node.is(FlowNode.TypeGuard)) {
@@ -56,6 +63,10 @@ export default class InferLiveness implements GraphTransformation {
             } else if (node.is(ReturnNode.TypeGuard)) {
                 const returnNode = node.as(ReturnNode.Class);
                 this.#computeDefAndUse(nodeAsLiveness, returnNode.jp.returnExpr);
+            }
+
+            if (this.#customComputeDefsAndUses !== undefined) {
+                this.#customComputeDefsAndUses(nodeAsLiveness);
             }
         }
     }
@@ -110,7 +121,7 @@ export default class InferLiveness implements GraphTransformation {
                 }
 
                 const nodeAsLiveness = node.as(LivenessNode.Class);
-                const oldLiveIn = new Set(nodeAsLiveness.liveIn.map(v => v.astId));
+                const oldLiveIn = new Set(nodeAsLiveness.liveIn.map((v) => v.astId));
                 const oldLiveOut = new Set(nodeAsLiveness.liveOut.map((v) => v.astId));
 
                 nodeAsLiveness.updateLiveIn();
@@ -120,10 +131,10 @@ export default class InferLiveness implements GraphTransformation {
                 const newLiveOut = new Set(nodeAsLiveness.liveOut.map((v) => v.astId));
 
                 if (
-                    oldLiveIn.size !== newLiveIn.size
-                    || oldLiveOut.size !== newLiveOut.size
-                    || ![...oldLiveIn].every((e) => newLiveIn.has(e))
-                    || ![...oldLiveOut].every((e) => newLiveOut.has(e))
+                    oldLiveIn.size !== newLiveIn.size ||
+                    oldLiveOut.size !== newLiveOut.size ||
+                    ![...oldLiveIn].every((e) => newLiveIn.has(e)) ||
+                    ![...oldLiveOut].every((e) => newLiveOut.has(e))
                 ) {
                     liveChanged = true;
                 }

@@ -11,19 +11,27 @@ namespace ScopeStartNode {
         override get jp(): Scope {
             return this.scratchData.$jp;
         }
+
+        get scopeKind(): Kind {
+            return this.data.scopeKind;
+        }
     }
 
     export class Builder
         extends InstructionNode.Builder
         implements NodeBuilder<Data, ScratchData>
     {
-        constructor($jp: Scope) {
+        #kind: Kind;
+
+        constructor($jp: Scope, kind: Kind) {
             super(InstructionNode.Type.SCOPE_START, $jp);
+            this.#kind = kind;
         }
 
         buildData(data: BaseNode.Data): Data {
             return {
                 ...super.buildData(data) as InstructionNode.Data & { instructionFlowNodeType: InstructionNode.Type.SCOPE_START },
+                scopeKind: this.#kind,
             };
         }
 
@@ -52,10 +60,22 @@ namespace ScopeStartNode {
 
     export interface Data extends InstructionNode.Data {
         instructionFlowNodeType: InstructionNode.Type.SCOPE_START;
+        scopeKind: Kind;
     }
 
     export interface ScratchData extends InstructionNode.ScratchData {
         $jp: Scope;
+    }
+
+    // -------------------------------------
+
+    export enum Kind {
+        // The scope was entered normally as it was
+        // the next line of code to be executed
+        NORMAL_FLOW,
+        // The scope was entered as a result of a
+        // control flow statement (e.g. goto)
+        BROKEN_FLOW,
     }
 }
 

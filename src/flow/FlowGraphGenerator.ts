@@ -375,7 +375,7 @@ export default class FlowGraphGenerator {
 
             scopeEnd = this.#graph
                 .addNode()
-                .init(new ScopeEndNode.Builder($body))
+                .init(new ScopeEndNode.Builder($body, ScopeEndNode.Kind.BROKEN_FLOW))
                 .as(ScopeEndNode.Class);
 
             breakNode.nextNode = scopeEnd;
@@ -462,7 +462,7 @@ export default class FlowGraphGenerator {
             if ($currentJp instanceof Scope) {
                 const endScope = this.#graph
                     .addNode()
-                    .init(new ScopeEndNode.Builder($currentJp))
+                    .init(new ScopeEndNode.Builder($currentJp, ScopeEndNode.Kind.BROKEN_FLOW))
                     .as(ScopeEndNode.Class);
 
                 exitNode.nextNode = endScope;
@@ -497,7 +497,7 @@ export default class FlowGraphGenerator {
         for (let i = 0; i <= fromScopesIdx; i++) {
             const endScope = this.#graph
                 .addNode()
-                .init(new ScopeEndNode.Builder(fromScopes[i]))
+                .init(new ScopeEndNode.Builder(fromScopes[i], ScopeEndNode.Kind.BROKEN_FLOW))
                 .as(ScopeEndNode.Class);
 
             exitNode.nextNode = endScope;
@@ -507,7 +507,7 @@ export default class FlowGraphGenerator {
         for (let i = toScopesIdx; i >= 0; i--) {
             const startScope = this.#graph
                 .addNode()
-                .init(new ScopeStartNode.Builder(toScopes[i]))
+                .init(new ScopeStartNode.Builder(toScopes[i], ScopeStartNode.Kind.BROKEN_FLOW))
                 .as(ScopeStartNode.Class);
 
             exitNode.nextNode = startScope;

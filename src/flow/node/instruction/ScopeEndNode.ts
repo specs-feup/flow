@@ -11,25 +11,37 @@ namespace ScopeEndNode {
         override get jp(): Scope {
             return this.scratchData.$jp;
         }
+
+        get scopeKind(): Kind {
+            return this.data.scopeKind;
+        }
     }
 
     export class Builder
         extends InstructionNode.Builder
         implements NodeBuilder<Data, ScratchData>
     {
-        constructor($jp: Scope) {
+        #kind: Kind;
+
+        constructor($jp: Scope, kind: Kind) {
             super(InstructionNode.Type.SCOPE_END, $jp);
+            this.#kind = kind;
         }
 
         buildData(data: BaseNode.Data): Data {
             return {
-                ...super.buildData(data) as InstructionNode.Data & { instructionFlowNodeType: InstructionNode.Type.SCOPE_END },
+                ...(super.buildData(data) as InstructionNode.Data & {
+                    instructionFlowNodeType: InstructionNode.Type.SCOPE_END;
+                }),
+                scopeKind: this.#kind,
             };
         }
 
         buildScratchData(scratchData: BaseNode.ScratchData): ScratchData {
             return {
-                ...super.buildScratchData(scratchData) as InstructionNode.Data & { $jp: Scope },
+                ...(super.buildScratchData(scratchData) as InstructionNode.Data & {
+                    $jp: Scope;
+                }),
             };
         }
     }
@@ -38,24 +50,38 @@ namespace ScopeEndNode {
         isDataCompatible(data: BaseNode.Data): data is Data {
             if (!InstructionNode.TypeGuard.isDataCompatible(data)) return false;
             const d = data as Data;
-            if (d.instructionFlowNodeType !== InstructionNode.Type.SCOPE_END) return false;
+            if (d.instructionFlowNodeType !== InstructionNode.Type.SCOPE_END)
+                return false;
             return true;
         },
 
         isScratchDataCompatible(
             scratchData: BaseNode.ScratchData,
         ): scratchData is ScratchData {
-            if (!InstructionNode.TypeGuard.isScratchDataCompatible(scratchData)) return false;
+            if (!InstructionNode.TypeGuard.isScratchDataCompatible(scratchData))
+                return false;
             return true;
         },
     };
 
     export interface Data extends InstructionNode.Data {
         instructionFlowNodeType: InstructionNode.Type.SCOPE_END;
+        scopeKind: Kind;
     }
 
     export interface ScratchData extends InstructionNode.ScratchData {
         $jp: Scope;
+    }
+
+    // -------------------------------------
+
+    export enum Kind {
+        // The scope was entered normally as it was
+        // the next line of code to be executed
+        NORMAL_FLOW,
+        // The scope was entered as a result of a
+        // control flow statement (e.g. break, continue)
+        BROKEN_FLOW,
     }
 }
 

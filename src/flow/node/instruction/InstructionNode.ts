@@ -10,6 +10,19 @@ namespace InstructionNode {
         D extends Data = Data,
         S extends ScratchData = ScratchData,
     > extends FlowNode.Class<D, S> {
+        insertAfter(node: InstructionNode.Class) {
+            this.insertSubgraphAfter(node, [node]);
+        }
+
+        insertSubgraphAfter(head: FlowNode.Class, tail: InstructionNode.Class[]) {
+            const target = this.nextNode;
+            this.nextNode = head;
+
+            for (const tailNode of tail) {
+                tailNode.nextNode = target;
+            }
+        }
+
         get nextEdge(): ControlFlowEdge.Class | undefined {
             if (this.data.nextEdgeId === undefined) {
                 return undefined;

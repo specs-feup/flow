@@ -50,7 +50,7 @@ namespace FlowGraph {
 
         addScope($jp: Scope, subGraphs: [FlowNode.Class, InstructionNode.Class[]][]): [ScopeStartNode.Class, ScopeEndNode.Class?] {
             const scope_start = this.addNode()
-                .init(new ScopeStartNode.Builder($jp))
+                .init(new ScopeStartNode.Builder($jp, ScopeStartNode.Kind.NORMAL_FLOW))
                 .as(ScopeStartNode.Class);
 
             let current_tail: InstructionNode.Class[] = [scope_start];
@@ -67,7 +67,7 @@ namespace FlowGraph {
             }
             
             const scope_end = this.addNode()
-                .init(new ScopeEndNode.Builder($jp))
+                .init(new ScopeEndNode.Builder($jp, ScopeEndNode.Kind.NORMAL_FLOW))
                 .as(ScopeEndNode.Class);
 
             for (const tailNode of current_tail) {
