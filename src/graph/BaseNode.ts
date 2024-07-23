@@ -1,8 +1,8 @@
 import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
-import Graph from "clava-flow/graph/Graph";
-import { NodeBuilder, NodeConstructor, NodeTypeGuard } from "clava-flow/graph/Node";
-import BaseGraph from "clava-flow/graph/BaseGraph";
-import BaseEdge from "clava-flow/graph/BaseEdge";
+import Graph from "lara-flow/graph/Graph";
+import { NodeBuilder, NodeConstructor, NodeTypeGuard } from "lara-flow/graph/Node";
+import BaseGraph from "lara-flow/graph/BaseGraph";
+import BaseEdge from "lara-flow/graph/BaseEdge";
 
 namespace BaseNode {
     export class Class<D extends Data = Data, S extends ScratchData = ScratchData> {
@@ -11,7 +11,12 @@ namespace BaseNode {
 
         // _d and _sd are a hack to force typescript to typecheck
         // D and S in .as() method.
-        constructor(graph: BaseGraph.Class, node: cytoscape.NodeSingular, _d: D = {} as any, _sd: S = {} as any) {
+        constructor(
+            graph: BaseGraph.Class,
+            node: cytoscape.NodeSingular,
+            _d: D = {} as any,
+            _sd: S = {} as any,
+        ) {
             this.#graph = graph;
             this.#node = node;
         }
@@ -29,11 +34,17 @@ namespace BaseNode {
         }
 
         get incomers(): BaseEdge.Class[] {
-            return this.#node.incomers().edges().map((edge) => new BaseEdge.Class(this.#graph, edge));
+            return this.#node
+                .incomers()
+                .edges()
+                .map((edge) => new BaseEdge.Class(this.#graph, edge));
         }
 
         get outgoers(): BaseEdge.Class[] {
-            return this.#node.outgoers().edges().map((edge) => new BaseEdge.Class(this.#graph, edge));
+            return this.#node
+                .outgoers()
+                .edges()
+                .map((edge) => new BaseEdge.Class(this.#graph, edge));
         }
 
         is<D2 extends Data, S2 extends ScratchData>(
@@ -52,28 +63,35 @@ namespace BaseNode {
             return result;
         }
 
-        as<N extends BaseNode.Class<D, S>>(
-            NodeType: NodeConstructor<D, S, N>
-        ): N {
+        as<N extends BaseNode.Class<D, S>>(NodeType: NodeConstructor<D, S, N>): N {
             return new NodeType(this.#graph, this.#node, this.data, this.scratchData);
         }
 
-        init<D2 extends BaseNode.Data, S2 extends BaseNode.ScratchData>(builder: NodeBuilder<D2, S2>): BaseNode.Class<D2, S2> {
+        init<D2 extends BaseNode.Data, S2 extends BaseNode.ScratchData>(
+            builder: NodeBuilder<D2, S2>,
+        ): BaseNode.Class<D2, S2> {
             const initedData = builder.buildData(this.data);
             const initedScratchData = builder.buildScratchData(this.scratchData);
             this.#node.data(initedData);
             this.#node.scratch(Graph.scratchNamespace, initedScratchData);
-            return new BaseNode.Class(this.#graph, this.#node, initedData, initedScratchData);
+            return new BaseNode.Class(
+                this.#graph,
+                this.#node,
+                initedData,
+                initedScratchData,
+            );
         }
 
         remove() {
             this.#node.remove();
         }
 
-        // cytoscape's dfs is not flexible enough for clava-flow purposes
+        // cytoscape's dfs is not flexible enough for lara-flow purposes
         // at least as far as I can tell
         // Returns a generator that yields [node, path, index]
-        bfs(propagate: (edge: BaseEdge.Class) => boolean): Generator<[BaseNode.Class, BaseEdge.Class[], number]> {
+        bfs(
+            propagate: (edge: BaseEdge.Class) => boolean,
+        ): Generator<[BaseNode.Class, BaseEdge.Class[], number]> {
             function* inner(
                 root: BaseNode.Class,
             ): Generator<[BaseNode.Class, BaseEdge.Class[], number]> {
@@ -136,7 +154,7 @@ namespace BaseNode {
         id: string;
     }
 
-    export interface ScratchData { }
+    export interface ScratchData {}
 }
 
 export default BaseNode;

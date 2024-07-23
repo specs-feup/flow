@@ -1,5 +1,5 @@
-import BaseGraph from "clava-flow/graph/BaseGraph";
-import BaseNode from "clava-flow/graph/BaseNode";
+import BaseGraph from "lara-flow/graph/BaseGraph";
+import BaseNode from "lara-flow/graph/BaseNode";
 import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
 
 export type NodeConstructor<

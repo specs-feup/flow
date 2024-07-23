@@ -13,7 +13,7 @@
         "forceConsistentCasingInFileNames": true,
         "noFallthroughCasesInSwitch": true,
         "paths": {
-            "clava-flow/*": ["./src/*.js"]
+            "lara-flow/*": ["./src/*.js"]
         }
         //"esModuleInterop": true
     },

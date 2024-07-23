@@ -1,5 +1,5 @@
-import EdgeIdGenerator from "clava-flow/graph/id/EdgeIdGenerator";
-import NodeIdGenerator from "clava-flow/graph/id/NodeIdGenerator";
+import EdgeIdGenerator from "lara-flow/graph/id/EdgeIdGenerator";
+import NodeIdGenerator from "lara-flow/graph/id/NodeIdGenerator";
 
 export default class IncrementingIdGenerator implements NodeIdGenerator, EdgeIdGenerator {
     #id = 0;

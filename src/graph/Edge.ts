@@ -1,5 +1,5 @@
-import BaseEdge from "clava-flow/graph/BaseEdge";
-import BaseGraph from "clava-flow/graph/BaseGraph";
+import BaseEdge from "lara-flow/graph/BaseEdge";
+import BaseGraph from "lara-flow/graph/BaseGraph";
 import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
 
 export type EdgeConstructor<

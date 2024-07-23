@@ -1,7 +1,7 @@
-import BaseGraph from "clava-flow/graph/BaseGraph";
-import BaseNode from "clava-flow/graph/BaseNode";
-import { EdgeBuilder, EdgeConstructor, EdgeTypeGuard } from "clava-flow/graph/Edge";
-import Graph from "clava-flow/graph/Graph";
+import BaseGraph from "lara-flow/graph/BaseGraph";
+import BaseNode from "lara-flow/graph/BaseNode";
+import { EdgeBuilder, EdgeConstructor, EdgeTypeGuard } from "lara-flow/graph/Edge";
+import Graph from "lara-flow/graph/Graph";
 import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
 
 namespace BaseEdge {
@@ -112,7 +112,9 @@ namespace BaseEdge {
             return true;
         },
 
-        isScratchDataCompatible(scratchData: BaseEdge.ScratchData): scratchData is ScratchData {
+        isScratchDataCompatible(
+            scratchData: BaseEdge.ScratchData,
+        ): scratchData is ScratchData {
             return true;
         },
     };

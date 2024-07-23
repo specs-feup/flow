@@ -1,6 +1,6 @@
-import BaseEdge from "clava-flow/graph/BaseEdge";
-import BaseGraph from "clava-flow/graph/BaseGraph";
-import BaseNode from "clava-flow/graph/BaseNode";
+import BaseEdge from "lara-flow/graph/BaseEdge";
+import BaseGraph from "lara-flow/graph/BaseGraph";
+import BaseNode from "lara-flow/graph/BaseNode";
 
 abstract class DotFormatter {
     static defaultGraphName: string = "clava_graph";

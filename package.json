@@ -1,7 +1,7 @@
 {
-    "name": "clava-flow",
+    "name": "lara-flow",
     "version": "1.0.0",
-    "description": "ControlFlow and DataFlow graphs for Clava.",
+    "description": "ControlFlow and DataFlow graphs for Lara.",
     "type": "module",
     "parserOptions": {
         "project": [
@@ -25,7 +25,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/Goncalerta/clava-flow.git"
+        "url": "git+https://github.com/Goncalerta/lara-flow.git"
     },
     "keywords": [
         "clava",
@@ -36,11 +36,11 @@
     ],
     "author": "",
     "bugs": {
-        "url": "https://github.com/Goncalerta/clava-flow/issues"
+        "url": "https://github.com/Goncalerta/lara-flow/issues"
     },
-    "homepage": "https://github.com/Goncalerta/clava-flow#readme",
+    "homepage": "https://github.com/Goncalerta/lara-flow#readme",
     "dependencies": {
-        "clava-js": "0.0.1"
+        "lara-js": "^0.0.1"
     },
     "devDependencies": {
         "@typescript-eslint/eslint-plugin": "^6.7.4",

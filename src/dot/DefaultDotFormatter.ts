@@ -1,6 +1,6 @@
-import DotFormatter from "clava-flow/dot/DotFormatter";
-import BaseEdge from "clava-flow/graph/BaseEdge";
-import BaseNode from "clava-flow/graph/BaseNode";
+import DotFormatter from "lara-flow/dot/DotFormatter";
+import BaseEdge from "lara-flow/graph/BaseEdge";
+import BaseNode from "lara-flow/graph/BaseNode";
 
 export default class DefaultDotFormatter extends DotFormatter {
     override formatNode(node: BaseNode.Class): DotFormatter.Node {
