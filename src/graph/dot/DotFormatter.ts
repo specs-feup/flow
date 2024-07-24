@@ -2,6 +2,10 @@ import BaseEdge from "lara-flow/graph/BaseEdge";
 import BaseGraph from "lara-flow/graph/BaseGraph";
 import BaseNode from "lara-flow/graph/BaseNode";
 
+/**
+ * @deprecated
+ * @todo
+ */
 abstract class DotFormatter {
     static defaultGraphName: string = "clava_graph";
 
@@ -43,6 +47,10 @@ abstract class DotFormatter {
     }
 }
 
+/**
+ * @deprecated
+ * @todo
+ */
 namespace DotFormatter {
     export interface Attrs {
         label: string;

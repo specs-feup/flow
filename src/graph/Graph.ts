@@ -120,6 +120,7 @@ namespace Graph {
          * @returns Whether the data object is compatible with the graph type.
          */
         isDataCompatible(data: BaseGraph.Data): data is D;
+
         /**
          * Type guard for the scratch data object of the graph.
          *
@@ -127,20 +128,6 @@ namespace Graph {
          * @returns Whether the scratch data object is compatible with the graph type.
          */
         isScratchDataCompatible(sData: BaseGraph.ScratchData): sData is S;
-    }
-
-    /**
-     * Represents a transformation that can be applied to the graph as a whole.
-     * See {@link BaseGraph.Class.apply}.
-     *
-     * @template G1 The graph before the transformation.
-     * @template G2 The graph after the transformation.
-     */
-    export interface Transformation<
-        G1 extends BaseGraph.Class,
-        G2 extends BaseGraph.Class,
-    > {
-        apply: (graph: G1) => G2;
     }
 
     /**
@@ -164,9 +151,6 @@ namespace Graph {
      * @param GraphType The graph type to match.
      * @param callback The call back if the graph type matches.
      * @returns An object to be used in {@link BaseGraph.Class.switch}.
-     *
-     *  @deprecated until stabilized.
-     *  @todo Decide whether to keep this or not.
      */
     export function Case<
         D extends BaseGraph.Data,
@@ -190,6 +174,20 @@ namespace Graph {
         }
 
         return new _Case(GraphType, callback);
+    }
+
+    /**
+     * Represents a transformation that can be applied to the graph as a whole.
+     * See {@link BaseGraph.Class.apply}.
+     *
+     * @template G1 The graph before the transformation.
+     * @template G2 The graph after the transformation.
+     */
+    export interface Transformation<
+        G1 extends BaseGraph.Class,
+        G2 extends BaseGraph.Class,
+    > {
+        apply: (graph: G1) => G2;
     }
 }
 

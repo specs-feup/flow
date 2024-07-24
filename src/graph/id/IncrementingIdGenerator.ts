@@ -1,6 +1,10 @@
 import EdgeIdGenerator from "lara-flow/graph/id/EdgeIdGenerator";
 import NodeIdGenerator from "lara-flow/graph/id/NodeIdGenerator";
 
+/**
+ * @deprecated
+ * @todo
+ */
 export default class IncrementingIdGenerator implements NodeIdGenerator, EdgeIdGenerator {
     #id = 0;
     #prefix: string;

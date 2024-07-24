@@ -31,8 +31,8 @@ namespace BaseGraph {
          * {@link Graph.Class}). However, it should not be used directly by user code.
          *
          * @param graph The underlying cytoscape graph object.
-         * @param _d A hack to force typescript to typecheck D in .as() method.
-         * @param _sd A hack to force typescript to typecheck S in .as() method.
+         * @param _d A hack to force typescript to typecheck D in {@link BaseGraph.Class.as} method.
+         * @param _sd A hack to force typescript to typecheck S in {@link BaseGraph.Class.as} method.
          * @deprecated
          */
         constructor(graph: cytoscape.Core, _d: D = {} as any, _sd: S = {} as any) {
@@ -40,6 +40,9 @@ namespace BaseGraph {
         }
 
         /**
+         * Use the data object for JSON serializable data.
+         * For temporary or non-serializable data, use {@link BaseGraph.Class.scratchData}.
+         * 
          * @returns the data object associated with this graph.
          */
         get data(): D {
@@ -47,10 +50,151 @@ namespace BaseGraph {
         }
 
         /**
+         * Use the scratch data object for temporary or non-serializable data.
+         * For JSON serializable data, use {@link BaseGraph.Class.data}.
+         * 
          * @returns the scratch data object associated with this graph.
          */
         get scratchData(): S {
             return this.#graph.scratch(Graph.scratchNamespace);
+        }
+
+        /**
+         * Initializes the graph with the information of a builder. This is effectively
+         * extends the type of the graph to include the data and scratch data of the builder.
+         *
+         * The same graph may simultaneously be of multiple types, as long as the data and
+         * scratch data are compatible with the types. The builder methods may overwrite
+         * data and scratch data fields with names that collide with its type's fields.
+         *
+         * @param builder The builder to use to initialize the graph.
+         * @returns The same graph, with the data and scratch data of the builder.
+         * The graph is downcasted to {@link BaseGraph.Class} because the builder may
+         * overwrite the data and scratch data fields, invalidating the current type.
+         */
+        init<D2 extends BaseGraph.Data, S2 extends BaseGraph.ScratchData>(
+            builder: Graph.Builder<D2, S2>,
+        ): BaseGraph.Class<D2, S2> {
+            const initedData = builder.buildData(this.data);
+            const initedScratchData = builder.buildScratchData(this.scratchData);
+            this.#graph.data(initedData);
+            this.#graph.scratch(Graph.scratchNamespace, initedScratchData);
+            // Appears as deprecated because it is for internal use only
+            return new BaseGraph.Class(this.#graph, initedData, initedScratchData);
+        }
+
+        /**
+         * Checks if this graph's data and scratch data are compatible
+         * with a specific type. This is effectively a type guard function.
+         *
+         * @param GraphType The graph type to check compatibility with. The relevant
+         * part of the graph type for this function is the {@link Graph.TypeGuard} object.
+         * @returns Whether the graph is compatible with the given type.
+         */
+        is<D2 extends Data, S2 extends ScratchData>(GraphType: {
+            TypeGuard: Graph.TypeGuard<D2, S2>;
+        }): this is BaseGraph.Class<D2, S2> {
+            const data = this.data;
+            const scratchData = this.scratchData;
+            const result =
+                GraphType.TypeGuard.isDataCompatible(data) &&
+                GraphType.TypeGuard.isScratchDataCompatible(scratchData);
+
+            // Have typescript statically check that the types are correct
+            // in the implementation of this function.
+            result && (data satisfies D2) && (scratchData satisfies S2);
+
+            return result;
+        }
+
+        /**
+         * Changes the functionality class of the current graph. This is only
+         * possible if the data and scratch data are compatible with the new class.
+         * To assert that, use {@link BaseGraph.Class.is}.
+         *
+         * @param GraphType The graph type to change the functionality class into.
+         * The relevant part of the graph type for this function is the {@link Graph.Class} class.
+         * @returns The same graph, wrapped in the new functionality class.
+         */
+        as<G extends BaseGraph.Class<D, S>>(GraphType: {
+            Class: Graph.Class<D, S, G>;
+        }): G {
+            return new GraphType.Class(this.#graph, this.data, this.scratchData);
+        }
+
+        /**
+         * Changes the functionality class of the current graph. Should only be used
+         * when it is known (but not statically provable) that the graph is compatible
+         * with the new class. If not, an error will be thrown.
+         *
+         * It is bad practice to try and catch the error thrown by this function. For
+         * such cases, combine {@link BaseGraph.Class.is} with {@link BaseGraph.Class.as},
+         * or use {@link BaseGraph.Class.switch} instead.
+         *
+         * @param GraphType The graph type to change the functionality class into.
+         * @param message The message to throw if the graph is not compatible with the type.
+         * @returns The graph, wrapped in the new functionality class.
+         * @throws LaraFlowError if the graph is not compatible with the type.
+         * This error should be seen as a logic error and not catched.
+         */
+        expect<
+            D2 extends BaseGraph.Data,
+            S2 extends BaseGraph.ScratchData,
+            G2 extends BaseGraph.Class<D2, S2>,
+            B2 extends Graph.Builder<D2, S2>,
+        >(GraphType: Graph<D2, S2, G2, B2>, message?: string): G2 {
+            if (!this.is(GraphType)) {
+                if (message === undefined) {
+                    message = "Graph type mismatch";
+                }
+                throw new LaraFlowError(message);
+            }
+
+            return this.as(GraphType);
+        }
+
+        /**
+         *  g.match(
+         *      [ TGraph, (g: TGraph.Class) => g.t() ],
+         *      [ BaseGraph, (g: BaseGraph.Class) => console.log("Default") ],
+         *  )
+         *
+         *  The implementation is not exactly correct. Will either be fixed or removed altogether
+         *  in the future. For most use cases, it should report error messages when needed.
+         *  See also {@link BaseGraph.Class.switch}.
+         *
+         *  @deprecated until stabilized.
+         *  @todo Decide whether to keep this or not.
+         */
+        match<T extends BaseGraph.Class[]>(
+            ...matches: [...{ [I in keyof T]: Graph.Match<T[I]> }]
+        ) {
+            const b = this as BaseGraph.Class;
+            for (const [type, callback] of matches) {
+                if (b.is(type)) {
+                    callback(b.as(type));
+                    return;
+                }
+            }
+        }
+
+        /**
+         * Checks if the type of the graph is compatible with several
+         * types, calling a callback for the first match. See
+         * {@link Graph.Case} for the syntax of each case.
+         *
+         * For a default case, match with {@link BaseGraph},
+         * which will always be compatible with any graph type.
+         *
+         * @param cases The cases to match against.
+         */
+        switch(...cases: ReturnType<typeof Graph.Case>[]) {
+            for (const { GraphType, callback } of cases) {
+                if (this.is(GraphType)) {
+                    callback(this.as(GraphType));
+                    return;
+                }
+            }
         }
 
         /**
@@ -164,146 +308,6 @@ namespace BaseGraph {
         }
 
         /**
-         * Initializes the graph with the information of a builder. This is effectively
-         * extends the type of the graph to include the data and scratch data of the builder.
-         *
-         * The same graph may simultaneously be of multiple types, as long as the data and
-         * scratch data are compatible with the types. The builder methods may overwrite
-         * data and scratch data fields with names that collide with its type's fields.
-         *
-         * @param builder The builder to use to initialize the graph.
-         * @returns The same graph, with the data and scratch data of the builder.
-         * The graph is downcasted to {@link BaseGraph.Class} because the builder may
-         * overwrite the data and scratch data fields, invalidating the current type.
-         */
-        init<D2 extends BaseGraph.Data, S2 extends BaseGraph.ScratchData>(
-            builder: Graph.Builder<D2, S2>,
-        ): BaseGraph.Class<D2, S2> {
-            const initedData = builder.buildData(this.data);
-            const initedScratchData = builder.buildScratchData(this.scratchData);
-            this.#graph.data(initedData);
-            this.#graph.scratch(Graph.scratchNamespace, initedScratchData);
-            // Appears as deprecated because it is for internal use only
-            return new BaseGraph.Class(this.#graph, initedData, initedScratchData);
-        }
-
-        /**
-         * Checks if this graph's data and scratch data are compatible
-         * with a specific type. This is effectively a type guard function.
-         *
-         * @param GraphType The graph type to check compatibility with. The relevant
-         * part of the graph type for this function is the {@link Graph.TypeGuard} object.
-         * @returns Whether the graph is compatible with the given type.
-         */
-        is<D2 extends Data, S2 extends ScratchData>(GraphType: {
-            TypeGuard: Graph.TypeGuard<D2, S2>;
-        }): this is BaseGraph.Class<D2, S2> {
-            const data = this.data;
-            const scratchData = this.scratchData;
-            const result =
-                GraphType.TypeGuard.isDataCompatible(data) &&
-                GraphType.TypeGuard.isScratchDataCompatible(scratchData);
-
-            // Have typescript statically check that the types are correct
-            // in the implementation of this function.
-            result && (data satisfies D2) && (scratchData satisfies S2);
-
-            return result;
-        }
-
-        /**
-         * Changes the functionality class of the current graph. This is only
-         * possible if the data and scratch data are compatible with the new class.
-         * To assert that, use {@link BaseGraph.Class.is}.
-         *
-         * @param GraphType The graph type to change the functionality class into.
-         * The relevant part of the graph type for this function is the {@link Graph.Class} class.
-         * @returns The same graph, wrapped in the new functionality class.
-         */
-        as<G extends BaseGraph.Class<D, S>>(GraphType: {
-            Class: Graph.Class<D, S, G>;
-        }): G {
-            return new GraphType.Class(this.#graph, this.data, this.scratchData);
-        }
-
-        /**
-         * Changes the functionality class of the current graph. Should only be used
-         * when it is known (but not statically provable) that the graph is compatible
-         * with the new class. If not, an error will be thrown.
-         *
-         * It is bad practice to try and catch the error thrown by this function. For
-         * such cases, combine {@link BaseGraph.Class.is} with {@link BaseGraph.Class.as},
-         * or use {@link BaseGraph.Class.match} instead.
-         *
-         * @param GraphType The graph type to change the functionality class into.
-         * @param message The message to throw if the graph is not compatible with the type.
-         * @returns The graph, wrapped in the new functionality class.
-         * @throws LaraFlowError if the graph is not compatible with the type.
-         * This error should be seen as a logic error and not catched.
-         */
-        expect<
-            D2 extends BaseGraph.Data,
-            S2 extends BaseGraph.ScratchData,
-            G2 extends BaseGraph.Class<D2, S2>,
-            B2 extends Graph.Builder<D2, S2>,
-        >(GraphType: Graph<D2, S2, G2, B2>, message?: string): G2 {
-            if (!this.is(GraphType)) {
-                if (message === undefined) {
-                    message = "Graph type mismatch";
-                }
-                throw new LaraFlowError(message);
-            }
-
-            return this.as(GraphType);
-        }
-
-        /**
-         *  g.match(
-         *      [ TGraph, (g: TGraph.Class) => g.t() ],
-         *      [ BaseGraph, (g: BaseGraph.Class) => console.log("Default") ],
-         *  )
-         *
-         *  The implementation is not exactly correct. Will either be fixed or removed altogether
-         *  in the future. For most use cases, it should report error messages when needed.
-         *  See also {@link BaseGraph.Class.switch}.
-         *
-         *  @deprecated until stabilized.
-         *  @todo Decide whether to keep this or not.
-         */
-        match<T extends BaseGraph.Class[]>(
-            ...matches: [...{ [I in keyof T]: Graph.Match<T[I]> }]
-        ) {
-            const b = this as BaseGraph.Class;
-            for (const [type, callback] of matches) {
-                if (b.is(type)) {
-                    callback(b.as(type));
-                    return;
-                }
-            }
-        }
-
-        /**
-         *  g.switch(
-         *      Graph.Case(TGraph, (g) => g.t()),
-         *      Graph.Case(BaseGraph, (g) => console.log("Default")),
-         *  )
-         *
-         *  Will either be fixed or removed altogether in the future. Depends on the decision
-         *  to keep {@link BaseGraph.Class.match}.
-         *
-         *  @deprecated until stabilized.
-         *  @todo Decide whether to keep this or not.
-         */
-        switch(...cases: ReturnType<typeof Graph.Case>[]) {
-            for (const c of cases) {
-                if (this.is(c.GraphType)) {
-                    c.callback(this.as(c.GraphType));
-                    return;
-                }
-            }
-        }
-
-        /**
          * Applies a {@link Graph.Transformation} to the graph. May be chained.
          *
          * @param transformation The transformation to apply.
@@ -386,7 +390,13 @@ namespace BaseGraph {
      * Scratch data contained in this graph type.
      */
     export interface ScratchData {
+        /**
+         * The {@link NodeIdGenerator} to be used when generating node identifiers.
+         */
         nodeIdGenerator: NodeIdGenerator | undefined;
+        /**
+         * The {@link EdgeIdGenerator} to be used when generating edge identifiers.
+         */
         edgeIdGenerator: EdgeIdGenerator | undefined;
     }
 }
