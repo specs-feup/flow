@@ -87,13 +87,15 @@ namespace BaseGraph {
          * Checks if this graph's data and scratch data are compatible
          * with a specific type. This is effectively a type guard function.
          *
-         * @param GraphType The graph type to check compatibility with. The relevant
-         * part of the graph type for this function is the {@link Graph.TypeGuard} object.
+         * @param GraphType The graph type to check compatibility with.
          * @returns Whether the graph is compatible with the given type.
          */
-        is<D2 extends Data, S2 extends ScratchData>(GraphType: {
-            TypeGuard: Graph.TypeGuard<D2, S2>;
-        }): this is BaseGraph.Class<D2, S2> {
+        is<
+            D2 extends BaseGraph.Data,
+            S2 extends BaseGraph.ScratchData,
+            G2 extends BaseGraph.Class<D2, S2>,
+            B2 extends Graph.Builder<D2, S2>,
+        >(GraphType: Graph<D2, S2, G2, B2>): this is BaseGraph.Class<D2, S2> {
             const data = this.data;
             const scratchData = this.scratchData;
             const result =
@@ -113,12 +115,11 @@ namespace BaseGraph {
          * To assert that, use {@link BaseGraph.Class.is}.
          *
          * @param GraphType The graph type to change the functionality class into.
-         * The relevant part of the graph type for this function is the {@link Graph.Class} class.
          * @returns The same graph, wrapped in the new functionality class.
          */
-        as<G extends BaseGraph.Class<D, S>>(GraphType: {
-            Class: Graph.Class<D, S, G>;
-        }): G {
+        as<G extends BaseGraph.Class<D, S>>(GraphType: { Class: Graph.Class<D, S, G> }): G {
+        // The correct signature does not work for some reason @todo fix
+        // as<G extends BaseGraph.Class<D, S>, B extends Graph.Builder<D, S>>(GraphType: Graph<D, S, G, B>): G {
             return new GraphType.Class(this.#graph, this.data, this.scratchData);
         }
 
@@ -151,31 +152,6 @@ namespace BaseGraph {
             }
 
             return this.as(GraphType);
-        }
-
-        /**
-         *  g.match(
-         *      [ TGraph, (g: TGraph.Class) => g.t() ],
-         *      [ BaseGraph, (g: BaseGraph.Class) => console.log("Default") ],
-         *  )
-         *
-         *  The implementation is not exactly correct. Will either be fixed or removed altogether
-         *  in the future. For most use cases, it should report error messages when needed.
-         *  See also {@link BaseGraph.Class.switch}.
-         *
-         *  @deprecated until stabilized.
-         *  @todo Decide whether to keep this or not.
-         */
-        match<T extends BaseGraph.Class[]>(
-            ...matches: [...{ [I in keyof T]: Graph.Match<T[I]> }]
-        ) {
-            const b = this as BaseGraph.Class;
-            for (const [type, callback] of matches) {
-                if (b.is(type)) {
-                    callback(b.as(type));
-                    return;
-                }
-            }
         }
 
         /**

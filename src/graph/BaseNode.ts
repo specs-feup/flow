@@ -105,13 +105,15 @@ namespace BaseNode {
          * Checks if this node's data and scratch data are compatible
          * with a specific type. This is effectively a type guard function.
          *
-         * @param NodeType The node type to check compatibility with. The relevant
-         * part of the node type for this function is the {@link Node.TypeGuard} object.
+         * @param NodeType The node type to check compatibility with.
          * @returns Whether the node is compatible with the given type.
          */
-        is<D2 extends Data, S2 extends ScratchData>(NodeType: {
-            TypeGuard: Node.TypeGuard<D2, S2>;
-        }): this is BaseNode.Class<D2, S2> {
+        is<
+            D2 extends BaseNode.Data,
+            S2 extends BaseNode.ScratchData,
+            N2 extends BaseNode.Class<D2, S2>,
+            B2 extends Node.Builder<D2, S2>,
+        >(NodeType: Node<D2, S2, N2, B2>): this is BaseNode.Class<D2, S2> {
             const data = this.data;
             const scratchData = this.scratchData;
             const result =
@@ -131,10 +133,11 @@ namespace BaseNode {
          * To assert that, use {@link BaseNode.Class.is}.
          *
          * @param NodeType The node type to change the functionality class into.
-         * The relevant part of the node type for this function is the {@link Node.Class} class.
          * @returns The same node, wrapped in the new functionality class.
          */
         as<N extends BaseNode.Class<D, S>>(NodeType: { Class: Node.Class<D, S, N> }): N {
+            // The correct signature does not work for some reason @todo fix
+        // as<N extends BaseNode.Class<D, S>, B extends Node.Builder<D, S>>(NodeType: Node<D, S, N, B>): N {
             return new NodeType.Class(
                 this.#graph,
                 this.#node,
@@ -142,7 +145,7 @@ namespace BaseNode {
                 this.scratchData,
             );
         }
-
+        
         /**
          * Changes the functionality class of the current node. Should only be used
          * when it is known (but not statically provable) that the node is compatible

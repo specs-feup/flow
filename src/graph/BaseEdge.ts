@@ -58,7 +58,7 @@ namespace BaseEdge {
         /**
          * Use the scratch data object for temporary or non-serializable data.
          * For JSON serializable data, use {@link BaseEdge.Class.data}.
-         * 
+         *
          * @returns the scratch data object associated with this edge.
          */
         get scratchData(): S {
@@ -137,13 +137,15 @@ namespace BaseEdge {
          * Checks if this edge's data and scratch data are compatible
          * with a specific type. This is effectively a type guard function.
          *
-         * @param EdgeType The edge type to check compatibility with. The relevant
-         * part of the edge type for this function is the {@link Edge.TypeGuard} object.
+         * @param EdgeType The edge type to check compatibility with.
          * @returns Whether the edge is compatible with the given type.
          */
-        is<D2 extends Data, S2 extends ScratchData>(EdgeType: {
-            TypeGuard: Edge.TypeGuard<D2, S2>;
-        }): this is BaseEdge.Class<D2, S2> {
+        is<
+            D2 extends BaseEdge.Data,
+            S2 extends BaseEdge.ScratchData,
+            E2 extends BaseEdge.Class<D2, S2>,
+            B2 extends Edge.Builder<D2, S2>,
+        >(EdgeType: Edge<D2, S2, E2, B2>): this is BaseEdge.Class<D2, S2> {
             const data = this.data;
             const scratchData = this.scratchData;
             const result =
@@ -163,10 +165,9 @@ namespace BaseEdge {
          * To assert that, use {@link BaseEdge.Class.is}.
          *
          * @param EdgeType The edge type to change the functionality class into.
-         * The relevant part of the edge type for this function is the {@link Edge.Class} class.
          * @returns The same edge, wrapped in the new functionality class.
          */
-        as<E extends BaseEdge.Class<D, S>>(EdgeType: { Class: Edge.Class<D, S, E> }): E {
+        as<E extends BaseEdge.Class<D, S>, B extends Edge.Builder<D, S>>(EdgeType: Edge<D, S, E, B>): E {
             return new EdgeType.Class(
                 this.#graph,
                 this.#edge,

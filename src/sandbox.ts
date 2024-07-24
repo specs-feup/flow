@@ -40,10 +40,12 @@ namespace TGraph {
 
 const graph = Graph.create();
 
-graph.match(
-    [TGraph, (g: TGraph.Class) => console.log("1a")],
-    [BaseGraph, (g: BaseGraph.Class) => console.log("1b")],
-);
+if (!graph.is(TGraph)) {
+    // throw new Error();
+}
+
+graph.as(BaseGraph);
+
 
 graph.switch(
     Graph.Case(TGraph, (g) => console.log("2a")),

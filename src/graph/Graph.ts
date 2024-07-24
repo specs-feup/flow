@@ -131,21 +131,6 @@ namespace Graph {
     }
 
     /**
-     *  Represents a tuple [Graph, Lambda] where the argument of the lambda depends on the type
-     *  of the graph.
-     *
-     *  The implementation is not exactly correct. Will either be fixed or removed altogether
-     *  in the future. For most use cases, it should report error messages when needed.
-     *
-     *  @deprecated until stabilized.
-     *  @todo Decide whether to keep this or not.
-     */
-    export type Match<T> = [
-        { Class: new (node: cytoscape.Core) => T; TypeGuard: Graph.TypeGuard<any, any> },
-        (_: T) => void,
-    ];
-
-    /**
      * Represents a case in a {@link BaseGraph.Class.switch}.
      *
      * @param GraphType The graph type to match.
