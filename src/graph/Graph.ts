@@ -4,31 +4,25 @@ import BaseGraph from "lara-flow/graph/BaseGraph";
 /**
  * Represents a graph type. All graph types must be subtypes of {@link BaseGraph}.
  * A graph type has 5 components:
- * - A class with functionality;
- * - A builder class;
- * - A type guard object;
- * - A data type;
- * - A scratch data type.
+ * - A class with functionality ({@link BaseGraph.Class});
+ * - A builder class (optional) ({@link Graph.Builder});
+ * - A type guard object ({@link Graph.TypeGuard});
+ * - A data type ({@link BaseGraph.Data});
+ * - A scratch data type ({@link BaseGraph.ScratchData}).
  *
  * @template D Type parameter for the data contained in the graph type.
  * @template S Type parameter for the scratch data contained in the graph type.
  * @template G Type parameter for the instance of the class with functionality for this graph type.
- * @template B Type parameter for the instance of the builder class for this graph type.
  */
 type Graph<
     D extends BaseGraph.Data,
     S extends BaseGraph.ScratchData,
     G extends BaseGraph.Class<D, S>,
-    B extends Graph.Builder<D, S>,
 > = {
     /**
      * The class with functionality for the graph type. See {@link Graph.Class}.
      */
     Class: Graph.Class<D, S, G>;
-    /**
-     * The builder class for the graph type. See {@link Graph.BuilderClass}.
-     */
-    Builder: Graph.BuilderClass<D, S, B>;
     /**
      * The type guard object for the graph type. See {@link Graph.TypeGuard}.
      */
@@ -78,7 +72,7 @@ namespace Graph {
         D extends BaseGraph.Data,
         S extends BaseGraph.ScratchData,
         B extends Graph.Builder<D, S>,
-    > = new (..._: any[]) => B;
+    > = abstract new (..._: any[]) => B;
 
     /**
      * Represents a builder class instance for a graph type.
@@ -141,16 +135,15 @@ namespace Graph {
         D extends BaseGraph.Data,
         S extends BaseGraph.ScratchData,
         G extends BaseGraph.Class<D, S>,
-        B extends Graph.Builder<D, S>,
-    >(GraphType: Graph<D, S, G, B>, callback: (g: G) => void) {
+    >(GraphType: Graph<D, S, G>, callback: (g: G) => void) {
         // By wrapping the class in a function, we can avoid the
         // use of the `new` keyword, making the switch slightly
         // less verbose.
         class _Case {
-            GraphType: Graph<any, any, any, any>;
+            GraphType: Graph<any, any, any>;
             callback: (g: any) => void;
             constructor(
-                GraphType: Graph<any, any, any, any>,
+                GraphType: Graph<any, any, any>,
                 callback: (g: any) => void,
             ) {
                 this.GraphType = GraphType;

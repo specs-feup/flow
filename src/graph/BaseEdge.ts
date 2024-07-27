@@ -144,8 +144,7 @@ namespace BaseEdge {
             D2 extends BaseEdge.Data,
             S2 extends BaseEdge.ScratchData,
             E2 extends BaseEdge.Class<D2, S2>,
-            B2 extends Edge.Builder<D2, S2>,
-        >(EdgeType: Edge<D2, S2, E2, B2>): this is BaseEdge.Class<D2, S2> {
+        >(EdgeType: Edge<D2, S2, E2>): this is BaseEdge.Class<D2, S2> {
             const data = this.data;
             const scratchData = this.scratchData;
             const result =
@@ -167,7 +166,7 @@ namespace BaseEdge {
          * @param EdgeType The edge type to change the functionality class into.
          * @returns The same edge, wrapped in the new functionality class.
          */
-        as<E extends BaseEdge.Class<D, S>, B extends Edge.Builder<D, S>>(EdgeType: Edge<D, S, E, B>): E {
+        as<E extends BaseEdge.Class<D, S>, B extends Edge.Builder<D, S>>(EdgeType: Edge<D, S, E>): E {
             return new EdgeType.Class(
                 this.#graph,
                 this.#edge,
@@ -195,8 +194,7 @@ namespace BaseEdge {
             D2 extends BaseEdge.Data,
             S2 extends BaseEdge.ScratchData,
             E2 extends BaseEdge.Class<D2, S2>,
-            B2 extends Edge.Builder<D2, S2>,
-        >(EdgeType: Edge<D2, S2, E2, B2>, message?: string): E2 {
+        >(EdgeType: Edge<D2, S2, E2>, message?: string): E2 {
             if (!this.is(EdgeType)) {
                 if (message === undefined) {
                     message = "Graph type mismatch";

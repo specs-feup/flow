@@ -1,56 +1,51 @@
 import BaseGraph from "lara-flow/graph/BaseGraph";
+import BaseNode from "lara-flow/graph/BaseNode";
 import Graph from "lara-flow/graph/Graph";
+import Node from "lara-flow/graph/Node";
 
 namespace TGraph {
     export class Class<
         D extends Data = Data,
         S extends ScratchData = ScratchData,
-    > extends BaseGraph.Class<D, S> {
+    > extends BaseNode.Class<D, S> {
         lolme() {
             console.log("lolme");
         }
     }
 
-    export class Builder implements Graph.Builder<Data, ScratchData> {
-        buildData(data: BaseGraph.Data): Data {
-            return data as any;
-        }
-
-        buildScratchData(scratchData: BaseGraph.ScratchData): ScratchData {
-            return scratchData;
-        }
-    }
-
-    export const TypeGuard: Graph.TypeGuard<Data, ScratchData> = {
-        isDataCompatible(data: BaseGraph.Data): data is Data {
+    export const TypeGuard: Node.TypeGuard<Data, ScratchData> = {
+        isDataCompatible(data: BaseNode.Data): data is Data {
             return true;
         },
 
-        isScratchDataCompatible(sData: BaseGraph.ScratchData): sData is ScratchData {
+        isScratchDataCompatible(sData: BaseNode.ScratchData): sData is ScratchData {
             return true;
         },
     };
 
-    export interface Data extends BaseGraph.Data {
+    export interface Data extends BaseNode.Data {
         kaka: string;
     }
 
-    export interface ScratchData extends BaseGraph.ScratchData {}
+    export interface ScratchData extends BaseNode.ScratchData {}
 }
 
 const graph = Graph.create();
 
-if (!graph.is(TGraph)) {
-    // throw new Error();
-}
+
+
 
 graph.as(BaseGraph);
 
 
-graph.switch(
-    Graph.Case(TGraph, (g) => console.log("2a")),
-    Graph.Case(BaseGraph, (g) => console.log("2b")),
+// graph.switch(
+//     Graph.Case(TGraph, (g) => console.log("2ac")),
+//     Graph.Case(BaseGraph, (g) => console.log("2baaa")),
+// )
+
+const node = graph.addNode();
+node.switch(
+    Node.Case(TGraph, (n) => console.log("2ac")),
+    Node.Case(BaseNode, (n) => console.log("2baaa")),
 )
-
-
 

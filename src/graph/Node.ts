@@ -5,31 +5,25 @@ import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
 /**
  * Represents a node type. All node types must be subtypes of {@link BaseNode}.
  * An node type has 5 components:
- * - A class with functionality;
- * - A builder class;
- * - A type guard object;
- * - A data type;
- * - A scratch data type.
+ * - A class with functionality ({@link BaseNode.Class});
+ * - A builder class (optional) ({@link Node.Builder});
+ * - A type guard object ({@link Node.TypeGuard});
+ * - A data type ({@link BaseNode.Data});
+ * - A scratch data type ({@link BaseNode.ScratchData}).
  *
  * @template D Type parameter for the data contained in the node type.
  * @template S Type parameter for the scratch data contained in the node type.
  * @template N Type parameter for the instance of the class with functionality for this node type.
- * @template B Type parameter for the instance of the builder class for this node type.
  */
 type Node<
     D extends BaseNode.Data,
     S extends BaseNode.ScratchData,
     N extends BaseNode.Class<D, S>,
-    B extends Node.Builder<D, S>,
 > = {
     /**
      * The class with functionality for the node type. See {@link Node.Class}.
      */
     Class: Node.Class<D, S, N>;
-    /**
-     * The builder class for the node type. See {@link Node.BuilderClass}.
-     */
-    Builder: Node.BuilderClass<D, S, B>;
     /**
      * The type guard object for the node type. See {@link Node.TypeGuard}.
      */
@@ -55,7 +49,7 @@ namespace Node {
         D extends BaseNode.Data,
         S extends BaseNode.ScratchData,
         B extends Node.Builder<D, S>,
-    > = new (..._: any[]) => B;
+    > = abstract new (..._: any[]) => B;
 
     /**
      * Represents a builder class instance for a node type.
@@ -115,16 +109,15 @@ namespace Node {
         D extends BaseNode.Data,
         S extends BaseNode.ScratchData,
         N extends BaseNode.Class<D, S>,
-        B extends Node.Builder<D, S>,
-    >(NodeType: Node<D, S, N, B>, callback: (g: N) => void) {
+    >(NodeType: Node<D, S, N>, callback: (g: N) => void) {
         // By wrapping the class in a function, we can avoid the
         // use of the `new` keyword, making the switch slightly
         // less verbose.
         class _Case {
-            NodeType: Node<any, any, any, any>;
+            NodeType: Node<any, any, any>;
             callback: (g: any) => void;
             constructor(
-                NodeType: Node<any, any, any, any>,
+                NodeType: Node<any, any, any>,
                 callback: (g: any) => void,
             ) {
                 this.NodeType = NodeType;

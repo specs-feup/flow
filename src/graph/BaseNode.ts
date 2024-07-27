@@ -112,8 +112,7 @@ namespace BaseNode {
             D2 extends BaseNode.Data,
             S2 extends BaseNode.ScratchData,
             N2 extends BaseNode.Class<D2, S2>,
-            B2 extends Node.Builder<D2, S2>,
-        >(NodeType: Node<D2, S2, N2, B2>): this is BaseNode.Class<D2, S2> {
+        >(NodeType: Node<D2, S2, N2>): this is BaseNode.Class<D2, S2> {
             const data = this.data;
             const scratchData = this.scratchData;
             const result =
@@ -165,8 +164,7 @@ namespace BaseNode {
             D2 extends BaseNode.Data,
             S2 extends BaseNode.ScratchData,
             N2 extends BaseNode.Class<D2, S2>,
-            B2 extends Node.Builder<D2, S2>,
-        >(NodeType: Node<D2, S2, N2, B2>, message?: string): N2 {
+        >(NodeType: Node<D2, S2, N2>, message?: string): N2 {
             if (!this.is(NodeType)) {
                 if (message === undefined) {
                     message = "Graph type mismatch";

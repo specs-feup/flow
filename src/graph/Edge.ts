@@ -5,31 +5,25 @@ import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
 /**
  * Represents an edge type. All edge types must be subtypes of {@link BaseEdge}.
  * An edge type has 5 components:
- * - A class with functionality;
- * - A builder class;
- * - A type guard object;
- * - A data type;
- * - A scratch data type.
+ * - A class with functionality ({@link Edge.Class});
+ * - A builder class (optional) ({@link Edge.Builder});
+ * - A type guard object ({@link Edge.TypeGuard});
+ * - A data type ({@link BaseEdge.Data});
+ * - A scratch data type ({@link BaseEdge.ScratchData}).
  *
  * @template D Type parameter for the data contained in the edge type.
  * @template S Type parameter for the scratch data contained in the edge type.
  * @template E Type parameter for the instance of the class with functionality for this edge type.
- * @template B Type parameter for the instance of the builder class for this edge type.
  */
 type Edge<
     D extends BaseEdge.Data,
     S extends BaseEdge.ScratchData,
     E extends BaseEdge.Class<D, S>,
-    B extends Edge.Builder<D, S>,
 > = {
     /**
      * The class with functionality for the edge type. See {@link Edge.Class}.
      */
     Class: Edge.Class<D, S, E>;
-    /**
-     * The builder class for the edge type. See {@link Edge.BuilderClass}.
-     */
-    Builder: Edge.BuilderClass<D, S, B>;
     /**
      * The type guard object for the edge type. See {@link Edge.TypeGuard}.
      */
@@ -46,16 +40,6 @@ namespace Edge {
         S extends BaseEdge.ScratchData,
         E extends BaseEdge.Class<D, S>,
     > = new (graph: BaseGraph.Class, node: cytoscape.EdgeSingular, _d: D, _sd: S) => E;
-
-    /**
-     * Represents a builder class for an edge type.
-     * For example, {@link BaseEdge.Builder} is a {@link Edge.BuilderClass}.
-     */
-    export type BuilderClass<
-        D extends BaseEdge.Data,
-        S extends BaseEdge.ScratchData,
-        B extends Edge.Builder<D, S>,
-    > = new (..._: any[]) => B;
 
     /**
      * Represents a builder class instance for an edge type.
@@ -115,15 +99,14 @@ namespace Edge {
         D extends BaseEdge.Data,
         S extends BaseEdge.ScratchData,
         E extends BaseEdge.Class<D, S>,
-        B extends Edge.Builder<D, S>,
-    >(EdgeType: Edge<D, S, E, B>, callback: (g: E) => void) {
+    >(EdgeType: Edge<D, S, E>, callback: (g: E) => void) {
         // By wrapping the class in a function, we can avoid the
         // use of the `new` keyword, making the switch slightly
         // less verbose.
         class _Case {
-            EdgeType: Edge<any, any, any, any>;
+            EdgeType: Edge<any, any, any>;
             callback: (g: any) => void;
-            constructor(EdgeType: Edge<any, any, any, any>, callback: (g: any) => void) {
+            constructor(EdgeType: Edge<any, any, any>, callback: (g: any) => void) {
                 this.EdgeType = EdgeType;
                 this.callback = callback;
             }

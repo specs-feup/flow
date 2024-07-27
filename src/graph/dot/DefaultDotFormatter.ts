@@ -1,4 +1,4 @@
-import DotFormatter from "lara-flow/dot/DotFormatter";
+import DotFormatter from "lara-flow/graph/dot/DotFormatter";
 import BaseEdge from "lara-flow/graph/BaseEdge";
 import BaseNode from "lara-flow/graph/BaseNode";
 

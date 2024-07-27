@@ -94,8 +94,7 @@ namespace BaseGraph {
             D2 extends BaseGraph.Data,
             S2 extends BaseGraph.ScratchData,
             G2 extends BaseGraph.Class<D2, S2>,
-            B2 extends Graph.Builder<D2, S2>,
-        >(GraphType: Graph<D2, S2, G2, B2>): this is BaseGraph.Class<D2, S2> {
+        >(GraphType: Graph<D2, S2, G2>): this is BaseGraph.Class<D2, S2> {
             const data = this.data;
             const scratchData = this.scratchData;
             const result =
@@ -142,8 +141,7 @@ namespace BaseGraph {
             D2 extends BaseGraph.Data,
             S2 extends BaseGraph.ScratchData,
             G2 extends BaseGraph.Class<D2, S2>,
-            B2 extends Graph.Builder<D2, S2>,
-        >(GraphType: Graph<D2, S2, G2, B2>, message?: string): G2 {
+        >(GraphType: Graph<D2, S2, G2>, message?: string): G2 {
             if (!this.is(GraphType)) {
                 if (message === undefined) {
                     message = "Graph type mismatch";
