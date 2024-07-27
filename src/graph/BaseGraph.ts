@@ -73,7 +73,7 @@ namespace BaseGraph {
          * overwrite the data and scratch data fields, invalidating the current type.
          */
         init<D2 extends BaseGraph.Data, S2 extends BaseGraph.ScratchData>(
-            builder: Graph.Builder<D2, S2>,
+            builder: Graph.Builder<D2, S2, D, S>,
         ): BaseGraph.Class<D2, S2> {
             const initedData = builder.buildData(this.data);
             const initedScratchData = builder.buildScratchData(this.scratchData);

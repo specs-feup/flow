@@ -86,7 +86,7 @@ namespace BaseNode {
          * overwrite the data and scratch data fields, invalidating the current type.
          */
         init<D2 extends BaseNode.Data, S2 extends BaseNode.ScratchData>(
-            builder: Node.Builder<D2, S2>,
+            builder: Node.Builder<D2, S2, D, S>,
         ): BaseNode.Class<D2, S2> {
             const initedData = builder.buildData(this.data);
             const initedScratchData = builder.buildScratchData(this.scratchData);

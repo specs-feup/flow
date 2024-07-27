@@ -118,7 +118,7 @@ namespace BaseEdge {
          * overwrite the data and scratch data fields, invalidating the current type.
          */
         init<D2 extends BaseEdge.Data, S2 extends BaseEdge.ScratchData>(
-            builder: Edge.Builder<D2, S2>,
+            builder: Edge.Builder<D2, S2, D, S>,
         ): BaseEdge.Class<D2, S2> {
             const initedData = builder.buildData(this.data);
             const initedScratchData = builder.buildScratchData(this.scratchData);

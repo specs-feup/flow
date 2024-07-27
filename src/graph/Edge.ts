@@ -48,14 +48,19 @@ namespace Edge {
      * The builder class may have a constructor and methods to customize the information
      * that is stored in the edge.
      */
-    export interface Builder<D extends BaseEdge.Data, S extends BaseEdge.ScratchData> {
+    export interface Builder<
+        D2 extends BaseEdge.Data,
+        S2 extends BaseEdge.ScratchData,
+        D1 extends BaseEdge.Data = BaseEdge.Data,
+        S1 extends BaseEdge.ScratchData = BaseEdge.ScratchData,
+    > {
         /**
          * Adds data to the data object of the edge.
          *
          * @param data The current data object of the edge.
          * @returns The data object to be stored in the edge.
          */
-        buildData(data: BaseEdge.Data): D;
+        buildData: (data: D1) => D2;
 
         /**
          * Adds data to the scratch data object of the edge.
@@ -63,7 +68,7 @@ namespace Edge {
          * @param scratchData The current scratch data object of the edge.
          * @returns The scratch data object to be stored in the edge.
          */
-        buildScratchData(scratchData: BaseEdge.ScratchData): S;
+        buildScratchData: (scratchData: S1) => S2;
     }
 
     /**

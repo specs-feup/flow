@@ -42,30 +42,25 @@ namespace Node {
     > = new (graph: BaseGraph.Class, node: cytoscape.NodeSingular, _d: D, _sd: S) => N;
 
     /**
-     * Represents a builder class for a node type.
-     * For example, {@link BaseNode.Builder} is a {@link Node.BuilderClass}.
-     */
-    export type BuilderClass<
-        D extends BaseNode.Data,
-        S extends BaseNode.ScratchData,
-        B extends Node.Builder<D, S>,
-    > = abstract new (..._: any[]) => B;
-
-    /**
      * Represents a builder class instance for a node type.
      * For example, an instance of {@link BaseNode.Builder} is a {@link Node.Builder}.
      *
      * The builder class may have a constructor and methods to customize the information
      * that is stored in the node.
      */
-    export interface Builder<D extends BaseNode.Data, S extends BaseNode.ScratchData> {
+    export interface Builder<
+        D2 extends BaseNode.Data,
+        S2 extends BaseNode.ScratchData,
+        D1 extends BaseNode.Data = BaseNode.Data,
+        S1 extends BaseNode.ScratchData = BaseNode.ScratchData,
+    > {
         /**
          * Adds data to the data object of the node.
          *
          * @param data The current data object of the node.
          * @returns The data object to be stored in the node.
          */
-        buildData(data: BaseNode.Data): D;
+        buildData: (data: D1) => D2;
 
         /**
          * Adds data to the scratch data object of the node.
@@ -73,7 +68,7 @@ namespace Node {
          * @param scratchData The current scratch data object of the node.
          * @returns The scratch data object to be stored in the node.
          */
-        buildScratchData(scratchData: BaseNode.ScratchData): S;
+        buildScratchData: (scratchData: S1) => S2;
     }
 
     /**
