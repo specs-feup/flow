@@ -1,7 +1,45 @@
 import BaseGraph from "lara-flow/graph/BaseGraph";
 import BaseNode from "lara-flow/graph/BaseNode";
 import Graph from "lara-flow/graph/Graph";
+import IncrementingIdGenerator from "lara-flow/graph/id/IncrementingIdGenerator";
 import Node from "lara-flow/graph/Node";
+
+namespace TGraph {
+    export class Class<
+        D extends Data = Data,
+        S extends ScratchData = ScratchData,
+    > extends BaseGraph.Class<D, S> {
+        lolme() {
+            console.log("lolme");
+        }
+    }
+
+    export class Builder extends BaseGraph.Builder implements Graph.Builder<Data, ScratchData> {
+        buildData(data: BaseGraph.Data): Data {
+            return { ...data, kaka: "kaka" };
+        }
+
+        buildScratchData(scratchData: BaseGraph.ScratchData): ScratchData {
+            return scratchData;
+        }
+    }
+
+    export const TypeGuard: Graph.TypeGuard<Data, ScratchData> = {
+        isDataCompatible(data: BaseGraph.Data): data is Data {
+            return true;
+        },
+
+        isScratchDataCompatible(sData: BaseGraph.ScratchData): sData is ScratchData {
+            return true;
+        },
+    };
+
+    export interface Data extends BaseGraph.Data {
+        kaka: string;
+    }
+
+    export interface ScratchData extends BaseGraph.ScratchData {}
+}
 
 namespace TNode {
     export class Class<
@@ -82,9 +120,3 @@ namespace T2Node {
     }
 }
 
-const graph = Graph.create();
-const node = graph.addNode();
-// node.init(new TNode.Builder());
-node
-    .init(new TNode.Builder())
-    .init(new T2Node.Builder());

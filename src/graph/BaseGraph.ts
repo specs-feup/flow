@@ -3,11 +3,10 @@ import { JavaClasses } from "lara-js/api/lara/util/JavaTypes.js";
 import Graph from "lara-flow/graph/Graph";
 import BaseNode from "lara-flow/graph/BaseNode";
 import BaseEdge from "lara-flow/graph/BaseEdge";
-import DotFormatter from "lara-flow/graph/dot/DotFormatter";
 import Io from "lara-js/api/lara/Io.js";
-import EdgeIdGenerator from "lara-flow/graph/id/EdgeIdGenerator";
-import NodeIdGenerator from "lara-flow/graph/id/NodeIdGenerator";
 import LaraFlowError from "lara-flow/error/LaraFlowError";
+import Edge from "lara-flow/graph/Edge";
+import Node from "lara-flow/graph/Node";
 
 /**
  * The base [graph type]{@link Graph}. All graph types must be subtypes of this type.
@@ -42,7 +41,7 @@ namespace BaseGraph {
         /**
          * Use the data object for JSON serializable data.
          * For temporary or non-serializable data, use {@link BaseGraph.Class.scratchData}.
-         * 
+         *
          * @returns the data object associated with this graph.
          */
         get data(): D {
@@ -52,7 +51,7 @@ namespace BaseGraph {
         /**
          * Use the scratch data object for temporary or non-serializable data.
          * For JSON serializable data, use {@link BaseGraph.Class.data}.
-         * 
+         *
          * @returns the scratch data object associated with this graph.
          */
         get scratchData(): S {
@@ -116,9 +115,11 @@ namespace BaseGraph {
          * @param GraphType The graph type to change the functionality class into.
          * @returns The same graph, wrapped in the new functionality class.
          */
-        as<G extends BaseGraph.Class<D, S>>(GraphType: { Class: Graph.Class<D, S, G> }): G {
-        // The correct signature does not work for some reason @todo fix
-        // as<G extends BaseGraph.Class<D, S>, B extends Graph.Builder<D, S>>(GraphType: Graph<D, S, G, B>): G {
+        as<G extends BaseGraph.Class<D, S>>(GraphType: {
+            Class: Graph.Class<D, S, G>;
+        }): G {
+            // The following signature does not work
+            // as<G extends BaseGraph.Class<D, S>>(GraphType: Graph<D, S, G>): G {
             return new GraphType.Class(this.#graph, this.data, this.scratchData);
         }
 
@@ -172,26 +173,38 @@ namespace BaseGraph {
         }
 
         /**
-         * @todo
-         * @deprecated
+         * Sets the id generator to be used when generating node identifiers.
+         * This id generator is only used when creating a node without specifying an id.
+         * In other words, if an id is explicitly provided when creating a node, it will
+         * have precedence over calling the id generator.
+         *
+         * When no id generator is set and no id is provided when creating a node, the
+         * id generation will be delegated to cytoscape.
+         *
+         * @param generator The id generator to use, or undefined to delegate to
+         * cytoscape's default id generation.
+         * @returns itself for chaining.
          */
-        setNodeIdGenerator(generator: NodeIdGenerator | undefined): this {
-            this.#graph.scratch(Graph.scratchNamespace, {
-                ...this.scratchData,
-                nodeIdGenerator: generator,
-            });
+        setNodeIdGenerator(generator: Node.IdGenerator | undefined): this {
+            this.scratchData.nodeIdGenerator = generator;
             return this;
         }
 
         /**
-         * @todo
-         * @deprecated
+         * Sets the id generator to be used when generating edge identifiers.
+         * This id generator is only used when creating an edge without specifying an id.
+         * In other words, if an id is explicitly provided when creating an edge, it will
+         * have precedence over calling the id generator.
+         *
+         * When no id generator is set and no id is provided when creating an edge, the
+         * id generation will be delegated to cytoscape.
+         *
+         * @param generator The id generator to use, or undefined to delegate to
+         * cytoscape's default id generation.
+         * @returns itself for chaining.
          */
-        setEdgeIdGenerator(generator: EdgeIdGenerator | undefined): this {
-            this.#graph.scratch(Graph.scratchNamespace, {
-                ...this.scratchData,
-                edgeIdGenerator: generator,
-            });
+        setEdgeIdGenerator(generator: Edge.IdGenerator | undefined): this {
+            this.scratchData.edgeIdGenerator = generator;
             return this;
         }
 
@@ -294,23 +307,25 @@ namespace BaseGraph {
         }
 
         /**
-         * @todo
-         * @deprecated
+         * Converts the graph to a string using a {@link Graph.Formatter}.
+         *
+         * @param formatter The formatter to use.
+         * @returns The string representation of the graph.
          */
-        toDot(dotFormatter: DotFormatter, label?: string): string {
-            return dotFormatter.format(this, label);
+        toString(formatter: Graph.Formatter<this>): string {
+            return formatter.format(this);
         }
 
         /**
-         * @todo
-         * @deprecated
+         * Converts the graph to a string using a {@link Graph.DotFormatter} and writes
+         * it to a file.
+         *
+         * @param formatter The formatter to use.
+         * @param filename The name of the file to write to.
+         * @returns The file to where the contents where written.
          */
-        toDotFile(
-            dotFormatter: DotFormatter,
-            filename: string,
-            label?: string,
-        ): JavaClasses.File {
-            return Io.writeFile(filename, this.toDot(dotFormatter, label));
+        toFile(formatter: Graph.Formatter<this>, filename: string): JavaClasses.File {
+            return Io.writeFile(filename, this.toString(formatter));
         }
 
         /**
@@ -365,13 +380,13 @@ namespace BaseGraph {
      */
     export interface ScratchData {
         /**
-         * The {@link NodeIdGenerator} to be used when generating node identifiers.
+         * The {@link Node.IdGenerator} to be used when generating node identifiers.
          */
-        nodeIdGenerator: NodeIdGenerator | undefined;
+        nodeIdGenerator: Node.IdGenerator | undefined;
         /**
-         * The {@link EdgeIdGenerator} to be used when generating edge identifiers.
+         * The {@link Edge.IdGenerator} to be used when generating edge identifiers.
          */
-        edgeIdGenerator: EdgeIdGenerator | undefined;
+        edgeIdGenerator: Edge.IdGenerator | undefined;
     }
 }
 

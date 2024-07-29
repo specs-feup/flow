@@ -111,16 +111,27 @@ namespace Node {
         class _Case {
             NodeType: Node<any, any, any>;
             callback: (g: any) => void;
-            constructor(
-                NodeType: Node<any, any, any>,
-                callback: (g: any) => void,
-            ) {
+            constructor(NodeType: Node<any, any, any>, callback: (g: any) => void) {
                 this.NodeType = NodeType;
                 this.callback = callback;
             }
         }
 
         return new _Case(NodeType, callback);
+    }
+
+    /**
+     * An object that can generate unique identifiers for nodes.
+     * See {@link BaseGraph.Class.setNodeIdGenerator}.
+     */
+    export interface IdGenerator {
+        /**
+         * Generates a unique identifier for a new node.
+         * 
+         * @param graph The graph that the node belongs to.
+         * @returns A unique identifier for the new node.
+         */
+        newId(graph: BaseGraph.Class): string;
     }
 }
 

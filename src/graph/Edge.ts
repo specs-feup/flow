@@ -1,5 +1,6 @@
 import BaseEdge from "lara-flow/graph/BaseEdge";
 import BaseGraph from "lara-flow/graph/BaseGraph";
+import BaseNode from "lara-flow/graph/BaseNode";
 import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
 
 /**
@@ -118,6 +119,26 @@ namespace Edge {
         }
 
         return new _Case(EdgeType, callback);
+    }
+
+    /**
+     * An object that can generate unique identifiers for edges.
+     * See {@link BaseGraph.Class.setEdgeIdGenerator}.
+     */
+    export interface IdGenerator {
+        /**
+         * Generates a unique identifier for a new edge.
+         *
+         * @param graph The graph that the edge belongs to.
+         * @param source The source node of the edge.
+         * @param target The target node of the edge.
+         * @returns A unique identifier for the new edge.
+         */
+        newId(
+            graph: BaseGraph.Class,
+            source: BaseNode.Class,
+            target: BaseNode.Class,
+        ): string;
     }
 }
 

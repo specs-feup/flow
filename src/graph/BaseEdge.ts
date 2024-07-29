@@ -166,7 +166,9 @@ namespace BaseEdge {
          * @param EdgeType The edge type to change the functionality class into.
          * @returns The same edge, wrapped in the new functionality class.
          */
-        as<E extends BaseEdge.Class<D, S>, B extends Edge.Builder<D, S>>(EdgeType: Edge<D, S, E>): E {
+        as<E extends BaseEdge.Class<D, S>>(EdgeType: { Class: Edge.Class<D, S, E> }): E {
+        // The following signature does not work
+        // as<E extends BaseEdge.Class<D, S>>(EdgeType: Edge<D, S, E>): E {
             return new EdgeType.Class(
                 this.#graph,
                 this.#edge,

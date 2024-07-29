@@ -137,16 +137,26 @@ namespace Graph {
         class _Case {
             GraphType: Graph<any, any, any>;
             callback: (g: any) => void;
-            constructor(
-                GraphType: Graph<any, any, any>,
-                callback: (g: any) => void,
-            ) {
+            constructor(GraphType: Graph<any, any, any>, callback: (g: any) => void) {
                 this.GraphType = GraphType;
                 this.callback = callback;
             }
         }
 
         return new _Case(GraphType, callback);
+    }
+
+    /**
+     * Represents a formatter that can be used to convert a graph to a string.
+     * See {@link BaseGraph.Class.toString}.
+     *
+     * @template G The graph type.
+     *
+     * @param graph The graph to be formatted.
+     * @returns The string representation of the graph.
+     */
+    export interface Formatter<G extends BaseGraph.Class> {
+        format: (graph: G) => string;
     }
 
     /**

@@ -135,8 +135,8 @@ namespace BaseNode {
          * @returns The same node, wrapped in the new functionality class.
          */
         as<N extends BaseNode.Class<D, S>>(NodeType: { Class: Node.Class<D, S, N> }): N {
-            // The correct signature does not work for some reason @todo fix
-        // as<N extends BaseNode.Class<D, S>, B extends Node.Builder<D, S>>(NodeType: Node<D, S, N, B>): N {
+        // The following signature does not work
+        // as<N extends BaseNode.Class<D, S>>(NodeType: Node<D, S, N>): N {
             return new NodeType.Class(
                 this.#graph,
                 this.#node,
