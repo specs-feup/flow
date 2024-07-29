@@ -1,24 +1,11 @@
-import BaseEdge from "lara-flow/graph/BaseEdge";
 import BaseGraph from "lara-flow/graph/BaseGraph";
-import BaseNode from "lara-flow/graph/BaseNode";
+import { DotGraph } from "lara-flow/graph/dot/dot";
+import Graph from "lara-flow/graph/Graph";
 
-abstract class DotFormatter {
-    abstract formatNode(node: BaseNode.Class): DotFormatter.Node;
+export default abstract class DotFormatter<G extends BaseGraph.Class> implements Graph.Formatter<G> {
+    abstract toDot(graph: G): DotGraph;
 
-    abstract formatEdge(edge: BaseEdge.Class): DotFormatter.Edge;
-
-    format(graph: BaseGraph.Class): string {
-        const nodes = graph.nodes
-            .map((node) => this.formatNode(node))
-            .join("");
-
-        const edges = graph.edges
-            .map((edge) => {
-                const { source, target, attrs } = this.formatEdge(edge);
-                
-            })
-            .join("");
-
-        
+    format(graph: G): string {
+        return this.toDot(graph).toDotString();
     }
 }

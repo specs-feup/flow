@@ -1,5 +1,7 @@
+import BaseEdge from "lara-flow/graph/BaseEdge";
 import BaseGraph from "lara-flow/graph/BaseGraph";
 import BaseNode from "lara-flow/graph/BaseNode";
+import DotFormatter from "lara-flow/graph/dot/DotFormatter";
 import Graph from "lara-flow/graph/Graph";
 import IncrementingIdGenerator from "lara-flow/graph/id/IncrementingIdGenerator";
 import Node from "lara-flow/graph/Node";
@@ -120,3 +122,6 @@ namespace T2Node {
     }
 }
 
+const graph = Graph.create();
+const n1 = graph.addNode();
+const e1 = graph.addEdge(n1, n1);

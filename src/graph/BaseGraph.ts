@@ -36,6 +36,9 @@ namespace BaseGraph {
          */
         constructor(graph: cytoscape.Core, _d: D = {} as any, _sd: S = {} as any) {
             this.#graph = graph;
+            if (this.#graph.scratch(Graph.scratchNamespace) === undefined) {
+                this.#graph.scratch(Graph.scratchNamespace, {});
+            }
         }
 
         /**
@@ -51,6 +54,8 @@ namespace BaseGraph {
         /**
          * Use the scratch data object for temporary or non-serializable data.
          * For JSON serializable data, use {@link BaseGraph.Class.data}.
+         * 
+         * The scratch data is stored under the [lara-flow namespace]{@link Graph.scratchNamespace}.
          *
          * @returns the scratch data object associated with this graph.
          */
@@ -212,15 +217,17 @@ namespace BaseGraph {
          * Adds a new empty node to the graph.
          *
          * @param id The id of the node to add. If not provided, a new id will be generated.
+         * @param parent The parent node of the node to add. If not provided, the node will
+         * be orphan.
          * @returns the newly created node.
          */
-        addNode(id?: string): BaseNode.Class {
+        addNode(id?: string, parent?: BaseNode.Class): BaseNode.Class {
             if (id === undefined && this.scratchData.nodeIdGenerator !== undefined) {
                 id = this.scratchData.nodeIdGenerator.newId(this);
             }
             const newNode = this.#graph.add({
                 group: "nodes",
-                data: { id },
+                data: { id, parent: parent?.id },
             });
             return new BaseNode.Class(this, newNode);
         }

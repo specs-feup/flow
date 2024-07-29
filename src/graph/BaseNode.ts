@@ -43,6 +43,9 @@ namespace BaseNode {
         ) {
             this.#graph = graph;
             this.#node = node;
+            if (this.#node.scratch(Graph.scratchNamespace) === undefined) {
+                this.#node.scratch(Graph.scratchNamespace, {});
+            }
         }
 
         /**
@@ -59,6 +62,8 @@ namespace BaseNode {
          * Use the scratch data object for temporary or non-serializable data.
          * For JSON serializable data, use {@link BaseEdge.Class.data}.
          *
+         * The scratch data is stored under the [lara-flow namespace]{@link Graph.scratchNamespace}.
+         *
          * @returns the scratch data object associated with this node.
          */
         get scratchData(): S {
@@ -70,6 +75,40 @@ namespace BaseNode {
          */
         get id(): string {
             return this.#node.id();
+        }
+
+        /**
+         * @returns the parent node of this node.
+         */
+        get parent(): BaseNode.Class | undefined {
+            const p = this.#node.parent();
+            if (p.empty()) {
+                return undefined;
+            }
+            return new BaseNode.Class(this.#graph, p.first());
+        }
+
+        /**
+         * Changes the parent node of this node.
+         *
+         * @param node The new parent node. If undefined, the node becomes orphan.
+         */
+        set parent(node: BaseNode.Class | undefined) {
+            this.#node.move({ parent: node === undefined ? null : node.id });
+        }
+
+        /**
+         * @returns whether this node is a parent node.
+         */
+        get isParent(): boolean {
+            return this.#node.isParent();
+        }
+
+        /**
+         * @returns whether this node is a child node.
+         */
+        get isChild(): boolean {
+            return this.#node.isChild();
         }
 
         /**
@@ -135,8 +174,8 @@ namespace BaseNode {
          * @returns The same node, wrapped in the new functionality class.
          */
         as<N extends BaseNode.Class<D, S>>(NodeType: { Class: Node.Class<D, S, N> }): N {
-        // The following signature does not work
-        // as<N extends BaseNode.Class<D, S>>(NodeType: Node<D, S, N>): N {
+            // The following signature does not work
+            // as<N extends BaseNode.Class<D, S>>(NodeType: Node<D, S, N>): N {
             return new NodeType.Class(
                 this.#graph,
                 this.#node,
@@ -144,7 +183,7 @@ namespace BaseNode {
                 this.scratchData,
             );
         }
-        
+
         /**
          * Changes the functionality class of the current node. Should only be used
          * when it is known (but not statically provable) that the node is compatible
@@ -195,10 +234,61 @@ namespace BaseNode {
         }
 
         /**
-         * Removes this node from the graph.
+         * Returns the number of edges connected to this node.
+         * Loop edges are counted twice.
+         *
+         * @returns the degree of this node.
          */
-        remove() {
-            this.#node.remove();
+        get degree(): number {
+            return this.#node.degree(true);
+        }
+
+        /**
+         * Returns the number of edges connected to this node.
+         * Loop edges are not counted.
+         *
+         * @returns the degree of this node, excluding loop edges.
+         */
+        get degreeWithoutLoops(): number {
+            return this.#node.degree(false);
+        }
+
+        /**
+         * Returns the number of edges that are directed towards this node.
+         *
+         * @returns the indegree of this node.
+         */
+        get indegree(): number {
+            return this.#node.indegree(true);
+        }
+
+        /**
+         * Returns the number of edges that are directed towards this node.
+         * Loop edges are not counted.
+         *
+         * @returns the indegree of this node, excluding loop edges.
+         */
+        get indegreeWithoutLoops(): number {
+            return this.#node.indegree(false);
+        }
+
+        /**
+         * Returns the number of edges that are directed away from this node.
+         *
+         * @returns the outdegree of this node.
+         */
+        get outdegree(): number {
+            return this.#node.outdegree(true);
+        }
+
+        /**
+         * Returns the number of edges that are directed away from this node.
+         * Loop edges are not counted.
+         *
+         * @returns the outdegree of this node, excluding loop edges.
+         */
+        get outdegreeWithoutLoops(): number {
+            return this.#node.outdegree(false);
         }
 
         /**
@@ -263,6 +353,27 @@ namespace BaseNode {
         }
 
         /**
+         * Removes this node from the graph.
+         */
+        remove() {
+            this.#node.remove();
+        }
+
+        /**
+         * @returns whether this node has been removed from the graph.
+         */
+        get isRemoved(): boolean {
+            return this.#node.removed();
+        }
+
+        /**
+         * Restores this node if it has been removed. See {@link BaseNode.Class.remove}.
+         */
+        restore() {
+            this.#node.restore();
+        }
+
+        /**
          * @returns the graph that this node is a part of.
          */
         get graph(): BaseGraph.Class {
@@ -313,6 +424,10 @@ namespace BaseNode {
          * The unique identifier of this node.
          */
         id: string;
+        /**
+         * The parent node of this node, if any.
+         */
+        parent?: string;
     }
 
     /**

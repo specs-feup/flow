@@ -43,6 +43,9 @@ namespace BaseEdge {
         ) {
             this.#graph = graph;
             this.#edge = edge;
+            if (this.#edge.scratch(Graph.scratchNamespace) === undefined) {
+                this.#edge.scratch(Graph.scratchNamespace, {});
+            }
         }
 
         /**
@@ -58,6 +61,8 @@ namespace BaseEdge {
         /**
          * Use the scratch data object for temporary or non-serializable data.
          * For JSON serializable data, use {@link BaseEdge.Class.data}.
+         *
+         * The scratch data is stored under the [lara-flow namespace]{@link Graph.scratchNamespace}.
          *
          * @returns the scratch data object associated with this edge.
          */
@@ -167,8 +172,8 @@ namespace BaseEdge {
          * @returns The same edge, wrapped in the new functionality class.
          */
         as<E extends BaseEdge.Class<D, S>>(EdgeType: { Class: Edge.Class<D, S, E> }): E {
-        // The following signature does not work
-        // as<E extends BaseEdge.Class<D, S>>(EdgeType: Edge<D, S, E>): E {
+            // The following signature does not work
+            // as<E extends BaseEdge.Class<D, S>>(EdgeType: Edge<D, S, E>): E {
             return new EdgeType.Class(
                 this.#graph,
                 this.#edge,
@@ -227,10 +232,31 @@ namespace BaseEdge {
         }
 
         /**
+         * @returns whether this edge is a loop (source and target are the same node).
+         */
+        get isLoop(): boolean {
+            return this.#edge.isLoop();
+        }
+
+        /**
          * Removes this edge from the graph.
          */
         remove() {
             this.#edge.remove();
+        }
+
+        /**
+         * @returns whether this edge has been removed from the graph.
+         */
+        get isRemoved(): boolean {
+            return this.#edge.removed();
+        }
+
+        /**
+         * Restores this edge if it has been removed. See {@link BaseEdge.Class.remove}.
+         */
+        restore() {
+            this.#edge.restore();
         }
 
         /**
