@@ -6,6 +6,7 @@ import DotFormatter from "lara-flow/graph/dot/DotFormatter";
 import Graph from "lara-flow/graph/Graph";
 import IncrementingIdGenerator from "lara-flow/graph/id/IncrementingIdGenerator";
 import Node from "lara-flow/graph/Node";
+import BreadthFirstSearch from "lara-flow/graph/search/BreadthFirstSearch";
 
 namespace TGraph {
     export class Class<
@@ -124,23 +125,26 @@ namespace T2Node {
 }
 
 const graph = Graph.create();
-const a = graph.addNode("a");
-const b = graph.addNode("b");
-const c = graph.addNode("c");
-const aa = graph.addNode("aa", a);
-const ab = graph.addNode("ab", a);
-const ac = graph.addNode("ac", a);
-const aba = graph.addNode("aba", ab);
-const abb = graph.addNode("abb", ab);
-const abc = graph.addNode("abc", ab);
+const n1 = graph.addNode("n1");
+const n2 = graph.addNode("n2");
+const n3 = graph.addNode("n3");
+const n4 = graph.addNode("n4");
+const n5 = graph.addNode("n5");
+const n6 = graph.addNode("n6");
+const n7 = graph.addNode("n7");
 
-const e1 = graph.addEdge(a, b, "graph");
-const e2 = graph.addEdge(b, c, "\"<B>e2</B>\"");
-const e3 = graph.addEdge(c, b, "e3");
-const e4 = graph.addEdge(c, b, "<<B>e2</B>>");
-const e5 = graph.addEdge(aa, aba, "e5");
-    
+const e1 = graph.addEdge(n1, n2, "e1");
+const e2 = graph.addEdge(n2, n3, "e2");
+const e3 = graph.addEdge(n3, n4, "e3");
+const e4 = graph.addEdge(n1, n5, "e4");
+const e5 = graph.addEdge(n5, n6, "e5");
+const e6 = graph.addEdge(n6, n7, "e6");
+
+for (const { node } of n1.search(new BreadthFirstSearch(() => true))) {
+    console.log(node.id);
+}
+
 const formatter = new DefaultDotFormatter().addNodeAttrs((n) => ({
     color: n.id.endsWith("b") ? "red" : "blue",
 }));
-graph.toFile(formatter, "out/graph.dot");
+graph.expect(TGraph).toFile(formatter, "out/graph.dot");

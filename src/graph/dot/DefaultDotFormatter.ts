@@ -10,8 +10,12 @@ import Dot, { DotEdge, DotGraph, DotNode, DotSubgraph } from "lara-flow/graph/do
  * All nodes and all edges are present in the resulting graph. Nodes
  * that are parents are represented as clusters, with an appropriate
  * hack (invisible point node) to make the edges connect correctly.
+ * 
+ * @typeParam G - The type of the graph. This parameter exists so that
+ * the formatter may be extended into a formatter that requires a more
+ * specific graph type.
  */
-export default class DefaultDotFormatter extends DotFormatter<BaseGraph.Class> {
+export default class DefaultDotFormatter<G extends BaseGraph.Class = BaseGraph.Class> extends DotFormatter<G> {
     /**
      * The attributes to add to each node.
      */
@@ -145,7 +149,7 @@ export default class DefaultDotFormatter extends DotFormatter<BaseGraph.Class> {
      * @param graph The graph to convert.
      * @returns The resulting DOT graph.
      */
-    toDot(graph: BaseGraph.Class): DotGraph {
+    toDot(graph: G): DotGraph {
         const dot = Dot.graph().graphAttr("compound", "true");
 
         for (const node of graph.nodes.filter((node) => !node.isChild)) {

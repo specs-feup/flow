@@ -4,6 +4,8 @@ import Node from "lara-flow/graph/Node";
 import BaseGraph from "lara-flow/graph/BaseGraph";
 import BaseEdge from "lara-flow/graph/BaseEdge";
 import LaraFlowError from "lara-flow/error/LaraFlowError";
+import BreadthFirstSearch from "lara-flow/graph/search/BreadthFirstSearch";
+import DepthFirstSearch from "lara-flow/graph/search/DepthFirstSearch";
 
 /**
  * The base [node type]{@link Node}. All node types must be subtypes of this type.
@@ -238,7 +240,9 @@ namespace BaseNode {
          * @deprecated
          */
         get children(): BaseNode.Class[] {
-            return this.#node.children().map((node) => new BaseNode.Class(this.#graph, node));
+            return this.#node
+                .children()
+                .map((node) => new BaseNode.Class(this.#graph, node));
         }
 
         /**
@@ -321,43 +325,62 @@ namespace BaseNode {
                 .map((edge) => new BaseEdge.Class(this.#graph, edge));
         }
 
-        // cytoscape's dfs is not flexible enough for lara-flow purposes
-        // at least as far as I can tell
-        // Returns a generator that yields [node, path, index]
         /**
-         * @deprecated
-         * @todo
+         * Searches the graph starting from this node.
+         *
+         * Example:
+         *
+         * ```typescript
+         * for (const {node, path, index} of node.search(new BreadthFirstSearch())) {
+         *     // Your code here
+         * }
+         * ```
+         *
+         * @param algorithm The search algorithm to use.
+         * @returns A generator that yields each visit, so that it can be lazily iterated over.
          */
-        bfs(
-            propagate: (edge: BaseEdge.Class) => boolean,
-        ): Generator<[BaseNode.Class, BaseEdge.Class[], number]> {
-            function* inner(
-                root: BaseNode.Class,
-            ): Generator<[BaseNode.Class, BaseEdge.Class[], number]> {
-                const toVisit: [BaseNode.Class, BaseEdge.Class[]][] = [[root, []]];
-                const visited = new Set();
-                let idx = 0;
+        search<V extends Node.SearchVisit>(
+            algorithm: Node.Search<V, this>,
+        ): Generator<V> {
+            return algorithm.search(this);
+        }
 
-                while (toVisit.length > 0) {
-                    const [node, path] = toVisit.pop()!;
-                    if (visited.has(node.id)) {
-                        continue;
-                    }
-                    if (path.length > 0 && !propagate(path[path.length - 1])) {
-                        continue;
-                    }
+        /**
+         * Depth-first search starting from this node.
+         * Shorthand for `this.search(new DepthFirstSearch(...))`.
+         *
+         * Example:
+         *
+         * ```typescript
+         * for (const {node, path, index} of node.dfs()) {
+         *     // Your code here
+         * }
+         * ```
+         *
+         * @param propagate A function that determines whether to propagate through an edge.
+         * @returns A generator that yields each visit, so that it can be lazily iterated over.
+         */
+        dfs(propagate: (edge: BaseEdge.Class) => boolean): Generator<Node.SearchVisit> {
+            return this.search(new DepthFirstSearch(propagate));
+        }
 
-                    yield [node, path, idx];
-                    idx++;
-                    visited.add(node.id);
-
-                    for (const out of node.outgoers) {
-                        toVisit.push([out.target, [...path, out]]);
-                    }
-                }
-            }
-
-            return inner(this);
+        /**
+         * Breadth-first search starting from this node.
+         * Shorthand for `this.search(new BreadthFirstSearch(...))`.
+         *
+         * Example:
+         *
+         * ```typescript
+         * for (const {node, path, index} of node.bfs()) {
+         *     // Your code here
+         * }
+         * ```
+         *
+         * @param propagate A function that determines whether to propagate through an edge.
+         * @returns A generator that yields each visit, so that it can be lazily iterated over.
+         */
+        bfs(propagate: (edge: BaseEdge.Class) => boolean): Generator<Node.SearchVisit> {
+            return this.search(new BreadthFirstSearch(propagate));
         }
 
         /**

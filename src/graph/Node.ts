@@ -1,3 +1,4 @@
+import BaseEdge from "lara-flow/graph/BaseEdge";
 import BaseGraph from "lara-flow/graph/BaseGraph";
 import BaseNode from "lara-flow/graph/BaseNode";
 import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
@@ -132,6 +133,53 @@ namespace Node {
          * @returns A unique identifier for the new node.
          */
         newId(graph: BaseGraph.Class): string;
+    }
+    
+    /**
+     * A search algorithm that can be used in node search.
+     * See {@link BaseNode.Class.search}.
+     */
+    export interface Search<
+        V extends SearchVisit = SearchVisit,
+        N extends BaseNode.Class = BaseNode.Class,
+    > {
+        /**
+         * Starts a search from a given root node. This method is a generator,
+         * so it is usually implemented like:
+         *
+         * ```typescript
+         * export default class MySearch implements Node.Search {
+         *     *search(root: BaseNode.Class): Generator<SearchVisit> {
+         *         // Your implementation here
+         *     }
+         * }
+         * ```
+         * 
+         * And uses the `yield` keyword to return values.
+         *
+         * @param root The root node to start the search from.
+         * @returns A generator that yields each visit, so that it can be lazily iterated over.
+         */
+        search: (root: N) => Generator<V>;
+    }
+
+    /**
+     * Represents a visit during a node search.
+     * See {@link Node.Search}.
+     */
+    export interface SearchVisit {
+        /**
+         * The current node that is being visited.
+         */
+        node: BaseNode.Class;
+        /**
+         * The path taken in this visit from the root node to the current node.
+         */
+        path: BaseEdge.Class[];
+        /**
+         * The current iteration number.
+         */
+        index: number;
     }
 }
 
