@@ -6,6 +6,7 @@ import DotFormatter from "lara-flow/graph/dot/DotFormatter";
 import Graph from "lara-flow/graph/Graph";
 import IncrementingIdGenerator from "lara-flow/graph/id/IncrementingIdGenerator";
 import Node from "lara-flow/graph/Node";
+import { NodeCollection } from "lara-flow/graph/NodeCollection";
 import BreadthFirstSearch from "lara-flow/graph/search/BreadthFirstSearch";
 import DijkstraSearch from "lara-flow/graph/search/DijkstraSearch";
 
@@ -141,9 +142,47 @@ const e4 = graph.addEdge(n1, n5, "4");
 const e5 = graph.addEdge(n5, n6, "5");
 const e6 = graph.addEdge(n6, n7, "6");
 
-for (const { node, distance } of n1.search(new DijkstraSearch((e) => parseInt(e.id)))) {
-    console.log(`Node ${node.id} at distance ${distance}`);
-}
+
+// console.log(graph.nodes2[10].id);
+
+console.log(graph.nodes2[5].outgoers[0].id);
+
+graph.nodes2.as(T2Node);
+
+// [[]][10].at(0);
+
+// console.log(1000 in graph.toCy().nodes());
+// for (const n in graph.toCy().nodes()) {
+//     console.log(n);
+// }
+
+// const a__ = graph.toCy().nodes();
+// delete a__[0];
+// console.log(0 in a__);
+// let a: any = {
+//     b: 1,
+//     c: 2,
+//     [0]: 5,
+// };
+// delete a.b;
+// console.log(a);
+
+// graph[0];
+// const coll = graph.nodes as any as NodeCollection<TNode.Data, TNode.ScratchData>;
+// coll.as(TNode);
+// for (const node of coll) {
+// }
+
+// for (const n in coll) {
+//     console.log(n);
+// }
+
+
+// delete ( as any).$id;
+
+// for (const { node, distance } of n1.search(new DijkstraSearch((e) => parseInt(e.id)))) {
+//     console.log(`Node ${node.id} at distance ${distance}`);
+// }
 
 const formatter = new DefaultDotFormatter().addNodeAttrs((n) => ({
     color: n.id.endsWith("b") ? "red" : "blue",

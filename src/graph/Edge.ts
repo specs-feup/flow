@@ -40,7 +40,7 @@ namespace Edge {
         D extends BaseEdge.Data,
         S extends BaseEdge.ScratchData,
         E extends BaseEdge.Class<D, S>,
-    > = new (graph: BaseGraph.Class, node: cytoscape.EdgeSingular, _d: D, _sd: S) => E;
+    > = new (graph: BaseGraph.Class, node: cytoscape.EdgeSingular, _d?: D, _sd?: S) => E;
 
     /**
      * Represents a builder class instance for an edge type.

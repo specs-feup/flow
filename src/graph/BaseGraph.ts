@@ -7,6 +7,7 @@ import Io from "lara-js/api/lara/Io.js";
 import LaraFlowError from "lara-flow/error/LaraFlowError";
 import Edge from "lara-flow/graph/Edge";
 import Node from "lara-flow/graph/Node";
+import { NodeCollection } from "lara-flow/graph/NodeCollection";
 
 /**
  * The base [graph type]{@link Graph}. All graph types must be subtypes of this type.
@@ -36,9 +37,6 @@ namespace BaseGraph {
          */
         constructor(graph: cytoscape.Core, _d: D = {} as any, _sd: S = {} as any) {
             this.#graph = graph;
-            if (this.#graph.scratch(Graph.scratchNamespace) === undefined) {
-                this.#graph.scratch(Graph.scratchNamespace, {});
-            }
         }
 
         /**
@@ -54,12 +52,15 @@ namespace BaseGraph {
         /**
          * Use the scratch data object for temporary or non-serializable data.
          * For JSON serializable data, use {@link BaseGraph.Class.data}.
-         * 
+         *
          * The scratch data is stored under the [lara-flow namespace]{@link Graph.scratchNamespace}.
          *
          * @returns the scratch data object associated with this graph.
          */
         get scratchData(): S {
+            if (this.#graph.scratch(Graph.scratchNamespace) === undefined) {
+                this.#graph.scratch(Graph.scratchNamespace, {});
+            }
             return this.#graph.scratch(Graph.scratchNamespace);
         }
 
@@ -288,14 +289,25 @@ namespace BaseGraph {
         /**
          * @todo
          * @deprecated
+         *
+         * May need to include selector as parameter.
          */
         get nodes(): BaseNode.Class[] {
-            return this.#graph.nodes().map((node) => new BaseNode.Class(this, node));
+            return new NodeCollection(
+                this,
+                BaseNode.Class,
+                this.#graph.nodes(),
+            ).toArray();
+        }
+        get nodes2(): NodeCollection {
+            return new NodeCollection(this, BaseNode.Class, this.#graph.nodes());
         }
 
         /**
          * @todo
          * @deprecated
+         *
+         * May need to include selector as parameter.
          */
         get edges(): BaseEdge.Class[] {
             return this.#graph.edges().map((edge) => new BaseEdge.Class(this, edge));

@@ -43,9 +43,6 @@ namespace BaseEdge {
         ) {
             this.#graph = graph;
             this.#edge = edge;
-            if (this.#edge.scratch(Graph.scratchNamespace) === undefined) {
-                this.#edge.scratch(Graph.scratchNamespace, {});
-            }
         }
 
         /**
@@ -67,6 +64,9 @@ namespace BaseEdge {
          * @returns the scratch data object associated with this edge.
          */
         get scratchData(): S {
+            if (this.#edge.scratch(Graph.scratchNamespace) === undefined) {
+                this.#edge.scratch(Graph.scratchNamespace, {});
+            }
             return this.#edge.scratch(Graph.scratchNamespace);
         }
 

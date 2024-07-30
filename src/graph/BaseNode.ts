@@ -32,7 +32,7 @@ namespace BaseNode {
          * {@link Node.Class}). However, it should not be used directly by user code.
          *
          * @param graph The graph that this node is a part of.
-         * @param edge The underlying cytoscape node object.
+         * @param node The underlying cytoscape node object.
          * @param _d A hack to force typescript to typecheck D in {@link BaseNode.Class.as} method.
          * @param _sd A hack to force typescript to typecheck S in {@link BaseNode.Class.as} method.
          * @deprecated
@@ -45,9 +45,6 @@ namespace BaseNode {
         ) {
             this.#graph = graph;
             this.#node = node;
-            if (this.#node.scratch(Graph.scratchNamespace) === undefined) {
-                this.#node.scratch(Graph.scratchNamespace, {});
-            }
         }
 
         /**
@@ -69,6 +66,9 @@ namespace BaseNode {
          * @returns the scratch data object associated with this node.
          */
         get scratchData(): S {
+            if (this.#node.scratch(Graph.scratchNamespace) === undefined) {
+                this.#node.scratch(Graph.scratchNamespace, {});
+            }
             return this.#node.scratch(Graph.scratchNamespace);
         }
 

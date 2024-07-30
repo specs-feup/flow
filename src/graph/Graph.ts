@@ -62,7 +62,7 @@ namespace Graph {
         D extends BaseGraph.Data,
         S extends BaseGraph.ScratchData,
         G extends BaseGraph.Class<D, S>,
-    > = new (node: cytoscape.Core, _d: D, _sd: S) => G;
+    > = new (node: cytoscape.Core, _d?: D, _sd?: S) => G;
 
     /**
      * Represents a builder class instance for a graph type.

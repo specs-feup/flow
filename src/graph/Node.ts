@@ -40,7 +40,7 @@ namespace Node {
         D extends BaseNode.Data,
         S extends BaseNode.ScratchData,
         N extends BaseNode.Class<D, S>,
-    > = new (graph: BaseGraph.Class, node: cytoscape.NodeSingular, _d: D, _sd: S) => N;
+    > = new (graph: BaseGraph.Class, node: cytoscape.NodeSingular, _d?: D, _sd?: S) => N;
 
     /**
      * Represents a builder class instance for a node type.
