@@ -26,12 +26,24 @@ export default class BreadthFirstSearch implements Node.Search {
 
     /**
      * Creates a new breadth-first search algorithm.
-     * 
+     *
      * @param propagate A function that determines whether to propagate a given edge.
      */
-    constructor(propagate: (edge: BaseEdge.Class) => boolean) {
-        this.propagate = propagate;
+    constructor(propagate?: (edge: BaseEdge.Class) => boolean) {
+        this.propagate = propagate ?? (() => true);
         this.directed = true;
+    }
+
+    /**
+     * Sets the propagation function for the edges.
+     * The propagation function should return a boolean that determines whether to propagate the edge.
+     *
+     * @param propagate The propagation function to set.
+     * @returns This search instance, for chaining.
+     */
+    setPropagate(propagate: (edge: BaseEdge.Class) => boolean): this {
+        this.propagate = propagate;
+        return this;
     }
 
     /**

@@ -7,6 +7,7 @@ import Graph from "lara-flow/graph/Graph";
 import IncrementingIdGenerator from "lara-flow/graph/id/IncrementingIdGenerator";
 import Node from "lara-flow/graph/Node";
 import BreadthFirstSearch from "lara-flow/graph/search/BreadthFirstSearch";
+import DijkstraSearch from "lara-flow/graph/search/DijkstraSearch";
 
 namespace TGraph {
     export class Class<
@@ -133,15 +134,15 @@ const n5 = graph.addNode("n5");
 const n6 = graph.addNode("n6");
 const n7 = graph.addNode("n7");
 
-const e1 = graph.addEdge(n1, n2, "e1");
-const e2 = graph.addEdge(n2, n3, "e2");
-const e3 = graph.addEdge(n3, n4, "e3");
-const e4 = graph.addEdge(n1, n5, "e4");
-const e5 = graph.addEdge(n5, n6, "e5");
-const e6 = graph.addEdge(n6, n7, "e6");
+const e1 = graph.addEdge(n1, n2, "1");
+const e2 = graph.addEdge(n2, n3, "2");
+const e3 = graph.addEdge(n3, n4, "3");
+const e4 = graph.addEdge(n1, n5, "4");
+const e5 = graph.addEdge(n5, n6, "5");
+const e6 = graph.addEdge(n6, n7, "6");
 
-for (const { node } of n1.search(new BreadthFirstSearch(() => true))) {
-    console.log(node.id);
+for (const { node, distance } of n1.search(new DijkstraSearch((e) => parseInt(e.id)))) {
+    console.log(`Node ${node.id} at distance ${distance}`);
 }
 
 const formatter = new DefaultDotFormatter().addNodeAttrs((n) => ({

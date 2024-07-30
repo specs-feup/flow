@@ -360,7 +360,7 @@ namespace BaseNode {
          * @param propagate A function that determines whether to propagate through an edge.
          * @returns A generator that yields each visit, so that it can be lazily iterated over.
          */
-        dfs(propagate: (edge: BaseEdge.Class) => boolean): Generator<Node.SearchVisit> {
+        dfs(propagate?: (edge: BaseEdge.Class) => boolean): Generator<Node.SearchVisit> {
             return this.search(new DepthFirstSearch(propagate));
         }
 
@@ -379,7 +379,7 @@ namespace BaseNode {
          * @param propagate A function that determines whether to propagate through an edge.
          * @returns A generator that yields each visit, so that it can be lazily iterated over.
          */
-        bfs(propagate: (edge: BaseEdge.Class) => boolean): Generator<Node.SearchVisit> {
+        bfs(propagate?: (edge: BaseEdge.Class) => boolean): Generator<Node.SearchVisit> {
             return this.search(new BreadthFirstSearch(propagate));
         }
 
