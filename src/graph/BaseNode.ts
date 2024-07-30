@@ -234,6 +234,14 @@ namespace BaseNode {
         }
 
         /**
+         * @todo
+         * @deprecated
+         */
+        get children(): BaseNode.Class[] {
+            return this.#node.children().map((node) => new BaseNode.Class(this.#graph, node));
+        }
+
+        /**
          * Returns the number of edges connected to this node.
          * Loop edges are counted twice.
          *

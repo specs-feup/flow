@@ -1,6 +1,7 @@
 import BaseEdge from "lara-flow/graph/BaseEdge";
 import BaseGraph from "lara-flow/graph/BaseGraph";
 import BaseNode from "lara-flow/graph/BaseNode";
+import DefaultDotFormatter from "lara-flow/graph/dot/DefaultDotFormatter";
 import DotFormatter from "lara-flow/graph/dot/DotFormatter";
 import Graph from "lara-flow/graph/Graph";
 import IncrementingIdGenerator from "lara-flow/graph/id/IncrementingIdGenerator";
@@ -123,5 +124,23 @@ namespace T2Node {
 }
 
 const graph = Graph.create();
-const n1 = graph.addNode();
-const e1 = graph.addEdge(n1, n1);
+const a = graph.addNode("a");
+const b = graph.addNode("b");
+const c = graph.addNode("c");
+const aa = graph.addNode("aa", a);
+const ab = graph.addNode("ab", a);
+const ac = graph.addNode("ac", a);
+const aba = graph.addNode("aba", ab);
+const abb = graph.addNode("abb", ab);
+const abc = graph.addNode("abc", ab);
+
+const e1 = graph.addEdge(a, b, "graph");
+const e2 = graph.addEdge(b, c, "\"<B>e2</B>\"");
+const e3 = graph.addEdge(c, b, "e3");
+const e4 = graph.addEdge(c, b, "<<B>e2</B>>");
+const e5 = graph.addEdge(aa, aba, "e5");
+    
+const formatter = new DefaultDotFormatter().addNodeAttrs((n) => ({
+    color: n.id.endsWith("b") ? "red" : "blue",
+}));
+graph.toFile(formatter, "out/graph.dot");
