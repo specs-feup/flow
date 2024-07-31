@@ -33,16 +33,12 @@ export class NodeCollection<
      * @param graph The graph that this collection is a part of.
      * @param nodeClass The underlying cytoscape node object.
      * @param nodes The underlying cytoscape collection object.
-     * @param _d A hack to force typescript to typecheck D in {@link BaseNode.Class.as} method.
-     * @param _sd A hack to force typescript to typecheck S in {@link BaseNode.Class.as} method.
      * @deprecated
      */
     constructor(
         graph: BaseGraph.Class,
         nodeClass: Node.Class<D, S, N>,
         nodes: cytoscape.NodeCollection,
-        _d: D = {} as any,
-        _sd: S = {} as any,
     ) {
         this.#graph = graph;
         this.#nodeClass = nodeClass;
@@ -116,6 +112,20 @@ export class NodeCollection<
     }
 
     /**
+     * Get the first node in the collection.
+     */
+    first(): N | undefined {
+        return this.at(0);
+    }
+
+    /**
+     * Get the last node in the collection.
+     */
+    last(): N | undefined {
+        return this.at(this.length - 1);
+    }
+
+    /**
      * @returns The number of nodes in this collection.
      */
     get length(): number {
@@ -142,10 +152,7 @@ export class NodeCollection<
     }
 
     /**
-     * 
-     * @todo
-     * @deprecated
-     * Checks if this node's data and scratch data are compatible
+     * Checks if all nodes in this collection are compatible
      * with a specific type. This is effectively a type guard function.
      *
      * @param NodeType The node type to check compatibility with.
@@ -155,19 +162,36 @@ export class NodeCollection<
         D2 extends BaseNode.Data,
         S2 extends BaseNode.ScratchData,
         N2 extends BaseNode.Class<D2, S2>,
-    >(NodeType: Node<D2, S2, N2>): this is NodeCollection<D2, S2, BaseNode.Class<D2, S2>> {
-        return false;
-        // const data = this.data;
-        // const scratchData = this.scratchData;
-        // const result =
-        //     NodeType.TypeGuard.isDataCompatible(data) &&
-        //     NodeType.TypeGuard.isScratchDataCompatible(scratchData);
+    >(
+        NodeType: Node<D2, S2, N2>,
+    ): this is NodeCollection<D2, S2, BaseNode.Class<D2, S2>> {
+        for (let i = 0; i < this.length; i++) {
+            if (!this[i].is(NodeType)) {
+                return false;
+            }
+        }
 
-        // // Have typescript statically check that the types are correct
-        // // in the implementation of this function.
-        // result && (data satisfies D2) && (scratchData satisfies S2);
+        return true;
+    }
 
-        // return result;
+    /**
+     * Filters the collection, keeping only the nodes that are compatible with
+     * the given type. The collection automatically becomes a collection of that
+     * type.
+     *
+     * @param NodeType The node type to test compatibility with.
+     * @returns The collection, with the new node type.
+     */
+    filterIs<
+        D2 extends BaseNode.Data,
+        S2 extends BaseNode.ScratchData,
+        N2 extends BaseNode.Class<D2, S2>,
+    >(NodeType: Node<D2, S2, N2>): NodeCollection<D2, S2, N2> {
+        const filtered = this.#nodes.filter((node) =>
+            new this.#nodeClass(this.#graph, node).is(NodeType),
+        );
+        // Appears as deprecated because it is for internal use only
+        return new NodeCollection(this.#graph, NodeType.Class, filtered);
     }
 
     /**
@@ -189,53 +213,221 @@ export class NodeCollection<
     }
 
     /**
-     * @todo
-     * @deprecated
-     * Changes the functionality class of the current node. Should only be used
-     * when it is known (but not statically provable) that the node is compatible
+     * Changes the functionality class of the nodes. Should only be used
+     * when it is known (but not statically provable) that all nodes are compatible
      * with the new class. If not, an error will be thrown.
      *
      * It is bad practice to try and catch the error thrown by this function. For
-     * such cases, combine {@link BaseNode.Class.is} with {@link BaseNode.Class.as},
-     * or use {@link BaseNode.Class.switch} instead.
+     * such cases, combine {@link NodeCollection.allAre} with {@link NodeCollection.allAs}.
      *
      * @param NodeType The node type to change the functionality class into.
      * @param message The message to throw if the node is not compatible with the type.
-     * @returns The node, wrapped in the new functionality class.
-     * @throws LaraFlowError if the node is not compatible with the type.
+     * May also be a function that takes the index of the first incompatible node and
+     * returns a message.
+     * @returns The node collection, wrapped in the new functionality class.
+     * @throws LaraFlowError if any node is not compatible with the type.
      * This error should be seen as a logic error and not catched.
      */
     expectAll<
         D2 extends BaseNode.Data,
         S2 extends BaseNode.ScratchData,
         N2 extends BaseNode.Class<D2, S2>,
-    >(NodeType: Node<D2, S2, N2>, message?: string): NodeCollection<D2, S2, N2> {
-        if (!this.allAre(NodeType)) {
-            if (message === undefined) {
-                message = "Graph type mismatch"; // @todo put the index
+    >(
+        NodeType: Node<D2, S2, N2>,
+        message?: string | ((i: number) => string),
+    ): NodeCollection<D2, S2, N2> {
+        for (let i = 0; i < this.length; i++) {
+            if (!this[i].is(NodeType)) {
+                if (message === undefined) {
+                    message = (i) => `Graph type mismatch on node ${i}`;
+                } else if (typeof message === "string") {
+                    // Some weird typescript inference problem prevents message from being
+                    // used directly inside the lambda.
+                    const _message = message;
+                    message = () => _message;
+                }
+                throw new LaraFlowError(message(i));
             }
-            throw new LaraFlowError(message);
         }
 
-        return this.allAs(NodeType);
+        // Appears as deprecated because it is for internal use only
+        return new NodeCollection(this.#graph, NodeType.Class, this.#nodes);
     }
 
     /**
-     * @todo
-     * @deprecated
+     * Returns the union of this collection with other collections.
+     * 
+     * @todo Variance does not work very well when multiple arguments have different
+     * data and scratch data types. Trying to come up with a better signature would be
+     * desirable. For any user running into this limitation, simply run the union one
+     * argument at a time (which is how you would do in cytoscape anyway).
+     * 
+     * @param others The other collections to union with.
+     * @returns A new collection containing the union of all nodes.
      */
-    forEach() {
-        // https://js.cytoscape.org/#eles.forEach
-        //     eles.forEach( function(ele, i, eles) [, thisArg] )
-        //          function(ele, i, eles) The function executed each iteration.
-        //          ele The current element.
-        //          i The index of the current element.
-        //          eles The collection of elements being iterated.
-        //          thisArg [optional] The value for this within the iterating function
-        // forEach(each: (ele: TIn, i: number, eles: this) => void | boolean, thisArg?: any): this;
-        // return this.#nodes.forEach(each);
-        //         This function behaves like Array.prototype.forEach() with minor changes for convenience:
-        // You can exit the iteration early by returning false in the iterating function. The Array.prototype.forEach() implementation does not support this, but it is included anyway on account of its utility.
+    union<
+        D2 extends D,
+        S2 extends S,
+    >(...others: NodeCollection<D2, S2, BaseNode.Class<D2, S2>>[]): NodeCollection<D, S, N> {
+        let result = this.#nodes;
+        for (const other of others) {
+            // @todo guarantee that this tests the graph properly
+            if (other.#graph !== this.#graph) {
+                throw new LaraFlowError("Cannot union nodes from different graphs");
+            }
+            result = result.union(other.#nodes);
+        }
+
+        // Appears as deprecated because it is for internal use only
+        return new NodeCollection(this.#graph, this.#nodeClass, result);
+    }
+
+
+    /**
+     * Returns the total degree of all nodes in the collection.
+     * Loop edges are counted twice.
+     *
+     * @returns the total degree of this collection.
+     */
+    get totalDegree(): number {
+        return this.#nodes.totalDegree(true);
+    }
+
+    /**
+     * Returns the total degree of all nodes in the collection.
+     * Loop edges are not counted.
+     *
+     * @returns the total degree of this collection, excluding loop edges.
+     */
+    get totalDegreeWithoutLoops(): number {
+        return this.#nodes.totalDegree(false);
+    }
+
+    /**
+     * Returns the minimum degree of all nodes in the collection.
+     * Loop edges are counted twice.
+     *
+     * @returns the minimum degree of this collection.
+     */
+    get minDegree(): number {
+        return this.#nodes.minDegree(true);
+    }
+
+    /**
+     * Returns the minimum degree of all nodes in the collection.
+     * Loop edges are not counted.
+     *
+     * @returns the minimum degree of this collection, excluding loop edges.
+     */
+    get minDegreeWithoutLoops(): number {
+        return this.#nodes.minDegree(false);
+    }
+
+    /**
+     * Returns the maximum degree of all nodes in the collection.
+     * Loop edges are counted twice.
+     *
+     * @returns the maximum degree of this collection.
+     */
+    get maxDegree(): number {
+        return this.#nodes.maxDegree(true);
+    }
+
+    /**
+     * Returns the maximum degree of all nodes in the collection.
+     * Loop edges are not counted.
+     *
+     * @returns the maximum degree of this collection, excluding loop edges.
+     */
+    get maxDegreeWithoutLoops(): number {
+        return this.#nodes.maxDegree(false);
+    }
+
+    /**
+     * Returns the minimum indegree of all nodes in the collection.
+     * Loop edges are counted twice.
+     * 
+     * @returns the minimum indegree of this collection.
+     */
+    get minIndegree(): number {
+        return this.#nodes.minIndegree(true);
+    }
+    
+    /**
+     * Returns the minimum indegree of all nodes in the collection.
+     * Loop edges are not counted.
+     * 
+     * @returns the minimum indegree of this collection, excluding loop edges.
+     */
+    get minIndegreeWithoutLoops(): number {
+        return this.#nodes.minIndegree(false);
+    }
+
+    /**
+     * Returns the maximum indegree of all nodes in the collection.
+     * Loop edges are counted twice.
+     * 
+     * @returns the maximum indegree of this collection.
+     */
+    get maxIndegree(): number {
+        return this.#nodes.maxIndegree(true);
+    }
+
+    /**
+     * Returns the maximum indegree of all nodes in the collection.
+     * Loop edges are not counted.
+     * 
+     * @returns the maximum indegree of this collection, excluding loop edges.
+     */
+    get maxIndegreeWithoutLoops(): number {
+        return this.#nodes.maxIndegree(false);
+    }
+
+    /**
+     * Returns the minimum outdegree of all nodes in the collection.
+     * Loop edges are counted twice.
+     * 
+     * @returns the minimum outdegree of this collection.
+     */
+    get minOutdegree(): number {
+        return this.#nodes.minOutdegree(true);
+    }
+
+    /**
+     * Returns the minimum outdegree of all nodes in the collection.
+     * Loop edges are not counted.
+     * 
+     * @returns the minimum outdegree of this collection, excluding loop edges.
+     */
+    get minOutdegreeWithoutLoops(): number {
+        return this.#nodes.minOutdegree(false);
+    }
+
+    /**
+     * Executes the provided function once for each node in the collection.
+     *
+     * Unline the analogous cytoscape method, this method does not support
+     * exiting early by returning false, due to the fact that a `return false;`
+     * would not be clear and intuitive for someone reading the code. As such,
+     * this function follows the behavior of the Array.prototype.forEach method.
+     *
+     * In the future, if that feature is really desirable, instead of returning false,
+     * the function could return an enum value that represents a control flow instruction.
+     * Until then, a for loop may be used.
+     *
+     * @param f The function to execute for each node. ele - The current element, i - The
+     * index of the current element, eles - The collection of elements being iterated.
+     * @param thisArg The value to use as `this` when executing the function.
+     */
+    forEach(f: (ele: N, i: number, eles: this) => void): void;
+    forEach<T>(f: (this: T, ele: N, i: number, eles: this) => void, thisArg: T): void;
+    forEach<T>(
+        f: (this: T | undefined, ele: N, i: number, eles: this) => void,
+        thisArg?: T,
+    ) {
+        for (let i = 0; i < this.length; i++) {
+            f.call(thisArg, this[i], i, this);
+        }
     }
 
     /**
@@ -279,12 +471,9 @@ export class NodeCollection<
         return this.#nodes;
     }
 
-    // is()
-    // map(), filter(), forEach()~
-    // union(), difference(), intersection(), ...
-    // [_node_ .total|min|maxdegree() et al https://js.cytoscape.org/#node.degree] degree()-like
-    // something like map-flat
-    // search()?
+    // map(),
+    // something like map-flat (instead of outgoers, etc)
+
     // remove/restore
 
     // https://js.cytoscape.org/#collection/comparison
@@ -299,7 +488,8 @@ export class NodeCollection<
     // - selector support
     //     https://js.cytoscape.org/#selectors
     //     cy.collection(); // Empty collection
-    //     cy.filter( _selector_ ); cy.filter( _function(ele, i, eles)_ );
+    //     cy|eles.filter( _selector_ ); cy|eles.filter( _function(ele, i, eles)_ );
     //          Probably also applies to Graph
+    //     .union( _selector_ ) et al.
     // - cytoscape dijkstra search (involves passing a collection of nodes) (maybe has a method to return the last result)
 }

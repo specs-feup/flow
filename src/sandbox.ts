@@ -145,11 +145,22 @@ const e6 = graph.addEdge(n6, n7, "6");
 
 // console.log(graph.nodes2[10].id);
 
+
+
+const a = graph.nodes2.expectAll(TNode).allAs(BaseNode);
+
+graph.nodes2.union(a.(BaseNode), a, graph.nodes2.filterIs(TNode), graph.nodes2);
+
+graph.nodes2.expectAll(TNode).union(graph.nodes2);
+
+graph.nodes2.filterIs(TNode).allAs(TNode);
+
 console.log(graph.nodes2[5].outgoers[0].id);
 
 graph.nodes2.as(T2Node);
 
 // [[]][10].at(0);
+
 
 // console.log(1000 in graph.toCy().nodes());
 // for (const n in graph.toCy().nodes()) {

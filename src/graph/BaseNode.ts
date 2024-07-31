@@ -6,6 +6,7 @@ import BaseEdge from "lara-flow/graph/BaseEdge";
 import LaraFlowError from "lara-flow/error/LaraFlowError";
 import BreadthFirstSearch from "lara-flow/graph/search/BreadthFirstSearch";
 import DepthFirstSearch from "lara-flow/graph/search/DepthFirstSearch";
+import { NodeCollection } from "lara-flow/graph/NodeCollection";
 
 /**
  * The base [node type]{@link Node}. All node types must be subtypes of this type.
@@ -402,6 +403,18 @@ namespace BaseNode {
          */
         restore() {
             this.#node.restore();
+        }
+
+        /**
+         * @returns A collection containing only this node.
+         */
+        toCollection(): NodeCollection<D, S, this> {
+            // Appears as deprecated because it is for internal use only
+            return new NodeCollection(
+                this.#graph,
+                Object.getPrototypeOf(this).constructor,
+                this.#node,
+            );
         }
 
         /**

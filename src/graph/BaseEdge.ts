@@ -260,6 +260,20 @@ namespace BaseEdge {
         }
 
         /**
+         * @todo
+         * @deprecated
+         * @returns A collection containing only this edge.
+         */
+        toCollection(): any {//EdgeCollection<D, S, this> {
+            // Appears as deprecated because it is for internal use only
+            // return new EdgeCollection(
+            //     this.#graph,
+            //     Object.getPrototypeOf(this).constructor,
+            //     this.#edge,
+            // );
+        }
+
+        /**
          * @returns the graph that this edge is a part of.
          */
         get graph(): BaseGraph.Class {
