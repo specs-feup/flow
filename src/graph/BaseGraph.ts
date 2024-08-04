@@ -314,6 +314,28 @@ namespace BaseGraph {
         }
 
         /**
+         * @todo
+         * @deprecated
+         */
+        emptyCollection<
+            D extends BaseNode.Data,
+            S extends BaseNode.ScratchData,
+            N extends BaseNode.Class<D, S>,
+        >(NodeType: Node<D, S, N>): NodeCollection;
+        // emptyCollection<
+        //     D extends BaseEdge.Data,
+        //     S extends BaseEdge.ScratchData,
+        //     E extends BaseEdge.Class<D, S>,
+        // >(EdgeType: Edge<D, S, E>): EdgeCollection;
+        emptyCollection(Type: Node<any, any, any> | Edge<any, any, any>): NodeCollection {
+            if (Type.Class.prototype instanceof BaseNode.Class) {
+                return new NodeCollection(this, Type.Class as Node.Class<any, any, any>, this.#graph.collection());
+            } else {
+                throw new LaraFlowError("Unsupported type @todo");
+            }
+        }
+
+        /**
          * Applies a {@link Graph.Transformation} to the graph. May be chained.
          *
          * @param transformation The transformation to apply.

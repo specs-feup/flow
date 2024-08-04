@@ -255,33 +255,95 @@ export class NodeCollection<
     }
 
     /**
-     * Returns the union of this collection with other collections.
-     * 
-     * @todo Variance does not work very well when multiple arguments have different
-     * data and scratch data types. Trying to come up with a better signature would be
-     * desirable. For any user running into this limitation, simply run the union one
-     * argument at a time (which is how you would do in cytoscape anyway).
-     * 
-     * @param others The other collections to union with.
+     * Returns the union of this collection with another other collection.
+     * You may chain this method to union multiple collections.
+     *
+     * If the rhs collection is a subtype of the lhs collection, the resulting
+     * collection will have the lhs type. Otherwise, the resulting collection
+     * is downgraded to a BaseNode and must be casted to the desired type
+     * explicitly with {@link NodeCollection.allAs}.
+     *
+     * @param other The other collection to union with.
      * @returns A new collection containing the union of all nodes.
+     * @throws LaraFlowError if the other collection is from a different graph.
      */
-    union<
-        D2 extends D,
-        S2 extends S,
-    >(...others: NodeCollection<D2, S2, BaseNode.Class<D2, S2>>[]): NodeCollection<D, S, N> {
-        let result = this.#nodes;
-        for (const other of others) {
-            // @todo guarantee that this tests the graph properly
-            if (other.#graph !== this.#graph) {
-                throw new LaraFlowError("Cannot union nodes from different graphs");
-            }
-            result = result.union(other.#nodes);
+    union<D2 extends D, S2 extends S>(
+        other: NodeCollection<D2, S2, BaseNode.Class<D2, S2>>,
+    ): NodeCollection<D, S, N>;
+    union<D2 extends BaseNode.Data, S2 extends BaseNode.ScratchData>(
+        other: NodeCollection<D2, S2, BaseNode.Class<D2, S2>>,
+    ): NodeCollection<D | D2, S | S2, BaseNode.Class<D | D2, S | S2>>;
+    union<D2 extends BaseNode.Data, S2 extends BaseNode.ScratchData>(
+        other: NodeCollection<D2, S2, BaseNode.Class<D2, S2>>,
+    ): NodeCollection<any, any, any> {
+        if (other.graph.toCy() !== this.graph.toCy()) {
+            throw new LaraFlowError("Cannot union nodes from different graphs");
         }
 
         // Appears as deprecated because it is for internal use only
-        return new NodeCollection(this.#graph, this.#nodeClass, result);
+        return new NodeCollection(
+            this.graph,
+            this.#nodeClass,
+            this.toCy().union(other.toCy()),
+        );
     }
 
+    /**
+     * Returns the intersection of this collection with another collection.
+     * You may chain this method to intersect multiple collections.
+     *
+     * @param other The other collection to union with.
+     * @returns A new collection containing the union of all nodes.
+     */
+    intersection<D2 extends BaseNode.Data, S2 extends BaseNode.ScratchData>(
+        other: NodeCollection<D2, S2, BaseNode.Class<D2, S2>>,
+    ): NodeCollection<D, S, N> {
+        // Appears as deprecated because it is for internal use only
+        return new NodeCollection(
+            this.graph,
+            this.#nodeClass,
+            this.toCy().intersection(other.toCy()),
+        );
+    }
+
+    /**
+     * Returns the set difference of this collection with another collection.
+     *
+     * @param other The other collection.
+     * @returns A new collection that consists of the nodes in this collection
+     * that are not in the other collection.
+     */
+    difference<D2 extends BaseNode.Data, S2 extends BaseNode.ScratchData>(
+        other: NodeCollection<D2, S2, BaseNode.Class<D2, S2>>,
+    ): NodeCollection<D, S, N> {
+        // Appears as deprecated because it is for internal use only
+        return new NodeCollection(
+            this.graph,
+            this.#nodeClass,
+            this.toCy().difference(other.toCy()),
+        );
+    }
+
+    /**
+     * Returns a collection with the elements sorted according to the
+     * given comparison function.
+     *
+     * @todo confirm that the behavior (which is from cytoscape) and
+     * document it
+     *
+     * @param f The comparison function to use for sorting.
+     * @returns A new collection with the elements sorted.
+     */
+    sort(f: (a: N, b: N) => number): NodeCollection<D, S, N> {
+        // Appears as deprecated because it is for internal use only
+        return new NodeCollection(
+            this.#graph,
+            this.#nodeClass,
+            this.#nodes.sort((a, b) =>
+                f(new this.#nodeClass(this.graph, a), new this.#nodeClass(this.graph, b)),
+            ),
+        );
+    }
 
     /**
      * Returns the total degree of all nodes in the collection.
@@ -304,106 +366,6 @@ export class NodeCollection<
     }
 
     /**
-     * Returns the minimum degree of all nodes in the collection.
-     * Loop edges are counted twice.
-     *
-     * @returns the minimum degree of this collection.
-     */
-    get minDegree(): number {
-        return this.#nodes.minDegree(true);
-    }
-
-    /**
-     * Returns the minimum degree of all nodes in the collection.
-     * Loop edges are not counted.
-     *
-     * @returns the minimum degree of this collection, excluding loop edges.
-     */
-    get minDegreeWithoutLoops(): number {
-        return this.#nodes.minDegree(false);
-    }
-
-    /**
-     * Returns the maximum degree of all nodes in the collection.
-     * Loop edges are counted twice.
-     *
-     * @returns the maximum degree of this collection.
-     */
-    get maxDegree(): number {
-        return this.#nodes.maxDegree(true);
-    }
-
-    /**
-     * Returns the maximum degree of all nodes in the collection.
-     * Loop edges are not counted.
-     *
-     * @returns the maximum degree of this collection, excluding loop edges.
-     */
-    get maxDegreeWithoutLoops(): number {
-        return this.#nodes.maxDegree(false);
-    }
-
-    /**
-     * Returns the minimum indegree of all nodes in the collection.
-     * Loop edges are counted twice.
-     * 
-     * @returns the minimum indegree of this collection.
-     */
-    get minIndegree(): number {
-        return this.#nodes.minIndegree(true);
-    }
-    
-    /**
-     * Returns the minimum indegree of all nodes in the collection.
-     * Loop edges are not counted.
-     * 
-     * @returns the minimum indegree of this collection, excluding loop edges.
-     */
-    get minIndegreeWithoutLoops(): number {
-        return this.#nodes.minIndegree(false);
-    }
-
-    /**
-     * Returns the maximum indegree of all nodes in the collection.
-     * Loop edges are counted twice.
-     * 
-     * @returns the maximum indegree of this collection.
-     */
-    get maxIndegree(): number {
-        return this.#nodes.maxIndegree(true);
-    }
-
-    /**
-     * Returns the maximum indegree of all nodes in the collection.
-     * Loop edges are not counted.
-     * 
-     * @returns the maximum indegree of this collection, excluding loop edges.
-     */
-    get maxIndegreeWithoutLoops(): number {
-        return this.#nodes.maxIndegree(false);
-    }
-
-    /**
-     * Returns the minimum outdegree of all nodes in the collection.
-     * Loop edges are counted twice.
-     * 
-     * @returns the minimum outdegree of this collection.
-     */
-    get minOutdegree(): number {
-        return this.#nodes.minOutdegree(true);
-    }
-
-    /**
-     * Returns the minimum outdegree of all nodes in the collection.
-     * Loop edges are not counted.
-     * 
-     * @returns the minimum outdegree of this collection, excluding loop edges.
-     */
-    get minOutdegreeWithoutLoops(): number {
-        return this.#nodes.minOutdegree(false);
-    }
-
-    /**
      * Executes the provided function once for each node in the collection.
      *
      * Unline the analogous cytoscape method, this method does not support
@@ -421,13 +383,88 @@ export class NodeCollection<
      */
     forEach(f: (ele: N, i: number, eles: this) => void): void;
     forEach<T>(f: (this: T, ele: N, i: number, eles: this) => void, thisArg: T): void;
-    forEach<T>(
-        f: (this: T | undefined, ele: N, i: number, eles: this) => void,
-        thisArg?: T,
-    ) {
+    forEach<T>(f: (ele: N, i: number, eles: this) => void, thisArg?: T) {
         for (let i = 0; i < this.length; i++) {
-            f.call(thisArg, this[i], i, this);
+            if (thisArg === undefined) {
+                f(this[i], i, this);
+            } else {
+                f.call(thisArg, this[i], i, this);
+            }
         }
+    }
+
+    /**
+     * Find the minimum value in a collection.
+     *
+     * @param f The function that returns the value to compare. ele - The current
+     * element, i - The index of the current element, eles - The collection of
+     * elements being iterated.
+     * @param thisArg The value to use as `this` when executing the function.
+     * @returns An object with the minimum element and its value, or undefined if
+     * the collection is empty.
+     */
+    min(
+        f: (ele: N, i: number, eles: this) => number,
+    ): { element: N; value: number } | undefined;
+    min<T>(
+        f: (this: T, ele: N, i: number, eles: this) => number,
+        thisArg: T,
+    ): { element: N; value: number } | undefined;
+    min<T>(
+        f: (ele: N, i: number, eles: this) => number,
+        thisArg?: T,
+    ): { element: N; value: number } | undefined {
+        if (this.isEmpty) {
+            return undefined;
+        }
+        const m = this.#nodes.min((ele, i) => {
+            if (thisArg === undefined) {
+                return f(this[i], i, this);
+            } else {
+                return f.call(thisArg, new this.#nodeClass(this.graph, ele), i, this);
+            }
+        });
+        return {
+            element: new this.#nodeClass(this.graph, m.ele),
+            value: m.value,
+        };
+    }
+
+    /**
+     * Find the maximum value in a collection.
+     *
+     * @param f The function that returns the value to compare. ele - The current
+     * element, i - The index of the current element, eles - The collection of
+     * elements being iterated.
+     * @param thisArg The value to use as `this` when executing the function.
+     * @returns An object with the maximum element and its value, or undefined if
+     * the collection is empty.
+     */
+    max(
+        f: (ele: N, i: number, eles: this) => number,
+    ): { element: N; value: number } | undefined;
+    max<T>(
+        f: (this: T, ele: N, i: number, eles: this) => number,
+        thisArg: T,
+    ): { element: N; value: number } | undefined;
+    max<T>(
+        f: (ele: N, i: number, eles: this) => number,
+        thisArg?: T,
+    ): { element: N; value: number } | undefined {
+        if (this.isEmpty) {
+            return undefined;
+        }
+        const m = this.#nodes.max((ele, i) => {
+            if (thisArg === undefined) {
+                return f(this[i], i, this);
+            } else {
+                return f.call(thisArg, new this.#nodeClass(this.graph, ele), i, this);
+            }
+        });
+        return {
+            element: new this.#nodeClass(this.graph, m.ele),
+            value: m.value,
+        };
     }
 
     /**
@@ -465,31 +502,57 @@ export class NodeCollection<
     }
 
     /**
+     * @returns the graph that this collection is a part of.
+     */
+    get graph(): BaseGraph.Class {
+        return this.#graph;
+    }
+
+    /**
      * @returns The underlying cytoscape collection object.
      */
     toCy(): cytoscape.NodeCollection {
         return this.#nodes;
     }
 
-    // map(),
-    // something like map-flat (instead of outgoers, etc)
-
-    // remove/restore
-
-    // https://js.cytoscape.org/#collection/comparison
-    // https://js.cytoscape.org/#collection/building--filtering
-    // https://js.cytoscape.org/#collection/traversing
-    // _nodes_ .ancestors
+    // Absolute complement
+    // symmetricDifference
+    // diff
+    // cy|eles.filter( _function(ele, i, eles)_ );
     // _nodes_ .commonAncestors
+
+    // _eles_ .same() -> not equals because of sorting
+    // _eles_ .anySame() -> in
+    // _eles_ .contains() (and maybe .has())
+    // _eles_ .some
+    // _eles_ .every
+
+    // In singulars:
+    // _nodes_ .ancestors
     // _nodes_ .children
     // _nodes_ .descendants
+    // _edges_ .paralelEdges()
+    // _edges_ .codirectedEdges()
+    // _nodes_ .successors()
+    // _nodes_ .predecessors()
+    // _nodes_ .connectedEdges()
+    // _nodes_ .edgesWith
+    // _nodes_ .edgesTo (maybe edgesFrom?)
+
     // _eles_ .clone() - Get a new collection containing clones (i.e. copies) of the elements in the calling collection.
     //      This can probably be also used in singulars
-    // - selector support
-    //     https://js.cytoscape.org/#selectors
-    //     cy.collection(); // Empty collection
-    //     cy|eles.filter( _selector_ ); cy|eles.filter( _function(ele, i, eles)_ );
-    //          Probably also applies to Graph
-    //     .union( _selector_ ) et al.
+
+    // _eles_ .components et al
+
+    // map()
+    //   - Para algo como o cytoscape, provavelmente não vale a pena, porque
+    //   bastaria fazer .toArray().map()
+    //   - Para algo que retorna outro nó, pode ser interessante
+    //   - mais interessante ainda seria um flatMap(), que retorna uma coleção
+    //   que é flattened. Ex. .flatMap((n) => n.outgoers.targets) podia retornar
+    //   uma coleção com todos os outgoers
+    // De um modo geral, independentemente dos três pontos, acho que só valem
+    // a pena explorar quando aparecer um caso de uso que os justifique.
+
     // - cytoscape dijkstra search (involves passing a collection of nodes) (maybe has a method to return the last result)
 }

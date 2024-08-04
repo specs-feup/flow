@@ -117,16 +117,16 @@ namespace T2Node {
         },
     };
 
-    export interface Data extends TNode.Data {
+    export interface Data extends BaseNode.Data {
         kaka2: string;
     }
 
-    export interface ScratchData extends TNode.ScratchData {
+    export interface ScratchData extends BaseNode.ScratchData {
         piu: string;
     }
 }
 
-const graph = Graph.create();
+const graph = Graph.create().setEdgeIdGenerator(new IncrementingIdGenerator());
 const n1 = graph.addNode("n1");
 const n2 = graph.addNode("n2");
 const n3 = graph.addNode("n3");
@@ -143,21 +143,39 @@ const e5 = graph.addEdge(n5, n6, "5");
 const e6 = graph.addEdge(n6, n7, "6");
 
 
+const d = graph.nodes2.min((n) => n.degree);
+
 // console.log(graph.nodes2[10].id);
 
+function a(bn: BaseNode.Class, tn: TNode.Class, t2n: T2Node.Class) {
+    // BaseNode.Class<TNode.Data, TNode.ScratchData>
+    const tb = tn.toCollection().union(bn.toCollection());
+    tb.allAs(BaseNode);
+    const bt = bn.toCollection().union(tn.toCollection());
+    bt.allAs(BaseNode);
+    const tt = tn.toCollection().union(tn.toCollection());
+    const bb = bn.toCollection().union(bn.toCollection());
+
+    const t2t = t2n.toCollection().union(tn.toCollection());
+    t2t.allAs(BaseNode);
+    const tt2 = tn.toCollection().union(t2n.toCollection());
 
 
-const a = graph.nodes2.expectAll(TNode).allAs(BaseNode);
+    const d = tn.toCollection().difference(bn.toCollection());
+}
 
-graph.nodes2.union(a.(BaseNode), a, graph.nodes2.filterIs(TNode), graph.nodes2);
 
-graph.nodes2.expectAll(TNode).union(graph.nodes2);
+// const a = graph.nodes2.expectAll(TNode).allAs(BaseNode);
 
-graph.nodes2.filterIs(TNode).allAs(TNode);
+// graph.nodes2.union(a.(BaseNode), a, graph.nodes2.filterIs(TNode), graph.nodes2);
 
-console.log(graph.nodes2[5].outgoers[0].id);
+// graph.nodes2.expectAll(TNode).union(graph.nodes2);
 
-graph.nodes2.as(T2Node);
+// graph.nodes2.filterIs(TNode).allAs(TNode);
+
+// console.log(graph.nodes2[5].outgoers[0].id);
+
+// graph.nodes2.as(T2Node);
 
 // [[]][10].at(0);
 
