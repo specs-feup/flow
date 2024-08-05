@@ -23,7 +23,8 @@ export interface DijkstraSearchVisit extends Node.SearchVisit {
  * 
  * Weights must be non-negative.
  *
- * @todo This implementation uses an array, which is not efficient. A better
+ * @privateRemarks
+ * TODO This implementation uses an array, which is not efficient. A better
  * data structure should be used instead.
  */
 export default class DijkstraSearch implements Node.Search<DijkstraSearchVisit> {

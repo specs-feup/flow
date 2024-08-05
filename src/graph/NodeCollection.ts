@@ -44,7 +44,7 @@ export class NodeCollection<
      * @param graph The graph that this collection is a part of.
      * @param nodeClass The underlying cytoscape node object.
      * @param nodes The underlying cytoscape collection object.
-     * @deprecated
+     * @deprecated @hideconstructor
      */
     constructor(
         graph: BaseGraph.Class,
@@ -160,10 +160,10 @@ export class NodeCollection<
 
     /**
      * Access the node at the given index.
-     * Indexing cannot be implemented directly in the class,
-     * so it is implemented by proxy.
      *
-     * Note (for implementers of lara-flow only): since this
+     * @privateRemarks
+     * Indexing cannot be implemented directly in the class,
+     * so it is implemented by proxy. Since this
      * indexing is implemented in the proxy and not in the class,
      * internal method implementations may not use it. Instead,
      * they should use the {@link NodeCollection.at} method.
@@ -172,7 +172,7 @@ export class NodeCollection<
 
     /**
      * Access the node at the given index.
-     * This is similar to doing `collection[index]`, but has
+     * This is similar to indexing, but has
      * undefined in the return type.
      *
      * @param index The index of the node to access.
@@ -447,7 +447,7 @@ export class NodeCollection<
      * May also be a function that takes the index of the first incompatible node and
      * returns a message.
      * @returns The node collection, wrapped in the new functionality class.
-     * @throws LaraFlowError if any node is not compatible with the type.
+     * @throws {} {@link LaraFlowError} if any node is not compatible with the type.
      * This error should be seen as a logic error and not catched.
      */
     expectAll<
@@ -524,17 +524,27 @@ export class NodeCollection<
      * You may chain this method to union multiple collections.
      *
      * If the rhs collection is a subtype of the lhs collection, the resulting
-     * collection will have the lhs type. Otherwise, the resulting collection
-     * is downgraded to a BaseNode and must be casted to the desired type
-     * explicitly with {@link NodeCollection.allAs}.
+     * collection will have the lhs type.
      *
      * @param other The other collection to union with.
      * @returns A new collection containing the union of all nodes.
-     * @throws LaraFlowError if the other collection is from a different graph.
+     * @throws {} {@link LaraFlowError} if the other collection is from a different graph.
      */
     union<D2 extends D, S2 extends S>(
         other: NodeCollection<D2, S2, BaseNode.Class<D2, S2>>,
     ): NodeCollection<D, S, N>;
+    /**
+     * Returns the union of this collection with another collection.
+     * You may chain this method to union multiple collections.
+     *
+     * If the rhs collection is not a subtype of the lhs collection, the resulting
+     * collection will be downgraded to a {@link BaseNode} and must be casted to the
+     * desired type explicitly with {@link NodeCollection.allAs}.
+     *
+     * @param other The other collection to union with.
+     * @returns A new collection containing the union of all nodes.
+     * @throws {} {@link LaraFlowError} if the other collection is from a different graph.
+     */
     union<D2 extends BaseNode.Data, S2 extends BaseNode.ScratchData>(
         other: NodeCollection<D2, S2, BaseNode.Class<D2, S2>>,
     ): NodeCollection<D | D2, S | S2, BaseNode.Class<D | D2, S | S2>>;
@@ -604,18 +614,30 @@ export class NodeCollection<
      * in both.
      *
      * If the rhs collection is a subtype of the lhs collection, the resulting
-     * collection will have the lhs type. Otherwise, the resulting collection
-     * is downgraded to a BaseNode and must be casted to the desired type
-     * explicitly with {@link NodeCollection.allAs}.
+     * collection will have the lhs type.
      *
      * @param other The other collection to apply the symmetric difference with.
      * @returns A new collection containing the symmetric difference of the two
      * collections.
-     * @throws LaraFlowError if the other collection is from a different graph.
+     * @throws {} {@link LaraFlowError} if the other collection is from a different graph.
      */
     symmetricDifference<D2 extends D, S2 extends S>(
         other: NodeCollection<D2, S2, BaseNode.Class<D2, S2>>,
     ): NodeCollection<D, S, N>;
+    /**
+     * Returns the symmetric difference of this collection with another collection.
+     * This collection consists of the nodes that are in either collection, but not
+     * in both.
+     *
+     * If the rhs collection is not a subtype of the lhs collection, the resulting
+     * collection will be downgraded to a {@link BaseNode} and must be casted to the
+     * desired type explicitly with {@link NodeCollection.allAs}.
+     *
+     * @param other The other collection to apply the symmetric difference with.
+     * @returns A new collection containing the symmetric difference of the two
+     * collections.
+     * @throws {} {@link LaraFlowError} if the other collection is from a different graph.
+     */
     symmetricDifference<D2 extends BaseNode.Data, S2 extends BaseNode.ScratchData>(
         other: NodeCollection<D2, S2, BaseNode.Class<D2, S2>>,
     ): NodeCollection<D | D2, S | S2, BaseNode.Class<D | D2, S | S2>>;
@@ -734,10 +756,18 @@ export class NodeCollection<
      *
      * @param f The function to test each node. ele - The current element, i - The
      * index of the current element, eles - The collection of elements being iterated.
-     * @param thisArg The value to use as `this` when executing the function.
      * @returns Whether any node in the collection satisfies the function.
      */
     some(f: (ele: N, i: number, eles: this) => boolean): boolean;
+    /**
+     * Returns whether any node in the collection satisfies the provided function.
+     * Returns false for an empty collection.
+     *
+     * @param f The function to test each node. ele - The current element, i - The
+     * index of the current element, eles - The collection of elements being iterated.
+     * @param thisArg The value to use as `this` when executing the function.
+     * @returns Whether any node in the collection satisfies the function.
+     */
     some<T>(f: (this: T, ele: N, i: number, eles: this) => boolean, thisArg: T): boolean;
     some<T>(f: (ele: N, i: number, eles: this) => boolean, thisArg?: T): boolean {
         for (let i = 0; i < this.length; i++) {
@@ -760,10 +790,18 @@ export class NodeCollection<
      *
      * @param f The function to test each node. ele - The current element, i - The
      * index of the current element, eles - The collection of elements being iterated.
-     * @param thisArg The value to use as `this` when executing the function.
      * @returns Whether all nodes in the collection satisfy the function.
      */
     every(f: (ele: N, i: number, eles: this) => boolean): boolean;
+    /**
+     * Returns whether all nodes in the collection satisfy the provided function.
+     * Returns true for an empty collection.
+     *
+     * @param f The function to test each node. ele - The current element, i - The
+     * index of the current element, eles - The collection of elements being iterated.
+     * @param thisArg The value to use as `this` when executing the function.
+     * @returns Whether all nodes in the collection satisfy the function.
+     */
     every<T>(f: (this: T, ele: N, i: number, eles: this) => boolean, thisArg: T): boolean;
     every<T>(f: (ele: N, i: number, eles: this) => boolean, thisArg?: T): boolean {
         for (let i = 0; i < this.length; i++) {
@@ -794,9 +832,24 @@ export class NodeCollection<
      *
      * @param f The function to execute for each node. ele - The current element, i - The
      * index of the current element, eles - The collection of elements being iterated.
-     * @param thisArg The value to use as `this` when executing the function.
      */
     forEach(f: (ele: N, i: number, eles: this) => void): void;
+    /**
+     * Executes the provided function once for each node in the collection.
+     *
+     * Unline the analogous cytoscape method, this method does not support
+     * exiting early by returning false, due to the fact that a `return false;`
+     * would not be clear and intuitive for someone reading the code. As such,
+     * this function follows the behavior of the Array.prototype.forEach method.
+     *
+     * In the future, if that feature is really desirable, instead of returning false,
+     * the function could return an enum value that represents a control flow instruction.
+     * Until then, a for loop may be used.
+     *
+     * @param f The function to execute for each node. ele - The current element, i - The
+     * index of the current element, eles - The collection of elements being iterated.
+     * @param thisArg The value to use as `this` when executing the function.
+     */
     forEach<T>(f: (this: T, ele: N, i: number, eles: this) => void, thisArg: T): void;
     forEach<T>(f: (ele: N, i: number, eles: this) => void, thisArg?: T) {
         for (let i = 0; i < this.length; i++) {
@@ -814,10 +867,18 @@ export class NodeCollection<
      *
      * @param f The function to test each node. ele - The current element, i - The
      * index of the current element, eles - The collection of elements being iterated.
-     * @param thisArg The value to use as `this` when executing the function.
      * @returns A new collection containing only the nodes that satisfy the function.
      */
     filter(f: (ele: N, i: number, eles: this) => boolean): NodeCollection<D, S, N>;
+    /**
+     * Returns a new collection containing only the nodes that satisfy the
+     * provided function.
+     *
+     * @param f The function to test each node. ele - The current element, i - The
+     * index of the current element, eles - The collection of elements being iterated.
+     * @param thisArg The value to use as `this` when executing the function.
+     * @returns A new collection containing only the nodes that satisfy the function.
+     */
     filter<T>(
         f: (this: T, ele: N, i: number, eles: this) => boolean,
         thisArg: T,
@@ -846,13 +907,22 @@ export class NodeCollection<
      * @param f The function that returns the value to compare. ele - The current
      * element, i - The index of the current element, eles - The collection of
      * elements being iterated.
-     * @param thisArg The value to use as `this` when executing the function.
      * @returns An object with the minimum element and its value, or undefined if
      * the collection is empty.
      */
     min(
         f: (ele: N, i: number, eles: this) => number,
     ): { element: N; value: number } | undefined;
+    /**
+     * Find the minimum value in a collection.
+     *
+     * @param f The function that returns the value to compare. ele - The current
+     * element, i - The index of the current element, eles - The collection of
+     * elements being iterated.
+     * @param thisArg The value to use as `this` when executing the function.
+     * @returns An object with the minimum element and its value, or undefined if
+     * the collection is empty.
+     */
     min<T>(
         f: (this: T, ele: N, i: number, eles: this) => number,
         thisArg: T,
@@ -884,13 +954,22 @@ export class NodeCollection<
      * @param f The function that returns the value to compare. ele - The current
      * element, i - The index of the current element, eles - The collection of
      * elements being iterated.
-     * @param thisArg The value to use as `this` when executing the function.
      * @returns An object with the maximum element and its value, or undefined if
      * the collection is empty.
      */
     max(
         f: (ele: N, i: number, eles: this) => number,
     ): { element: N; value: number } | undefined;
+    /**
+     * Find the maximum value in a collection.
+     *
+     * @param f The function that returns the value to compare. ele - The current
+     * element, i - The index of the current element, eles - The collection of
+     * elements being iterated.
+     * @param thisArg The value to use as `this` when executing the function.
+     * @returns An object with the maximum element and its value, or undefined if
+     * the collection is empty.
+     */
     max<T>(
         f: (this: T, ele: N, i: number, eles: this) => number,
         thisArg: T,

@@ -10,7 +10,7 @@ import { NodeCollection } from "lara-flow/graph/NodeCollection";
 import { EdgeCollection } from "lara-flow/graph/EdgeCollection";
 
 /**
- * The base [node type]{@link Node}. All node types must be subtypes of this type.
+ * The base {@link Node | node type}. All node types must be subtypes of this type.
  */
 namespace BaseNode {
     /**
@@ -37,7 +37,7 @@ namespace BaseNode {
          * @param node The underlying cytoscape node object.
          * @param _d A hack to force typescript to typecheck D in {@link BaseNode.Class.as} method.
          * @param _sd A hack to force typescript to typecheck S in {@link BaseNode.Class.as} method.
-         * @deprecated
+         * @deprecated @hideconstructor
          */
         constructor(
             graph: BaseGraph.Class,
@@ -63,7 +63,7 @@ namespace BaseNode {
          * Use the scratch data object for temporary or non-serializable data.
          * For JSON serializable data, use {@link BaseEdge.Class.data}.
          *
-         * The scratch data is stored under the [lara-flow namespace]{@link Graph.scratchNamespace}.
+         * The scratch data is stored under the {@link Graph.scratchNamespace | lara-flow namespace}.
          *
          * @returns the scratch data object associated with this node.
          */
@@ -233,7 +233,7 @@ namespace BaseNode {
          * @param NodeType The node type to change the functionality class into.
          * @param message The message to throw if the node is not compatible with the type.
          * @returns The node, wrapped in the new functionality class.
-         * @throws LaraFlowError if the node is not compatible with the type.
+         * @throws {} {@link LaraFlowError} if the node is not compatible with the type.
          * This error should be seen as a logic error and not catched.
          */
         expect<
@@ -395,7 +395,7 @@ namespace BaseNode {
         /**
          * Retrieves the edges that connect this node with the given nodes.
          * Direction is not considered.
-         * 
+         *
          * @param nodes The node or collection of nodes to check for edges connected
          * with this node.
          * @returns The edges that connect this node with the given nodes.
@@ -411,7 +411,7 @@ namespace BaseNode {
 
         /**
          * Retrieves the edges from this node to the given nodes.
-         * 
+         *
          * @param nodes The node or collection of nodes to check for edges connected
          * with this node.
          * @returns The edges from this node to the given nodes.
@@ -427,7 +427,7 @@ namespace BaseNode {
 
         /**
          * Retrieves the edges from the given nodes to this node.
-         * 
+         *
          * @param nodes The node or collection of nodes to check for edges connected
          * with this node.
          * @returns The edges from the given nodes to this node.

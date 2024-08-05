@@ -7,7 +7,7 @@ import Graph from "lara-flow/graph/Graph";
 import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
 
 /**
- * The base [edge type]{@link Edge}. All edge types must be subtypes of this type.
+ * The base {@link Edge | edge type}. All edge types must be subtypes of this type.
  */
 namespace BaseEdge {
     /**
@@ -34,7 +34,7 @@ namespace BaseEdge {
          * @param edge The underlying cytoscape edge object.
          * @param _d A hack to force typescript to typecheck D in {@link BaseEdge.Class.as} method.
          * @param _sd A hack to force typescript to typecheck S in {@link BaseEdge.Class.as} method.
-         * @deprecated
+         * @deprecated @hideconstructor
          */
         constructor(
             graph: BaseGraph.Class,
@@ -60,7 +60,7 @@ namespace BaseEdge {
          * Use the scratch data object for temporary or non-serializable data.
          * For JSON serializable data, use {@link BaseEdge.Class.data}.
          *
-         * The scratch data is stored under the [lara-flow namespace]{@link Graph.scratchNamespace}.
+         * The scratch data is stored under the {@link Graph.scratchNamespace | lara-flow namespace}.
          *
          * @returns the scratch data object associated with this edge.
          */
@@ -221,7 +221,7 @@ namespace BaseEdge {
          * @param EdgeType The edge type to change the functionality class into.
          * @param message The message to throw if the edge is not compatible with the type.
          * @returns The edge, wrapped in the new functionality class.
-         * @throws LaraFlowError if the edge is not compatible with the type.
+         * @throws {} {@link LaraFlowError} if the edge is not compatible with the type.
          * This error should be seen as a logic error and not catched.
          */
         expect<

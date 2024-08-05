@@ -590,9 +590,9 @@ export class DotSubgraph implements DotStatement {
 /**
  * A dot graph.
  * 
- * While it would be convenient for DotGraph to extend {@link DotSubGraph},
+ * While it would be convenient for DotGraph to extend {@link DotSubgraph},
  * that would violate the Liskov Substitution Principle: you may not
- * use a DotGraph wherever a DotSubGraph is expected.
+ * use a DotGraph wherever a {@link DotSubgraph} is expected.
  */
 export class DotGraph {
     /**
@@ -855,7 +855,6 @@ export default class Dot {
      * 
      * Example: "node [shape=point];"
      * 
-     * @param type The type of attributes: graph, node, or edge.
      * @param attrs The list of attributes.
      * @returns The created dot attributes statement.
      */
@@ -868,7 +867,6 @@ export default class Dot {
      * 
      * Example: "edge [color=red];"
      * 
-     * @param type The type of attributes: graph, node, or edge.
      * @param attrs The list of attributes.
      * @returns The created dot attributes statement.
      */
@@ -881,7 +879,6 @@ export default class Dot {
      * 
      * Example: "graph [label=\"Hello\"];"
      * 
-     * @param type The type of attributes: graph, node, or edge.
      * @param attrs The list of attributes.
      * @returns The created dot attributes statement.
      */

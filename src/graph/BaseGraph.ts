@@ -11,7 +11,7 @@ import { NodeCollection } from "lara-flow/graph/NodeCollection";
 import { EdgeCollection } from "lara-flow/graph/EdgeCollection";
 
 /**
- * The base [graph type]{@link Graph}. All graph types must be subtypes of this type.
+ * The base {@link Graph | graph type}. All graph types must be subtypes of this type.
  */
 namespace BaseGraph {
     /**
@@ -34,7 +34,7 @@ namespace BaseGraph {
          * @param graph The underlying cytoscape graph object.
          * @param _d A hack to force typescript to typecheck D in {@link BaseGraph.Class.as} method.
          * @param _sd A hack to force typescript to typecheck S in {@link BaseGraph.Class.as} method.
-         * @deprecated
+         * @deprecated @hideconstructor
          */
         constructor(graph: cytoscape.Core, _d: D = {} as any, _sd: S = {} as any) {
             this.#graph = graph;
@@ -54,7 +54,7 @@ namespace BaseGraph {
          * Use the scratch data object for temporary or non-serializable data.
          * For JSON serializable data, use {@link BaseGraph.Class.data}.
          *
-         * The scratch data is stored under the [lara-flow namespace]{@link Graph.scratchNamespace}.
+         * The scratch data is stored under the {@link Graph.scratchNamespace | lara-flow namespace}.
          *
          * @returns the scratch data object associated with this graph.
          */
@@ -142,7 +142,7 @@ namespace BaseGraph {
          * @param GraphType The graph type to change the functionality class into.
          * @param message The message to throw if the graph is not compatible with the type.
          * @returns The graph, wrapped in the new functionality class.
-         * @throws LaraFlowError if the graph is not compatible with the type.
+         * @throws {} {@link LaraFlowError} if the graph is not compatible with the type.
          * This error should be seen as a logic error and not catched.
          */
         expect<
@@ -304,7 +304,7 @@ namespace BaseGraph {
         }
 
         /**
-         * @param Type The type of node or edge to create an empty collection for.
+         * @param NodeType The type of node to create an empty collection for.
          * @returns An empty collection of the given type.
          */
         emptyCollection<
@@ -312,12 +312,18 @@ namespace BaseGraph {
             S extends BaseNode.ScratchData,
             N extends BaseNode.Class<D, S>,
         >(NodeType: Node<D, S, N>): NodeCollection;
+        /**
+         * @param EdgeType The type of edge to create an empty collection for.
+         * @returns An empty collection of the given type.
+         */
         emptyCollection<
             D extends BaseEdge.Data,
             S extends BaseEdge.ScratchData,
             E extends BaseEdge.Class<D, S>,
         >(EdgeType: Edge<D, S, E>): EdgeCollection;
-        emptyCollection(Type: Node<any, any, any> | Edge<any, any, any>): NodeCollection | EdgeCollection {
+        emptyCollection(
+            Type: Node<any, any, any> | Edge<any, any, any>,
+        ): NodeCollection | EdgeCollection {
             // Checks which constructor Type.Class is by constructing a dummy object.
             // This distinguishes node types from edge types.
             if (new Type.Class(this, {} as any) instanceof BaseNode.Class) {
@@ -360,7 +366,7 @@ namespace BaseGraph {
         }
 
         /**
-         * Converts the graph to a string using a {@link Graph.DotFormatter} and writes
+         * Converts the graph to a string using a {@link Graph.Formatter} and writes
          * it to a file.
          *
          * @param formatter The formatter to use.
@@ -401,7 +407,7 @@ namespace BaseGraph {
      * However, importing a cytoscape object that does not respect these types may lead to
      * runtime errors on certain operations, such as adding a new node. In practice, its almost
      * impossible for that to happen unintentionally, as these fields are under the
-     * [lara-flow namespace]{@link Graph.scratchNamespace}.
+     * {@link Graph.scratchNamespace | lara-flow namespace}.
      */
     export const TypeGuard: Graph.TypeGuard<Data, ScratchData> = {
         isDataCompatible(data: BaseGraph.Data): data is Data {

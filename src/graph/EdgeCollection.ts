@@ -45,7 +45,7 @@ export class EdgeCollection<
      * @param graph The graph that this collection is a part of.
      * @param edgeClass The underlying cytoscape edge object.
      * @param edges The underlying cytoscape collection object.
-     * @deprecated
+     * @deprecated @hideconstructor
      */
     constructor(
         graph: BaseGraph.Class,
@@ -161,10 +161,10 @@ export class EdgeCollection<
 
     /**
      * Access the edge at the given index.
-     * Indexing cannot be implemented directly in the class,
-     * so it is implemented by proxy.
      *
-     * Note (for implementers of lara-flow only): since this
+     * @privateRemarks
+     * Indexing cannot be implemented directly in the class,
+     * so it is implemented by proxy. Since this
      * indexing is implemented in the proxy and not in the class,
      * internal method implementations may not use it. Instead,
      * they should use the {@link EdgeCollection.at} method.
@@ -173,7 +173,7 @@ export class EdgeCollection<
 
     /**
      * Access the edge at the given index.
-     * This is similar to doing `collection[index]`, but has
+     * This is similar to indexing, but has
      * undefined in the return type.
      *
      * @param index The index of the edge to access.
@@ -232,11 +232,7 @@ export class EdgeCollection<
      */
     get sources(): NodeCollection {
         // Appears as deprecated because it is for internal use only
-        return new NodeCollection(
-            this.#graph,
-            BaseNode.Class,
-            this.#edges.sources(),
-        );
+        return new NodeCollection(this.#graph, BaseNode.Class, this.#edges.sources());
     }
 
     /**
@@ -244,11 +240,7 @@ export class EdgeCollection<
      */
     get targets(): NodeCollection {
         // Appears as deprecated because it is for internal use only
-        return new NodeCollection(
-            this.#graph,
-            BaseNode.Class,
-            this.#edges.targets(),
-        );
+        return new NodeCollection(this.#graph, BaseNode.Class, this.#edges.targets());
     }
 
     /**
@@ -325,7 +317,7 @@ export class EdgeCollection<
      * May also be a function that takes the index of the first incompatible edge and
      * returns a message.
      * @returns The edge collection, wrapped in the new functionality class.
-     * @throws LaraFlowError if any edge is not compatible with the type.
+     * @throws {} {@link LaraFlowError} if any edge is not compatible with the type.
      * This error should be seen as a logic error and not catched.
      */
     expectAll<
@@ -402,17 +394,27 @@ export class EdgeCollection<
      * You may chain this method to union multiple collections.
      *
      * If the rhs collection is a subtype of the lhs collection, the resulting
-     * collection will have the lhs type. Otherwise, the resulting collection
-     * is downgraded to a EdgeNode and must be casted to the desired type
-     * explicitly with {@link EdgeCollection.allAs}.
+     * collection will have the lhs type.
      *
      * @param other The other collection to union with.
      * @returns A new collection containing the union of all edges.
-     * @throws LaraFlowError if the other collection is from a different graph.
+     * @throws {} {@link LaraFlowError} if the other collection is from a different graph.
      */
     union<D2 extends D, S2 extends S>(
         other: EdgeCollection<D2, S2, BaseEdge.Class<D2, S2>>,
     ): EdgeCollection<D, S, E>;
+    /**
+     * Returns the union of this collection with another collection.
+     * You may chain this method to union multiple collections.
+     *
+     * If the rhs collection is not a subtype of the lhs collection, the resulting
+     * collection will be downgraded to a {@link BaseEdge} and must be casted to the desired type
+     * explicitly with {@link EdgeCollection.allAs}.
+     *
+     * @param other The other collection to union with.
+     * @returns A new collection containing the union of all edges.
+     * @throws {} {@link LaraFlowError} if the other collection is from a different graph.
+     */
     union<D2 extends BaseEdge.Data, S2 extends BaseEdge.ScratchData>(
         other: EdgeCollection<D2, S2, BaseEdge.Class<D2, S2>>,
     ): EdgeCollection<D | D2, S | S2, BaseEdge.Class<D | D2, S | S2>>;
@@ -482,18 +484,30 @@ export class EdgeCollection<
      * in both.
      *
      * If the rhs collection is a subtype of the lhs collection, the resulting
-     * collection will have the lhs type. Otherwise, the resulting collection
-     * is downgraded to a BaseEdge and must be casted to the desired type
+     * collection will have the lhs type.
+     *
+     * @param other The other collection to apply the symmetric difference with.
+     * @returns A new collection containing the symmetric difference of the two
+     * collections.
+     * @throws {} {@link LaraFlowError} if the other collection is from a different graph.
+     */
+    symmetricDifference<D2 extends D, S2 extends S>(
+        other: EdgeCollection<D2, S2, BaseEdge.Class<D2, S2>>,
+    ): EdgeCollection<D, S, E>;
+    /**
+     * Returns the symmetric difference of this collection with another collection.
+     * This collection consists of the edges that are in either collection, but not
+     * in both.
+     *
+     * If the rhs collection is not a subtype of the lhs collection, the resulting
+     * collection will be downgraded to a {@link BaseEdge} and must be casted to the desired type
      * explicitly with {@link EdgeCollection.allAs}.
      *
      * @param other The other collection to apply the symmetric difference with.
      * @returns A new collection containing the symmetric difference of the two
      * collections.
-     * @throws LaraFlowError if the other collection is from a different graph.
+     * @throws {} {@link LaraFlowError} if the other collection is from a different graph.
      */
-    symmetricDifference<D2 extends D, S2 extends S>(
-        other: EdgeCollection<D2, S2, BaseEdge.Class<D2, S2>>,
-    ): EdgeCollection<D, S, E>;
     symmetricDifference<D2 extends BaseEdge.Data, S2 extends BaseEdge.ScratchData>(
         other: EdgeCollection<D2, S2, BaseEdge.Class<D2, S2>>,
     ): EdgeCollection<D | D2, S | S2, BaseEdge.Class<D | D2, S | S2>>;
@@ -575,10 +589,18 @@ export class EdgeCollection<
      *
      * @param f The function to test each edge. ele - The current element, i - The
      * index of the current element, eles - The collection of elements being iterated.
-     * @param thisArg The value to use as `this` when executing the function.
      * @returns Whether any edge in the collection satisfies the function.
      */
     some(f: (ele: E, i: number, eles: this) => boolean): boolean;
+    /**
+     * Returns whether any edge in the collection satisfies the provided function.
+     * Returns false for an empty collection.
+     *
+     * @param f The function to test each edge. ele - The current element, i - The
+     * index of the current element, eles - The collection of elements being iterated.
+     * @param thisArg The value to use as `this` when executing the function.
+     * @returns Whether any edge in the collection satisfies the function.
+     */
     some<T>(f: (this: T, ele: E, i: number, eles: this) => boolean, thisArg: T): boolean;
     some<T>(f: (ele: E, i: number, eles: this) => boolean, thisArg?: T): boolean {
         for (let i = 0; i < this.length; i++) {
@@ -601,10 +623,18 @@ export class EdgeCollection<
      *
      * @param f The function to test each edge. ele - The current element, i - The
      * index of the current element, eles - The collection of elements being iterated.
-     * @param thisArg The value to use as `this` when executing the function.
      * @returns Whether all edges in the collection satisfy the function.
      */
     every(f: (ele: E, i: number, eles: this) => boolean): boolean;
+    /**
+     * Returns whether all edges in the collection satisfy the provided function.
+     * Returns true for an empty collection.
+     *
+     * @param f The function to test each edge. ele - The current element, i - The
+     * index of the current element, eles - The collection of elements being iterated.
+     * @param thisArg The value to use as `this` when executing the function.
+     * @returns Whether all edges in the collection satisfy the function.
+     */
     every<T>(f: (this: T, ele: E, i: number, eles: this) => boolean, thisArg: T): boolean;
     every<T>(f: (ele: E, i: number, eles: this) => boolean, thisArg?: T): boolean {
         for (let i = 0; i < this.length; i++) {
@@ -635,9 +665,24 @@ export class EdgeCollection<
      *
      * @param f The function to execute for each edge. ele - The current element, i - The
      * index of the current element, eles - The collection of elements being iterated.
-     * @param thisArg The value to use as `this` when executing the function.
      */
     forEach(f: (ele: E, i: number, eles: this) => void): void;
+    /**
+     * Executes the provided function once for each edge in the collection.
+     *
+     * Unline the analogous cytoscape method, this method does not support
+     * exiting early by returning false, due to the fact that a `return false;`
+     * would not be clear and intuitive for someone reading the code. As such,
+     * this function follows the behavior of the Array.prototype.forEach method.
+     *
+     * In the future, if that feature is really desirable, instead of returning false,
+     * the function could return an enum value that represents a control flow instruction.
+     * Until then, a for loop may be used.
+     *
+     * @param f The function to execute for each edge. ele - The current element, i - The
+     * index of the current element, eles - The collection of elements being iterated.
+     * @param thisArg The value to use as `this` when executing the function.
+     */
     forEach<T>(f: (this: T, ele: E, i: number, eles: this) => void, thisArg: T): void;
     forEach<T>(f: (ele: E, i: number, eles: this) => void, thisArg?: T) {
         for (let i = 0; i < this.length; i++) {
@@ -655,10 +700,18 @@ export class EdgeCollection<
      *
      * @param f The function to test each edge. ele - The current element, i - The
      * index of the current element, eles - The collection of elements being iterated.
-     * @param thisArg The value to use as `this` when executing the function.
      * @returns A new collection containing only the edges that satisfy the function.
      */
     filter(f: (ele: E, i: number, eles: this) => boolean): EdgeCollection<D, S, E>;
+    /**
+     * Returns a new collection containing only the edges that satisfy the
+     * provided function.
+     *
+     * @param f The function to test each edge. ele - The current element, i - The
+     * index of the current element, eles - The collection of elements being iterated.
+     * @param thisArg The value to use as `this` when executing the function.
+     * @returns A new collection containing only the edges that satisfy the function.
+     */
     filter<T>(
         f: (this: T, ele: E, i: number, eles: this) => boolean,
         thisArg: T,
@@ -687,13 +740,22 @@ export class EdgeCollection<
      * @param f The function that returns the value to compare. ele - The current
      * element, i - The index of the current element, eles - The collection of
      * elements being iterated.
-     * @param thisArg The value to use as `this` when executing the function.
      * @returns An object with the minimum element and its value, or undefined if
      * the collection is empty.
      */
     min(
         f: (ele: E, i: number, eles: this) => number,
     ): { element: E; value: number } | undefined;
+    /**
+     * Find the minimum value in a collection.
+     *
+     * @param f The function that returns the value to compare. ele - The current
+     * element, i - The index of the current element, eles - The collection of
+     * elements being iterated.
+     * @param thisArg The value to use as `this` when executing the function.
+     * @returns An object with the minimum element and its value, or undefined if
+     * the collection is empty.
+     */
     min<T>(
         f: (this: T, ele: E, i: number, eles: this) => number,
         thisArg: T,
@@ -725,13 +787,22 @@ export class EdgeCollection<
      * @param f The function that returns the value to compare. ele - The current
      * element, i - The index of the current element, eles - The collection of
      * elements being iterated.
-     * @param thisArg The value to use as `this` when executing the function.
      * @returns An object with the maximum element and its value, or undefined if
      * the collection is empty.
      */
     max(
         f: (ele: E, i: number, eles: this) => number,
     ): { element: E; value: number } | undefined;
+    /**
+     * Find the maximum value in a collection.
+     *
+     * @param f The function that returns the value to compare. ele - The current
+     * element, i - The index of the current element, eles - The collection of
+     * elements being iterated.
+     * @param thisArg The value to use as `this` when executing the function.
+     * @returns An object with the maximum element and its value, or undefined if
+     * the collection is empty.
+     */
     max<T>(
         f: (this: T, ele: E, i: number, eles: this) => number,
         thisArg: T,
