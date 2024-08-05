@@ -25,9 +25,6 @@ export interface DijkstraSearchVisit extends Node.SearchVisit {
  *
  * @todo This implementation uses an array, which is not efficient. A better
  * data structure should be used instead.
- * @todo Maybe expose a DijkstraSearch that is not lazy but uses cytoscape's
- * implementation. That would only be worth it if cytoscape is significantly
- * faster and we cannot implement a faster version ourselves.
  */
 export default class DijkstraSearch implements Node.Search<DijkstraSearchVisit> {
     /**
@@ -126,9 +123,9 @@ export default class DijkstraSearch implements Node.Search<DijkstraSearchVisit> 
             index++;
             visited.add(closest.id);
 
-            let neighbors: [BaseEdge.Class, BaseNode.Class][] = closest.outgoers.map(e => [e, e.target]);
+            let neighbors: [BaseEdge.Class, BaseNode.Class][] = closest.outgoers.toArray().map(e => [e, e.target]);
             if (!this.directed) {
-                const incomers: [BaseEdge.Class, BaseNode.Class][] = closest.incomers.map(e => [e, e.source]);
+                const incomers: [BaseEdge.Class, BaseNode.Class][] = closest.incomers.toArray().map(e => [e, e.source]);
                 neighbors.push(...incomers);
             }
             neighbors = neighbors.filter(([e, n]) => this.propagate(e) && !visited.has(n.id));

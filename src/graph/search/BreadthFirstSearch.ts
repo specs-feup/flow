@@ -11,7 +11,7 @@ import Node from "lara-flow/graph/Node";
  * Can be set to be undirected, in which case it will also use incoming edges
  * to traverse the graph, disregarding edge direction.
  * 
- * @todo This BFS implementation uses an array as a queue, which is not efficient.
+ * @todo This implementation uses an array as a queue, which is not efficient.
  *      A proper queue implementation should be used instead.
  */
 export default class BreadthFirstSearch implements Node.Search {

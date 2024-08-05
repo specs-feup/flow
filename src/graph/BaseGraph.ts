@@ -8,6 +8,7 @@ import LaraFlowError from "lara-flow/error/LaraFlowError";
 import Edge from "lara-flow/graph/Edge";
 import Node from "lara-flow/graph/Node";
 import { NodeCollection } from "lara-flow/graph/NodeCollection";
+import { EdgeCollection } from "lara-flow/graph/EdgeCollection";
 
 /**
  * The base [graph type]{@link Graph}. All graph types must be subtypes of this type.
@@ -290,38 +291,49 @@ namespace BaseGraph {
          * @returns A collection of all nodes in the graph.
          */
         get nodes(): NodeCollection {
+            // Appears as deprecated because it is for internal use only
             return new NodeCollection(this, BaseNode.Class, this.#graph.nodes());
         }
 
         /**
-         * @todo
-         * @deprecated
-         *
-         * May need to include selector as parameter.
+         * @returns A collection of all edges in the graph.
          */
-        get edges(): BaseEdge.Class[] {
-            return this.#graph.edges().map((edge) => new BaseEdge.Class(this, edge));
+        get edges(): EdgeCollection {
+            // Appears as deprecated because it is for internal use only
+            return new EdgeCollection(this, BaseEdge.Class, this.#graph.edges());
         }
 
         /**
-         * @todo
-         * @deprecated
+         * @param Type The type of node or edge to create an empty collection for.
+         * @returns An empty collection of the given type.
          */
         emptyCollection<
             D extends BaseNode.Data,
             S extends BaseNode.ScratchData,
             N extends BaseNode.Class<D, S>,
         >(NodeType: Node<D, S, N>): NodeCollection;
-        // emptyCollection<
-        //     D extends BaseEdge.Data,
-        //     S extends BaseEdge.ScratchData,
-        //     E extends BaseEdge.Class<D, S>,
-        // >(EdgeType: Edge<D, S, E>): EdgeCollection;
-        emptyCollection(Type: Node<any, any, any> | Edge<any, any, any>): NodeCollection {
-            if (Type.Class.prototype instanceof BaseNode.Class) {
-                return new NodeCollection(this, Type.Class as Node.Class<any, any, any>, this.#graph.collection());
+        emptyCollection<
+            D extends BaseEdge.Data,
+            S extends BaseEdge.ScratchData,
+            E extends BaseEdge.Class<D, S>,
+        >(EdgeType: Edge<D, S, E>): EdgeCollection;
+        emptyCollection(Type: Node<any, any, any> | Edge<any, any, any>): NodeCollection | EdgeCollection {
+            // Checks which constructor Type.Class is by constructing a dummy object.
+            // This distinguishes node types from edge types.
+            if (new Type.Class(this, {} as any) instanceof BaseNode.Class) {
+                // Appears as deprecated because it is for internal use only
+                return new NodeCollection(
+                    this,
+                    Type.Class as Node.Class<any, any, any>,
+                    this.#graph.collection(),
+                );
             } else {
-                throw new LaraFlowError("Unsupported type @todo");
+                // Appears as deprecated because it is for internal use only
+                return new EdgeCollection(
+                    this,
+                    Type.Class as Edge.Class<any, any, any>,
+                    this.#graph.collection(),
+                );
             }
         }
 

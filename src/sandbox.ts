@@ -3,6 +3,7 @@ import BaseGraph from "lara-flow/graph/BaseGraph";
 import BaseNode from "lara-flow/graph/BaseNode";
 import DefaultDotFormatter from "lara-flow/graph/dot/DefaultDotFormatter";
 import DotFormatter from "lara-flow/graph/dot/DotFormatter";
+import { EdgeCollection } from "lara-flow/graph/EdgeCollection";
 import Graph from "lara-flow/graph/Graph";
 import IncrementingIdGenerator from "lara-flow/graph/id/IncrementingIdGenerator";
 import Node from "lara-flow/graph/Node";
@@ -142,17 +143,9 @@ const e4 = graph.addEdge(n1, n5, "4");
 const e5 = graph.addEdge(n5, n6, "5");
 const e6 = graph.addEdge(n6, n7, "6");
 
-console.log(graph.nodes[0].id);
-
-const d = graph.nodes.max((n) => n.degree);
-
-n1.expect(TNode).search(new BreadthFirstSearch());
-
-graph.nodes.forEach((() => { this }).bind(5), "n2");
-
-const ns = graph.nodes;
-
-const res = ns.filter((n) => false);
+for (const e of EdgeCollection.from(e4, e2, e3, e1).sort((a, b) => parseInt(a.id) - parseInt(b.id))) {
+    console.log(e.id);
+}
 
 
 // console.log(graph.nodes2[10].id);

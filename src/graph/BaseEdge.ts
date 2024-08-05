@@ -2,6 +2,7 @@ import LaraFlowError from "lara-flow/error/LaraFlowError";
 import BaseGraph from "lara-flow/graph/BaseGraph";
 import BaseNode from "lara-flow/graph/BaseNode";
 import Edge from "lara-flow/graph/Edge";
+import { EdgeCollection } from "lara-flow/graph/EdgeCollection";
 import Graph from "lara-flow/graph/Graph";
 import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
 
@@ -107,6 +108,32 @@ namespace BaseEdge {
          */
         set target(node: BaseNode.Class) {
             this.#edge.move({ target: node.id });
+        }
+
+        /**
+         * @returns The edges that connect the same nodes as this edge.
+         * Direction is not taken into account.
+         */
+        get parallelEdges(): EdgeCollection<D, S, this> {
+            // Appears as deprecated because it is for internal use only
+            return new EdgeCollection(
+                this.#graph,
+                Object.getPrototypeOf(this).constructor,
+                this.#edge.parallelEdges(),
+            );
+        }
+
+        /**
+         * @returns The edges that connect the same nodes as this edge.
+         * Direction is taken into account.
+         */
+        get codirectedEdges(): EdgeCollection<D, S, this> {
+            // Appears as deprecated because it is for internal use only
+            return new EdgeCollection(
+                this.#graph,
+                Object.getPrototypeOf(this).constructor,
+                this.#edge.codirectedEdges(),
+            );
         }
 
         /**
@@ -260,17 +287,15 @@ namespace BaseEdge {
         }
 
         /**
-         * @todo
-         * @deprecated
          * @returns A collection containing only this edge.
          */
-        toCollection(): any {//EdgeCollection<D, S, this> {
+        toCollection(): EdgeCollection<D, S, this> {
             // Appears as deprecated because it is for internal use only
-            // return new EdgeCollection(
-            //     this.#graph,
-            //     Object.getPrototypeOf(this).constructor,
-            //     this.#edge,
-            // );
+            return new EdgeCollection(
+                this.#graph,
+                Object.getPrototypeOf(this).constructor,
+                this.#edge,
+            );
         }
 
         /**

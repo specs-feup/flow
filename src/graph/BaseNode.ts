@@ -7,6 +7,7 @@ import LaraFlowError from "lara-flow/error/LaraFlowError";
 import BreadthFirstSearch from "lara-flow/graph/search/BreadthFirstSearch";
 import DepthFirstSearch from "lara-flow/graph/search/DepthFirstSearch";
 import { NodeCollection } from "lara-flow/graph/NodeCollection";
+import { EdgeCollection } from "lara-flow/graph/EdgeCollection";
 
 /**
  * The base [node type]{@link Node}. All node types must be subtypes of this type.
@@ -101,6 +102,37 @@ namespace BaseNode {
         }
 
         /**
+         * @returns The ancestors (parents, parents' parents, etc.) of this node.
+         */
+        get ancestors(): NodeCollection {
+            // Appears as deprecated because it is for internal use only
+            return new NodeCollection(
+                this.#graph,
+                BaseNode.Class,
+                this.#node.ancestors(),
+            );
+        }
+
+        /**
+         * @return The children of this node.
+         */
+        get children(): NodeCollection {
+            return new NodeCollection(this.#graph, BaseNode.Class, this.#node.children());
+        }
+
+        /**
+         * @returns The descendants (children, children's children, etc.) of this node.
+         */
+        get descendants(): NodeCollection {
+            // Appears as deprecated because it is for internal use only
+            return new NodeCollection(
+                this.#graph,
+                BaseNode.Class,
+                this.#node.descendants(),
+            );
+        }
+
+        /**
          * @returns whether this node is a parent node.
          */
         get isParent(): boolean {
@@ -176,7 +208,9 @@ namespace BaseNode {
          * @param NodeType The node type to change the functionality class into.
          * @returns The same node, wrapped in the new functionality class.
          */
-        as<N2 extends BaseNode.Class<D, S>>(NodeType: { Class: Node.Class<D, S, N2> }): N2 {
+        as<N2 extends BaseNode.Class<D, S>>(NodeType: {
+            Class: Node.Class<D, S, N2>;
+        }): N2 {
             // The following signature does not work
             // as<N extends BaseNode.Class<D, S>>(NodeType: Node<D, S, N>): N {
             return new NodeType.Class(
@@ -234,13 +268,6 @@ namespace BaseNode {
                     return;
                 }
             }
-        }
-
-        /**
-         * @return The children of this node.
-         */
-        get children(): NodeCollection {
-            return new NodeCollection(this.#graph, BaseNode.Class, this.#node.children());
         }
 
         /**
@@ -302,25 +329,116 @@ namespace BaseNode {
         }
 
         /**
-         * @deprecated
-         * @todo
+         * @returns The edges that connect to this node.
          */
-        get incomers(): BaseEdge.Class[] {
-            return this.#node
-                .incomers()
-                .edges()
-                .map((edge) => new BaseEdge.Class(this.#graph, edge));
+        get incomers(): EdgeCollection {
+            // Appears as deprecated because it is for internal use only
+            return new EdgeCollection(
+                this.#graph,
+                BaseEdge.Class,
+                this.#node.incomers().edges(),
+            );
         }
 
         /**
-         * @deprecated
-         * @todo
+         * @returns The predecessors of this node.
+         * This repeatedly follows the sources of incoming edges.
          */
-        get outgoers(): BaseEdge.Class[] {
-            return this.#node
-                .outgoers()
-                .edges()
-                .map((edge) => new BaseEdge.Class(this.#graph, edge));
+        get predecessors(): NodeCollection {
+            // Appears as deprecated because it is for internal use only
+            return new NodeCollection(
+                this.#graph,
+                BaseNode.Class,
+                this.#node.predecessors().nodes(),
+            );
+        }
+
+        /**
+         * @returns The edges that connect from this node.
+         */
+        get outgoers(): EdgeCollection {
+            // Appears as deprecated because it is for internal use only
+            return new EdgeCollection(
+                this.#graph,
+                BaseEdge.Class,
+                this.#node.outgoers().edges(),
+            );
+        }
+
+        /**
+         * @returns The successors of this node.
+         * This repeatedly follows the targets of outgoing edges.
+         */
+        get successors(): NodeCollection {
+            // Appears as deprecated because it is for internal use only
+            return new NodeCollection(
+                this.#graph,
+                BaseNode.Class,
+                this.#node.successors().nodes(),
+            );
+        }
+
+        /**
+         * @returns The edges that are adjacent to this node.
+         */
+        get adjacentEdges(): EdgeCollection {
+            return this.incomers.union(this.outgoers);
+        }
+
+        /**
+         * @returns The nodes that are adjacent to this node.
+         */
+        get adjacentNodes(): NodeCollection {
+            return this.incomers.sources.union(this.outgoers.targets);
+        }
+
+        /**
+         * Retrieves the edges that connect this node with the given nodes.
+         * Direction is not considered.
+         * 
+         * @param nodes The node or collection of nodes to check for edges connected
+         * with this node.
+         * @returns The edges that connect this node with the given nodes.
+         */
+        edgesWith(nodes: NodeCollection | BaseNode.Class): EdgeCollection {
+            // Appears as deprecated because it is for internal use only
+            return new EdgeCollection(
+                this.#graph,
+                BaseEdge.Class,
+                this.#node.edgesWith(nodes.toCy()),
+            );
+        }
+
+        /**
+         * Retrieves the edges from this node to the given nodes.
+         * 
+         * @param nodes The node or collection of nodes to check for edges connected
+         * with this node.
+         * @returns The edges from this node to the given nodes.
+         */
+        edgesTo(nodes: NodeCollection | BaseNode.Class): EdgeCollection {
+            // Appears as deprecated because it is for internal use only
+            return new EdgeCollection(
+                this.#graph,
+                BaseEdge.Class,
+                this.#node.edgesTo(nodes.toCy()),
+            );
+        }
+
+        /**
+         * Retrieves the edges from the given nodes to this node.
+         * 
+         * @param nodes The node or collection of nodes to check for edges connected
+         * with this node.
+         * @returns The edges from the given nodes to this node.
+         */
+        edgesFrom(nodes: NodeCollection | BaseNode.Class): EdgeCollection {
+            // Appears as deprecated because it is for internal use only
+            return new EdgeCollection(
+                this.#graph,
+                BaseEdge.Class,
+                nodes.toCy().edgesTo(this.#node),
+            );
         }
 
         // /**
