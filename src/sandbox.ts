@@ -142,8 +142,18 @@ const e4 = graph.addEdge(n1, n5, "4");
 const e5 = graph.addEdge(n5, n6, "5");
 const e6 = graph.addEdge(n6, n7, "6");
 
+console.log(graph.nodes[0].id);
 
-const d = graph.nodes2.min((n) => n.degree);
+const d = graph.nodes.max((n) => n.degree);
+
+n1.expect(TNode).search(new BreadthFirstSearch());
+
+graph.nodes.forEach((() => { this }).bind(5), "n2");
+
+const ns = graph.nodes;
+
+const res = ns.filter((n) => false);
+
 
 // console.log(graph.nodes2[10].id);
 

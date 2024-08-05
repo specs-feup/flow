@@ -1,6 +1,7 @@
 import LaraFlowError from "lara-flow/error/LaraFlowError";
 import BaseGraph from "lara-flow/graph/BaseGraph";
 import BaseNode from "lara-flow/graph/BaseNode";
+import Graph from "lara-flow/graph/Graph";
 import Node from "lara-flow/graph/Node";
 import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
 
@@ -16,8 +17,11 @@ export class NodeCollection<
     /**
      * The class produced for elements of this collection.
      * This collection may only contain nodes that extend this class.
+     *
+     * Note: Node.Class is not being used as the type to avoid
+     * invariance problems.
      */
-    #nodeClass: Node.Class<D, S, N>;
+    #nodeClass: new (graph: BaseGraph.Class, node: cytoscape.NodeSingular) => N;
     /**
      * Underlying cytoscape node object.
      */
@@ -49,7 +53,7 @@ export class NodeCollection<
         // which also behaves like an array.
         return new Proxy(this, {
             get(target, prop) {
-                if (Number(prop) == (prop as any)) {
+                if (typeof prop === "string" && Number(prop) == (prop as any)) {
                     // Wraps the cytoscape node object in the node class.
                     const value = nodes[prop as any];
                     if (value === undefined) {
@@ -67,13 +71,13 @@ export class NodeCollection<
                 return value;
             },
             has(target, prop): boolean {
-                if (Number(prop) == (prop as any)) {
+                if (typeof prop === "string" && Number(prop) == (prop as any)) {
                     return prop in nodes;
                 }
                 return prop in target;
             },
             deleteProperty(target, prop): boolean {
-                if (Number(prop) == (prop as any)) {
+                if (typeof prop === "string" && Number(prop) == (prop as any)) {
                     delete nodes[prop as any];
                     return true;
                 }
@@ -82,7 +86,7 @@ export class NodeCollection<
             },
 
             set(target, prop, newValue): boolean {
-                if (Number(prop) == (prop as any)) {
+                if (typeof prop === "string" && Number(prop) == (prop as any)) {
                     nodes[prop as any] = newValue;
                     return true;
                 }
@@ -93,9 +97,71 @@ export class NodeCollection<
     }
 
     /**
+     * Creates a new collection from the given nodes.
+     * At least one node must be provided. For an empty collection, use
+     * {@link BaseGraph.Class.emptyCollection}.
+     *
+     * @param first The first node in the collection.
+     * @param elements The rest of the nodes in the collection.
+     * @returns A new collection containing the given nodes.
+     */
+    static from<
+        D extends BaseNode.Data,
+        S extends BaseNode.ScratchData,
+        N extends BaseNode.Class<D, S>,
+    >(first: N, ...elements: N[]): NodeCollection<D, S, N> {
+        for (const element of elements) {
+            if (element.graph.toCy() !== first.graph.toCy()) {
+                throw new LaraFlowError(
+                    "Cannot create collection with nodes from different graphs",
+                );
+            }
+        }
+
+        const collection = first.graph.toCy().collection();
+        collection.merge(first.toCy());
+        for (const element of elements) {
+            collection.merge(element.toCy());
+        }
+
+        // Appears as deprecated because it is for internal use only
+        // @todo confirm that .constructor is correct
+        return new NodeCollection(first.graph, first.constructor as any, collection);
+    }
+
+    /**
+     * Creates a new collection from the given cytoscape collection.
+     *
+     * @param nodes The cytoscape collection to create the collection from.
+     * @returns A new collection containing the nodes from the cytoscape collection.
+     */
+    static fromCy(nodes: cytoscape.NodeCollection): NodeCollection {
+        if (nodes.length === 0) {
+            throw new LaraFlowError(
+                "Cannot create collection from empty cytoscape collection",
+            );
+        }
+        const first = nodes[0];
+        for (let i = 1; i < nodes.length; i++) {
+            if (nodes[i].cy() !== first.cy()) {
+                throw new LaraFlowError(
+                    "Cannot create collection with nodes from different graphs",
+                );
+            }
+        }
+        // Appears as deprecated because it is for internal use only
+        return new NodeCollection(Graph.fromCy(first.cy()), BaseNode.Class, nodes);
+    }
+
+    /**
      * Access the node at the given index.
      * Indexing cannot be implemented directly in the class,
      * so it is implemented by proxy.
+     *
+     * Note (for implementers of lara-flow only): since this
+     * indexing is implemented in the proxy and not in the class,
+     * internal method implementations may not use it. Instead,
+     * they should use the {@link NodeCollection.at} method.
      */
     [index: number]: N;
 
@@ -108,7 +174,11 @@ export class NodeCollection<
      * @returns The node at the given index, or undefined if it does not exist.
      */
     at(index: number): N | undefined {
-        return this[index];
+        const value = this.#nodes[index];
+        if (value === undefined) {
+            return undefined;
+        }
+        return new this.#nodeClass(this.graph, value);
     }
 
     /**
@@ -166,7 +236,7 @@ export class NodeCollection<
         NodeType: Node<D2, S2, N2>,
     ): this is NodeCollection<D2, S2, BaseNode.Class<D2, S2>> {
         for (let i = 0; i < this.length; i++) {
-            if (!this[i].is(NodeType)) {
+            if (!this.at(i)!.is(NodeType)) {
                 return false;
             }
         }
@@ -237,7 +307,7 @@ export class NodeCollection<
         message?: string | ((i: number) => string),
     ): NodeCollection<D2, S2, N2> {
         for (let i = 0; i < this.length; i++) {
-            if (!this[i].is(NodeType)) {
+            if (!this.at(i)!.is(NodeType)) {
                 if (message === undefined) {
                     message = (i) => `Graph type mismatch on node ${i}`;
                 } else if (typeof message === "string") {
@@ -255,7 +325,50 @@ export class NodeCollection<
     }
 
     /**
-     * Returns the union of this collection with another other collection.
+     * Returns whether the elements in the collection are the same as
+     * the elements in the other collection.
+     *
+     * @param other The other collection to compare with.
+     * @returns Whether the elements in the collection are the same as the elements in the other collection.
+     */
+    same<
+        D2 extends BaseNode.Data,
+        S2 extends BaseNode.ScratchData,
+        N2 extends BaseNode.Class<D2, S2>,
+    >(other: NodeCollection<D2, S2, N2>): boolean {
+        return this.#nodes.same(other.toCy());
+    }
+
+    /**
+     * Returns whether the collection contains the given node or collection.
+     *
+     * @param elements The node or collection to check for.
+     * @returns Whether the collection contains the given node or collection.
+     */
+    contains<
+        D2 extends BaseNode.Data,
+        S2 extends BaseNode.ScratchData,
+        N2 extends BaseNode.Class<D2, S2>,
+    >(elements: NodeCollection<D2, S2, N2> | N2): boolean {
+        return this.#nodes.contains(elements.toCy());
+    }
+
+    /**
+     * Returns whether the collection contains any of the nodes in the given collection.
+     *
+     * @param elements The collection to check for.
+     * @returns Whether the collection contains any of the nodes in the given collection.
+     */
+    containsAny<
+        D2 extends BaseNode.Data,
+        S2 extends BaseNode.ScratchData,
+        N2 extends BaseNode.Class<D2, S2>,
+    >(elements: NodeCollection<D2, S2, N2>): boolean {
+        return this.#nodes.anySame(elements.toCy());
+    }
+
+    /**
+     * Returns the union of this collection with another collection.
      * You may chain this method to union multiple collections.
      *
      * If the rhs collection is a subtype of the lhs collection, the resulting
@@ -307,7 +420,16 @@ export class NodeCollection<
     }
 
     /**
+     * @returns The complement of this collection with respect to the universe
+     * of all nodes in the graph.
+     */
+    complement(): NodeCollection {
+        return this.graph.nodes.difference(this);
+    }
+
+    /**
      * Returns the set difference of this collection with another collection.
+     * You may chain this method to remove multiple collections.
      *
      * @param other The other collection.
      * @returns A new collection that consists of the nodes in this collection
@@ -325,11 +447,81 @@ export class NodeCollection<
     }
 
     /**
+     * Returns the symmetric difference of this collection with another collection.
+     * This collection consists of the nodes that are in either collection, but not
+     * in both.
+     *
+     * If the rhs collection is a subtype of the lhs collection, the resulting
+     * collection will have the lhs type. Otherwise, the resulting collection
+     * is downgraded to a BaseNode and must be casted to the desired type
+     * explicitly with {@link NodeCollection.allAs}.
+     *
+     * @param other The other collection to apply the symmetric difference with.
+     * @returns A new collection containing the symmetric difference of the two
+     * collections.
+     * @throws LaraFlowError if the other collection is from a different graph.
+     */
+    symmetricDifference<D2 extends D, S2 extends S>(
+        other: NodeCollection<D2, S2, BaseNode.Class<D2, S2>>,
+    ): NodeCollection<D, S, N>;
+    symmetricDifference<D2 extends BaseNode.Data, S2 extends BaseNode.ScratchData>(
+        other: NodeCollection<D2, S2, BaseNode.Class<D2, S2>>,
+    ): NodeCollection<D | D2, S | S2, BaseNode.Class<D | D2, S | S2>>;
+    symmetricDifference<D2 extends BaseNode.Data, S2 extends BaseNode.ScratchData>(
+        other: NodeCollection<D2, S2, BaseNode.Class<D2, S2>>,
+    ): NodeCollection<any, any, any> {
+        if (other.graph.toCy() !== this.graph.toCy()) {
+            throw new LaraFlowError("Cannot union nodes from different graphs");
+        }
+
+        // Appears as deprecated because it is for internal use only
+        return new NodeCollection(
+            this.graph,
+            this.#nodeClass,
+            this.toCy().symmetricDifference(other.toCy()),
+        );
+    }
+
+    /**
+     * Performs a diff comparison between this collection and another collection.
+     * You can think of the result as the added, removed, and kept elements to go
+     * from this collection to the other collection.
+     *
+     * @param other The other collection to compare with.
+     * @returns An object with three properties:
+     * - `both`: A collection with the nodes that are in both collections. The type
+     * of this collection is maintained.
+     * - `onlyLeft`: A collection with the nodes that are only in this collection. The
+     * type of this collection is maintained.
+     * - `onlyRight`: A collection with the nodes that are only in the other collection.
+     * The type of the other collection is maintained.
+     */
+    compareDiff<
+        D2 extends BaseNode.Data,
+        S2 extends BaseNode.ScratchData,
+        N2 extends BaseNode.Class<D2, S2>,
+    >(
+        other: NodeCollection<D2, S2, N2>,
+    ): {
+        both: NodeCollection<D, S, N>;
+        onlyLeft: NodeCollection<D, S, N>;
+        onlyRight: NodeCollection<D2, S2, N2>;
+    } {
+        const diff = this.toCy().diff(other.toCy());
+        // Appears as deprecated because it is for internal use only
+        return {
+            both: new NodeCollection(this.graph, this.#nodeClass, diff.both),
+            onlyLeft: new NodeCollection(this.graph, this.#nodeClass, diff.left),
+            onlyRight: new NodeCollection(this.graph, other.#nodeClass, diff.right),
+        };
+    }
+
+    /**
      * Returns a collection with the elements sorted according to the
      * given comparison function.
      *
      * @todo confirm that the behavior (which is from cytoscape) and
-     * document it
+     * document it.
      *
      * @param f The comparison function to use for sorting.
      * @returns A new collection with the elements sorted.
@@ -366,6 +558,75 @@ export class NodeCollection<
     }
 
     /**
+     * @returns The common ancestors of all nodes in the collection,
+     * starting with the closest and getting progressively farther.
+     */
+    commonAncestors(): NodeCollection<
+        BaseNode.Data,
+        BaseNode.ScratchData,
+        BaseNode.Class
+    > {
+        // Appears as deprecated because it is for internal use only
+        return new NodeCollection(
+            this.#graph,
+            BaseNode.Class,
+            this.#nodes.commonAncestors(),
+        );
+    }
+
+    /**
+     * Returns whether any node in the collection satisfies the provided function.
+     * Returns false for an empty collection.
+     *
+     * @param f The function to test each node. ele - The current element, i - The
+     * index of the current element, eles - The collection of elements being iterated.
+     * @param thisArg The value to use as `this` when executing the function.
+     * @returns Whether any node in the collection satisfies the function.
+     */
+    some(f: (ele: N, i: number, eles: this) => boolean): boolean;
+    some<T>(f: (this: T, ele: N, i: number, eles: this) => boolean, thisArg: T): boolean;
+    some<T>(f: (ele: N, i: number, eles: this) => boolean, thisArg?: T): boolean {
+        for (let i = 0; i < this.length; i++) {
+            let result;
+            if (thisArg === undefined) {
+                result = f(this.at(i)!, i, this);
+            } else {
+                result = f.call(thisArg, this.at(i)!, i, this);
+            }
+            if (result) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns whether all nodes in the collection satisfy the provided function.
+     * Returns true for an empty collection.
+     *
+     * @param f The function to test each node. ele - The current element, i - The
+     * index of the current element, eles - The collection of elements being iterated.
+     * @param thisArg The value to use as `this` when executing the function.
+     * @returns Whether all nodes in the collection satisfy the function.
+     */
+    every(f: (ele: N, i: number, eles: this) => boolean): boolean;
+    every<T>(f: (this: T, ele: N, i: number, eles: this) => boolean, thisArg: T): boolean;
+    every<T>(f: (ele: N, i: number, eles: this) => boolean, thisArg?: T): boolean {
+        for (let i = 0; i < this.length; i++) {
+            let result;
+            if (thisArg === undefined) {
+                result = f(this.at(i)!, i, this);
+            } else {
+                result = f.call(thisArg, this.at(i)!, i, this);
+            }
+            if (!result) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Executes the provided function once for each node in the collection.
      *
      * Unline the analogous cytoscape method, this method does not support
@@ -386,11 +647,43 @@ export class NodeCollection<
     forEach<T>(f: (ele: N, i: number, eles: this) => void, thisArg?: T) {
         for (let i = 0; i < this.length; i++) {
             if (thisArg === undefined) {
-                f(this[i], i, this);
+                f(this.at(i)!, i, this);
             } else {
-                f.call(thisArg, this[i], i, this);
+                f.call(thisArg, this.at(i)!, i, this);
             }
         }
+    }
+
+    /**
+     * Returns a new collection containing only the nodes that satisfy the
+     * provided function.
+     *
+     * @param f The function to test each node. ele - The current element, i - The
+     * index of the current element, eles - The collection of elements being iterated.
+     * @param thisArg The value to use as `this` when executing the function.
+     * @returns A new collection containing only the nodes that satisfy the function.
+     */
+    filter(f: (ele: N, i: number, eles: this) => boolean): NodeCollection<D, S, N>;
+    filter<T>(
+        f: (this: T, ele: N, i: number, eles: this) => boolean,
+        thisArg: T,
+    ): NodeCollection<D, S, N>;
+    filter<T>(
+        f: (ele: N, i: number, eles: this) => boolean,
+        thisArg?: T,
+    ): NodeCollection<D, S, N> {
+        // Appears as deprecated because it is for internal use only
+        return new NodeCollection(
+            this.#graph,
+            this.#nodeClass,
+            this.#nodes.filter((_, i) => {
+                if (thisArg === undefined) {
+                    return f(this.at(i)!, i, this);
+                } else {
+                    return f.call(thisArg, this.at(i)!, i, this);
+                }
+            }),
+        );
     }
 
     /**
@@ -417,9 +710,10 @@ export class NodeCollection<
         if (this.isEmpty) {
             return undefined;
         }
+
         const m = this.#nodes.min((ele, i) => {
             if (thisArg === undefined) {
-                return f(this[i], i, this);
+                return f(this.at(i)!, i, this);
             } else {
                 return f.call(thisArg, new this.#nodeClass(this.graph, ele), i, this);
             }
@@ -456,7 +750,7 @@ export class NodeCollection<
         }
         const m = this.#nodes.max((ele, i) => {
             if (thisArg === undefined) {
-                return f(this[i], i, this);
+                return f(this.at(i)!, i, this);
             } else {
                 return f.call(thisArg, new this.#nodeClass(this.graph, ele), i, this);
             }
@@ -490,8 +784,10 @@ export class NodeCollection<
     /**
      * Makes this class behave like an iterable object.
      */
-    [Symbol.iterator]() {
-        return this.#nodes[Symbol.iterator]();
+    *[Symbol.iterator](): Iterator<N, void> {
+        for (const n of this.#nodes) {
+            yield new this.#nodeClass(this.#graph, n);
+        }
     }
 
     /**
@@ -514,45 +810,4 @@ export class NodeCollection<
     toCy(): cytoscape.NodeCollection {
         return this.#nodes;
     }
-
-    // Absolute complement
-    // symmetricDifference
-    // diff
-    // cy|eles.filter( _function(ele, i, eles)_ );
-    // _nodes_ .commonAncestors
-
-    // _eles_ .same() -> not equals because of sorting
-    // _eles_ .anySame() -> in
-    // _eles_ .contains() (and maybe .has())
-    // _eles_ .some
-    // _eles_ .every
-
-    // In singulars:
-    // _nodes_ .ancestors
-    // _nodes_ .children
-    // _nodes_ .descendants
-    // _edges_ .paralelEdges()
-    // _edges_ .codirectedEdges()
-    // _nodes_ .successors()
-    // _nodes_ .predecessors()
-    // _nodes_ .connectedEdges()
-    // _nodes_ .edgesWith
-    // _nodes_ .edgesTo (maybe edgesFrom?)
-
-    // _eles_ .clone() - Get a new collection containing clones (i.e. copies) of the elements in the calling collection.
-    //      This can probably be also used in singulars
-
-    // _eles_ .components et al
-
-    // map()
-    //   - Para algo como o cytoscape, provavelmente não vale a pena, porque
-    //   bastaria fazer .toArray().map()
-    //   - Para algo que retorna outro nó, pode ser interessante
-    //   - mais interessante ainda seria um flatMap(), que retorna uma coleção
-    //   que é flattened. Ex. .flatMap((n) => n.outgoers.targets) podia retornar
-    //   uma coleção com todos os outgoers
-    // De um modo geral, independentemente dos três pontos, acho que só valem
-    // a pena explorar quando aparecer um caso de uso que os justifique.
-
-    // - cytoscape dijkstra search (involves passing a collection of nodes) (maybe has a method to return the last result)
 }

@@ -176,7 +176,7 @@ namespace BaseNode {
          * @param NodeType The node type to change the functionality class into.
          * @returns The same node, wrapped in the new functionality class.
          */
-        as<N extends BaseNode.Class<D, S>>(NodeType: { Class: Node.Class<D, S, N> }): N {
+        as<N2 extends BaseNode.Class<D, S>>(NodeType: { Class: Node.Class<D, S, N2> }): N2 {
             // The following signature does not work
             // as<N extends BaseNode.Class<D, S>>(NodeType: Node<D, S, N>): N {
             return new NodeType.Class(
@@ -237,13 +237,10 @@ namespace BaseNode {
         }
 
         /**
-         * @todo
-         * @deprecated
+         * @return The children of this node.
          */
-        get children(): BaseNode.Class[] {
-            return this.#node
-                .children()
-                .map((node) => new BaseNode.Class(this.#graph, node));
+        get children(): NodeCollection {
+            return new NodeCollection(this.#graph, BaseNode.Class, this.#node.children());
         }
 
         /**
@@ -340,11 +337,11 @@ namespace BaseNode {
         //  * @param algorithm The search algorithm to use.
         //  * @returns A generator that yields each visit, so that it can be lazily iterated over.
         //  */
-        // search<V extends Node.SearchVisit>(
-        //     algorithm: Node.Search<V, this>,
-        // ): Generator<V> {
-        //     return algorithm.search(this);
-        // }
+        search<V extends Node.SearchVisit>(
+            algorithm: Node.Search<V, this>,
+        ): Generator<V> {
+            return algorithm.search(this);
+        }
 
         // /**
         //  * Depth-first search starting from this node.
@@ -361,9 +358,9 @@ namespace BaseNode {
         //  * @param propagate A function that determines whether to propagate through an edge.
         //  * @returns A generator that yields each visit, so that it can be lazily iterated over.
         //  */
-        // dfs(propagate?: (edge: BaseEdge.Class) => boolean): Generator<Node.SearchVisit> {
-        //     return this.search(new DepthFirstSearch(propagate));
-        // }
+        dfs(propagate?: (edge: BaseEdge.Class) => boolean): Generator<Node.SearchVisit> {
+            return this.search(new DepthFirstSearch(propagate));
+        }
 
         // /**
         //  * Breadth-first search starting from this node.
@@ -380,9 +377,9 @@ namespace BaseNode {
         //  * @param propagate A function that determines whether to propagate through an edge.
         //  * @returns A generator that yields each visit, so that it can be lazily iterated over.
         //  */
-        // bfs(propagate?: (edge: BaseEdge.Class) => boolean): Generator<Node.SearchVisit> {
-        //     return this.search(new BreadthFirstSearch(propagate));
-        // }
+        bfs(propagate?: (edge: BaseEdge.Class) => boolean): Generator<Node.SearchVisit> {
+            return this.search(new BreadthFirstSearch(propagate));
+        }
 
         /**
          * Removes this node from the graph.
@@ -406,8 +403,6 @@ namespace BaseNode {
         }
 
         /**
-         * @todo return value is glitched
-         * @deprecated
          * @returns A collection containing only this node.
          */
         toCollection(): NodeCollection<D, S, this> {

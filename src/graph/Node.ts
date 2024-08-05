@@ -1,6 +1,7 @@
 import BaseEdge from "lara-flow/graph/BaseEdge";
 import BaseGraph from "lara-flow/graph/BaseGraph";
 import BaseNode from "lara-flow/graph/BaseNode";
+import Graph from "lara-flow/graph/Graph";
 import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
 
 /**
@@ -32,6 +33,17 @@ type Node<
 };
 
 namespace Node {
+    /**
+     * Retrieves a node from the given cytoscape node representation.
+     *
+     * @param node The cytoscape node to create the node from.
+     * @returns The node from the cytoscape node.
+     */
+    export function fromCy(node: cytoscape.NodeSingular): BaseNode.Class {
+        // Appears as deprecated because it is for internal use only
+        return new BaseNode.Class(Graph.fromCy(node.cy()), node);
+    }
+
     /**
      * Represents the class with functionality for a node type.
      * For example, {@link BaseNode.Class} is a {@link Node.Class}
@@ -128,13 +140,13 @@ namespace Node {
     export interface IdGenerator {
         /**
          * Generates a unique identifier for a new node.
-         * 
+         *
          * @param graph The graph that the node belongs to.
          * @returns A unique identifier for the new node.
          */
         newId(graph: BaseGraph.Class): string;
     }
-    
+
     /**
      * A search algorithm that can be used in node search.
      * See {@link BaseNode.Class.search}.
@@ -154,7 +166,7 @@ namespace Node {
          *     }
          * }
          * ```
-         * 
+         *
          * And uses the `yield` keyword to return values.
          *
          * @param root The root node to start the search from.

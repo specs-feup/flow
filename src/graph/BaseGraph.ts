@@ -287,19 +287,9 @@ namespace BaseGraph {
         }
 
         /**
-         * @todo
-         * @deprecated
-         *
-         * May need to include selector as parameter.
+         * @returns A collection of all nodes in the graph.
          */
-        get nodes(): BaseNode.Class[] {
-            return new NodeCollection(
-                this,
-                BaseNode.Class,
-                this.#graph.nodes(),
-            ).toArray();
-        }
-        get nodes2(): NodeCollection {
+        get nodes(): NodeCollection {
             return new NodeCollection(this, BaseNode.Class, this.#graph.nodes());
         }
 

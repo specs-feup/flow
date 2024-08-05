@@ -1,6 +1,7 @@
 import BaseEdge from "lara-flow/graph/BaseEdge";
 import BaseGraph from "lara-flow/graph/BaseGraph";
 import BaseNode from "lara-flow/graph/BaseNode";
+import Graph from "lara-flow/graph/Graph";
 import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
 
 /**
@@ -32,6 +33,17 @@ type Edge<
 };
 
 namespace Edge {
+    /**
+     * Retrieves an edge from the given cytoscape edge representation.
+     *
+     * @param edge The cytoscape edge to create the edge from.
+     * @returns The edge from the cytoscape edge.
+     */
+    export function fromCy(edge: cytoscape.EdgeSingular): BaseEdge.Class {
+        // Appears as deprecated because it is for internal use only
+        return new BaseEdge.Class(Graph.fromCy(edge.cy()), edge);
+    }
+
     /**
      * Represents the class with functionality for an edge type.
      * For example, {@link BaseEdge.Class} is an {@link Edge.Class}
