@@ -107,6 +107,34 @@ namespace Node {
     }
 
     /**
+     * Creates a type guard object for a node type based on a tag, which is
+     * less verbose than the usual boilerplate for defining TypeGuards.
+     *
+     * @param tag The tag to check for in the data object.
+     * @param version The version number for the node type. In the future,
+     * if breaking changes are needed (for example, adding a new field
+     * when there are already serialized nodes), this version number may
+     * be increased. Utility functions to convert types from older versions
+     * should be provided.
+     * @returns A type guard object for the node type.
+     */
+    export function TagTypeGuard<
+        D extends BaseNode.Data,
+        S extends BaseNode.ScratchData,
+    >(tag: string, version: string): TypeGuard<D, S> {
+        return {
+            isDataCompatible(data: BaseNode.Data): data is D {
+                const obj = (data as any)[tag];
+                return typeof obj === "object" && obj.version === version;
+            },
+
+            isScratchDataCompatible(sData: BaseNode.ScratchData): sData is S {
+                return true;
+            },
+        };
+    }
+
+    /**
      * Represents a case in a {@link BaseNode.Class.switch}.
      *
      * @param NodeType The node type to match.

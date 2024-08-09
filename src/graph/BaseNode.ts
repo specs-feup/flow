@@ -548,20 +548,6 @@ namespace BaseNode {
     }
 
     /**
-     * Builder for {@link BaseNode}. Since this is the base class, the implementation
-     * is trivial.
-     */
-    export class Builder implements Node.Builder<Data, ScratchData> {
-        buildData(data: BaseNode.Data): Data {
-            return data;
-        }
-
-        buildScratchData(scratchData: BaseNode.ScratchData): ScratchData {
-            return scratchData;
-        }
-    }
-
-    /**
      * Type guards for {@link BaseNode}. Since this is the base class, data and scratch
      * are always assumed to be compatible.
      */

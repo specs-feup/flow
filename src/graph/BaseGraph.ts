@@ -311,7 +311,7 @@ namespace BaseGraph {
             D extends BaseNode.Data,
             S extends BaseNode.ScratchData,
             N extends BaseNode.Class<D, S>,
-        >(NodeType: Node<D, S, N>): NodeCollection;
+        >(NodeType: Node<D, S, N>): NodeCollection<D, S, N>;
         /**
          * @param EdgeType The type of edge to create an empty collection for.
          * @returns An empty collection of the given type.
@@ -320,7 +320,7 @@ namespace BaseGraph {
             D extends BaseEdge.Data,
             S extends BaseEdge.ScratchData,
             E extends BaseEdge.Class<D, S>,
-        >(EdgeType: Edge<D, S, E>): EdgeCollection;
+        >(EdgeType: Edge<D, S, E>): EdgeCollection<D, S, E>;
         emptyCollection(
             Type: Node<any, any, any> | Edge<any, any, any>,
         ): NodeCollection | EdgeCollection {
@@ -340,6 +340,51 @@ namespace BaseGraph {
                     Type.Class as Edge.Class<any, any, any>,
                     this.#graph.collection(),
                 );
+            }
+        }
+
+        /**
+         * Creates a collection from an array of nodes.
+         * Given that the array may be empty, passing the NodeType is mandatory.
+         * 
+         * @param NodeType The type of node to create a collection for.
+         * @param nodes The nodes to create a collection from.
+         * @returns A collection of the given type with the given nodes.
+         */
+        arrayCollection<
+            D extends BaseNode.Data,
+            S extends BaseNode.ScratchData,
+            N extends BaseNode.Class<D, S>,
+        >(NodeType: Node<D, S, N>, nodes: N[]): NodeCollection<D, S, N>;
+        /**
+         * Creates a collection from an array of edges.
+         * Given that the array may be empty, passing the EdgeType is mandatory.
+         * 
+         * @param EdgeType The type of edge to create a collection for.
+         * @param edges The edges to create a collection from.
+         * @returns A collection of the given type with the given edges.
+         */
+        arrayCollection<
+            D extends BaseEdge.Data,
+            S extends BaseEdge.ScratchData,
+            E extends BaseEdge.Class<D, S>,
+        >(EdgeType: Edge<D, S, E>, edges: E[]): EdgeCollection<D, S, E>;
+        arrayCollection(
+            Type: Node<any, any, any> | Edge<any, any, any>,
+            elements: any[],
+        ): NodeCollection | EdgeCollection {
+            if (new Type.Class(this, {} as any) instanceof BaseNode.Class) {
+                if (elements.length === 0) {
+                    return this.emptyCollection(Type as Node<any, any, any>);
+                } else {
+                    return NodeCollection.from(elements[0], ...elements.slice(1));
+                }
+            } else {
+                if (elements.length === 0) {
+                    return this.emptyCollection(Type as Edge<any, any, any>);
+                } else {
+                    return EdgeCollection.from(elements[0], ...elements.slice(1));
+                }
             }
         }
 
@@ -382,20 +427,6 @@ namespace BaseGraph {
          */
         toCy(): cytoscape.Core {
             return this.#graph;
-        }
-    }
-
-    /**
-     * Builder for {@link BaseGraph}. Since this is the base class, the implementation
-     * is trivial.
-     */
-    export class Builder implements Graph.Builder<Data, ScratchData> {
-        buildData(data: BaseGraph.Data): Data {
-            return data;
-        }
-
-        buildScratchData(scratchData: BaseGraph.ScratchData): ScratchData {
-            return scratchData;
         }
     }
 

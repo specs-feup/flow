@@ -107,6 +107,34 @@ namespace Edge {
     }
 
     /**
+     * Creates a type guard object for an edge type based on a tag, which is
+     * less verbose than the usual boilerplate for defining TypeGuards.
+     *
+     * @param tag The tag to check for in the data object.
+     * @param version The version number for the edge type. In the future,
+     * if breaking changes are needed (for example, adding a new field
+     * when there are already serialized edges), this version number may
+     * be increased. Utility functions to convert types from older versions
+     * should be provided.
+     * @returns A type guard object for the edge type.
+     */
+    export function TagTypeGuard<
+        D extends BaseEdge.Data,
+        S extends BaseEdge.ScratchData,
+    >(tag: string, version: string): TypeGuard<D, S> {
+        return {
+            isDataCompatible(data: BaseEdge.Data): data is D {
+                const obj = (data as any)[tag];
+                return typeof obj === "object" && obj.version === version;
+            },
+
+            isScratchDataCompatible(sData: BaseEdge.ScratchData): sData is S {
+                return true;
+            },
+        };
+    }
+
+    /**
      * Represents a case in a {@link BaseEdge.Class.switch}.
      *
      * @param EdgeType The edge type to match.

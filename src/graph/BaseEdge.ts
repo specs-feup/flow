@@ -314,20 +314,6 @@ namespace BaseEdge {
     }
 
     /**
-     * Builder for {@link BaseEdge}. Since this is the base class, the implementation
-     * is trivial.
-     */
-    export class Builder implements Edge.Builder<Data, ScratchData> {
-        buildData(data: BaseEdge.Data): Data {
-            return data;
-        }
-
-        buildScratchData(scratchData: BaseEdge.ScratchData): ScratchData {
-            return scratchData;
-        }
-    }
-
-    /**
      * Type guards for {@link BaseEdge}. Since this is the base class, data and scratch
      * are always assumed to be compatible.
      */
