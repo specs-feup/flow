@@ -11,6 +11,15 @@ import { NodeCollection } from "lara-flow/graph/NodeCollection";
  * This graph is language and weaver agnostic. In fact,
  * it may contain custom nodes and edges not associated
  * with any language or weaver.
+ * 
+ * Note that this graph maintains a map from function names
+ * to their respective nodes. While this is useful for
+ * efficiency and for transformations to target the intended
+ * nodes, a precaution must be taken:
+ * - Initializing, cloning, or deserializing nodes does not
+ * necessarily update the function map. Take that into account
+ * when manipulating the graph, favoring functions such as
+ * {@link FlowGraph.addFunction}.
  */
 namespace FlowGraph {
     export const TAG = "__lara_flow__flow_graph";
@@ -34,12 +43,14 @@ namespace FlowGraph {
          */
         addFunction(name: string, node?: BaseNode.Class): FunctionNode.Class {
             if (this.hasFunction(name)) {
-                throw new LaraFlowError(`Function ${name} already exists in the graph.`);
+                throw new LaraFlowError(
+                    `Another function '${name}' is already registered in the graph.`,
+                );
             }
             if (node === undefined) {
                 node = this.addNode();
             }
-            this.data[FlowGraph.TAG].functions.set(name, node.id);
+            this.data[FlowGraph.TAG].functions[name] = node.id;
             return node.init(new FunctionNode.Builder(name)).as(FunctionNode);
         }
 
@@ -53,7 +64,7 @@ namespace FlowGraph {
          * @returns The {@link FunctionNode}, or `undefined` if it does not exist.
          */
         getFunction(name: string): FunctionNode.Class | undefined {
-            const id = this.data[FlowGraph.TAG].functions.get(name);
+            const id = this.data[FlowGraph.TAG].functions[name];
             if (id === undefined) return undefined;
             const node = this.getNodeById(id);
             if (node === undefined || !node.is(FunctionNode)) {
@@ -86,10 +97,11 @@ namespace FlowGraph {
          * @returns A collection of all functions in the graph.
          */
         get functions(): NodeCollection<FunctionNode.Data, FunctionNode.ScratchData, FunctionNode.Class> {
-            const nodes = Array.from(this.data[FlowGraph.TAG].functions.values())
+            const nodes = Object.values(this.data[FlowGraph.TAG].functions)
                 .map(id => this.getNodeById(id))
                 .filter(node => node !== undefined && node.is(FunctionNode))
                 .map(node => node.as(FunctionNode));
+
             return this.arrayCollection(FunctionNode, nodes);
         }
     }
@@ -100,7 +112,7 @@ namespace FlowGraph {
                 ...data,
                 [TAG]: {
                     version: VERSION,
-                    functions: new Map(),
+                    functions: {},
                 },
             };
         }
@@ -118,9 +130,14 @@ namespace FlowGraph {
         [TAG]: {
             version: typeof VERSION;
             /**
-             * Maps function name to its node id
+             * Maps function name to its node id. A Record is used
+             * instead of a Map so that it can be serialized.
+             * @todo se calhar criar listeners de nos/edges criados
+             *       isso só seria viável se desse para colocar no
+             *       data/scratch data (para nao depender da view)
+             *       idealmente data, para ser serializavel
              */
-            functions: Map<string, string>;
+            functions: Record<string, string>;
         };
     }
 
