@@ -1,3 +1,7 @@
+import CallEdge from "lara-flow/flow/CallEdge";
+import ControlFlowEdge from "lara-flow/flow/ControlFlowEdge";
+import ControlFlowNode from "lara-flow/flow/ControlFlowNode";
+import FlowDotFormatter from "lara-flow/flow/dot/FlowDotFormatter";
 import FlowGraph from "lara-flow/flow/FlowGraph";
 import FunctionNode from "lara-flow/flow/FunctionNode";
 import BaseEdge from "lara-flow/graph/BaseEdge";
@@ -189,16 +193,20 @@ const graph = Graph
     .as(FlowGraph);
 
 const f1 = graph.addFunction("f1");
+const f2 = graph.addFunction("f2");
 
-const formatter = new DefaultDotFormatter().addNodeAttrs((n): Record<string, string> => {
-    if (n.is(FunctionNode)) {
-        const f = n.as(FunctionNode);
-        return {
-            color: "green",
-            label: f.functionName,
-        };
-    }
+const c1 = graph.addEdge(f1, f2, "c1").init(new CallEdge.Builder());
+const c2 = graph.addEdge(f2, f2, "c2").init(new CallEdge.Builder());
 
-    return {};
-});
-graph.expect(TGraph).toFile(formatter, "out/graph.dot");
+const cf1 = graph.addNode("cf1").init(new ControlFlowNode.Builder(f1));
+const cf2 = graph.addNode("cf2").init(new ControlFlowNode.Builder(f1));
+const cf3 = graph.addNode("cf3").init(new ControlFlowNode.Builder(f1));
+
+const cfe1 = graph.addEdge(cf1, cf2, "cfe1").init(new ControlFlowEdge.Builder());
+const cfe2 = graph.addEdge(cf2, cf3, "cfe2").init(new ControlFlowEdge.Builder().fake());
+const cfe3 = graph.addEdge(cf2, cf2, "cfe3").init(new ControlFlowEdge.Builder());
+
+f1.cfgEntryNode = cf1.as(ControlFlowNode);
+
+const formatter = new FlowDotFormatter();
+graph.toFile(formatter, "out/graph.dot");

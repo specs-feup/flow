@@ -89,6 +89,7 @@ namespace BaseNode {
             if (p.empty()) {
                 return undefined;
             }
+            // Appears as deprecated because it is for internal use only
             return new BaseNode.Class(this.#graph, p.first());
         }
 

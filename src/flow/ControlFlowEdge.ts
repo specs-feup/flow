@@ -8,14 +8,35 @@ namespace ControlFlowEdge {
     export class Class<
         D extends Data = Data,
         S extends ScratchData = ScratchData,
-    > extends BaseEdge.Class<D, S> {}
+    > extends BaseEdge.Class<D, S> {
+        
+        get isFake(): boolean {
+            return this.data[TAG].isFake;
+        }
+
+        set isFake(value: boolean) {
+            this.data[TAG].isFake = value;
+        }
+    }
 
     export class Builder implements Edge.Builder<Data, ScratchData> {
+        #isFake: boolean;
+
+        constructor() {
+            this.#isFake = false;
+        }
+
+        fake(): this {
+            this.#isFake = true;
+            return this;
+        }
+
         buildData(data: BaseEdge.Data): Data {
             return {
                 ...data,
                 [TAG]: {
                     version: VERSION,
+                    isFake: this.#isFake,
                 },
             };
         }
@@ -32,6 +53,7 @@ namespace ControlFlowEdge {
     export interface Data extends BaseEdge.Data {
         [TAG]: {
             version: typeof VERSION;
+            isFake: boolean;
         };
     }
 
