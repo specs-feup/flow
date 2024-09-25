@@ -41,7 +41,7 @@
     },
     "homepage": "https://github.com/Goncalerta/lara-flow#readme",
     "dependencies": {
-        "lara-js": "^0.0.1"
+        "@specs-feup/lara": "^3.0.0"
     },
     "devDependencies": {
         "@typescript-eslint/eslint-plugin": "^6.7.4",
