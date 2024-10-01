@@ -1,9 +1,9 @@
-import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
-import { JavaClasses } from "lara-js/api/lara/util/JavaTypes.js";
+import cytoscape from "@specs-feup/lara/api/libs/cytoscape-3.26.0.js";
+import { JavaClasses } from "@specs-feup/lara/api/lara/util/JavaTypes.js";
 import Graph from "lara-flow/graph/Graph";
 import BaseNode from "lara-flow/graph/BaseNode";
 import BaseEdge from "lara-flow/graph/BaseEdge";
-import Io from "lara-js/api/lara/Io.js";
+import Io from "@specs-feup/lara/api/lara/Io.js";
 import LaraFlowError from "lara-flow/error/LaraFlowError";
 import Edge from "lara-flow/graph/Edge";
 import Node from "lara-flow/graph/Node";

@@ -5,7 +5,7 @@ import BaseNode from "lara-flow/graph/BaseNode";
 import { EdgeCollection } from "lara-flow/graph/EdgeCollection";
 import Graph from "lara-flow/graph/Graph";
 import Node from "lara-flow/graph/Node";
-import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
+import cytoscape from "@specs-feup/lara/api/libs/cytoscape-3.26.0.js";
 
 /**
  * A collection of nodes from a given graph. All nodes have a common

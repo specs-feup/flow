@@ -2,7 +2,7 @@ import BaseEdge from "lara-flow/graph/BaseEdge";
 import BaseGraph from "lara-flow/graph/BaseGraph";
 import BaseNode from "lara-flow/graph/BaseNode";
 import Graph from "lara-flow/graph/Graph";
-import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
+import cytoscape from "@specs-feup/lara/api/libs/cytoscape-3.26.0.js";
 
 /**
  * Represents an edge type. All edge types must be subtypes of {@link BaseEdge}.

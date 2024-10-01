@@ -4,7 +4,7 @@ import BaseNode from "lara-flow/graph/BaseNode";
 import Edge from "lara-flow/graph/Edge";
 import { EdgeCollection } from "lara-flow/graph/EdgeCollection";
 import Graph from "lara-flow/graph/Graph";
-import cytoscape from "lara-js/api/libs/cytoscape-3.26.0.js";
+import cytoscape from "@specs-feup/lara/api/libs/cytoscape-3.26.0.js";
 
 /**
  * The base {@link Edge | edge type}. All edge types must be subtypes of this type.
