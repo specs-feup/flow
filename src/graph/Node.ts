@@ -116,12 +116,16 @@ namespace Node {
      * when there are already serialized nodes), this version number may
      * be increased. Utility functions to convert types from older versions
      * should be provided.
+     * @param isScratchDataCompatible An optional function to check if the
+     * scratch data is compatible with the node type. If not provided, the
+     * scratch data is assumed to be compatible.
      * @returns A type guard object for the node type.
      */
-    export function TagTypeGuard<
-        D extends BaseNode.Data,
-        S extends BaseNode.ScratchData,
-    >(tag: string, version: string): TypeGuard<D, S> {
+    export function TagTypeGuard<D extends BaseNode.Data, S extends BaseNode.ScratchData>(
+        tag: string,
+        version: string,
+        isScratchDataCompatible: (sData: BaseNode.ScratchData) => boolean = () => true,
+    ): TypeGuard<D, S> {
         return {
             isDataCompatible(data: BaseNode.Data): data is D {
                 const obj = (data as any)[tag];
@@ -129,7 +133,7 @@ namespace Node {
             },
 
             isScratchDataCompatible(sData: BaseNode.ScratchData): sData is S {
-                return true;
+                return isScratchDataCompatible(sData);
             },
         };
     }

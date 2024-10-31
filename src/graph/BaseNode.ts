@@ -253,6 +253,38 @@ namespace BaseNode {
         }
 
         /**
+         * Tries to change the functionality class of the current node. If the node
+         * is not compatible with the new class, undefined is returned.
+         *
+         * @example
+         * ```typescript
+         * if (node === undefined || !node.is(ControlFlowNode)) {
+         *     return undefined;
+         * }
+         * return node.as(ControlFlowNode);
+         * ```
+         *
+         * Can be simplified to:
+         * ```typescript
+         * return node?.tryAs(ControlFlowNode);
+         * ```
+         *
+         * @param NodeType The node type to change the functionality class into.
+         * @returns The node, wrapped in the new functionality class, or undefined if
+         * the node is not compatible with the type.
+         */
+        tryAs<
+            D2 extends BaseNode.Data,
+            S2 extends BaseNode.ScratchData,
+            N2 extends BaseNode.Class<D2, S2>,
+        >(NodeType: Node<D2, S2, N2>): N2 | undefined {
+            if (!this.is(NodeType)) {
+                return undefined;
+            }
+            return this.as(NodeType);
+        }
+
+        /**
          *  Checks if the type of the node is compatible with several
          *  types, calling a callback for the first match. See
          *  {@link Node.Case} for the syntax of each case.

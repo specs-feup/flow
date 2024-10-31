@@ -116,12 +116,16 @@ namespace Edge {
      * when there are already serialized edges), this version number may
      * be increased. Utility functions to convert types from older versions
      * should be provided.
+     * @param isScratchDataCompatible An optional function to check if the
+     * scratch data is compatible with the edge type. If not provided, the
+     * scratch data is assumed to be compatible.
      * @returns A type guard object for the edge type.
      */
-    export function TagTypeGuard<
-        D extends BaseEdge.Data,
-        S extends BaseEdge.ScratchData,
-    >(tag: string, version: string): TypeGuard<D, S> {
+    export function TagTypeGuard<D extends BaseEdge.Data, S extends BaseEdge.ScratchData>(
+        tag: string,
+        version: string,
+        isScratchDataCompatible: (sData: BaseEdge.ScratchData) => boolean = () => true,
+    ): TypeGuard<D, S> {
         return {
             isDataCompatible(data: BaseEdge.Data): data is D {
                 const obj = (data as any)[tag];
@@ -129,7 +133,7 @@ namespace Edge {
             },
 
             isScratchDataCompatible(sData: BaseEdge.ScratchData): sData is S {
-                return true;
+                return isScratchDataCompatible(sData);
             },
         };
     }

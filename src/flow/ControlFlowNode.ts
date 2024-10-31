@@ -4,8 +4,8 @@ import BaseNode from "lara-flow/graph/BaseNode";
 import Node from "lara-flow/graph/Node";
 
 /**
- * @todo
- * 
+ * TODO
+ *
  * Each ControlFlowNode must belong to exactly one FunctionNode.
  * You may create a "global" FunctionNode for the flow that is not
  * part of any function (in languages such as python or javascript).
@@ -22,7 +22,9 @@ namespace ControlFlowNode {
             const id = this.data[TAG].function;
             const node = this.graph.getNodeById(id);
             if (node === undefined || !node.is(FunctionNode)) {
-                throw new LaraFlowError("FunctionNode not in graph; may have been removed.");
+                throw new LaraFlowError(
+                    "FunctionNode not in graph; may have been removed.",
+                );
             }
             return node.as(FunctionNode);
         }

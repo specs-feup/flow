@@ -161,6 +161,38 @@ namespace BaseGraph {
         }
 
         /**
+         * Tries to change the functionality class of the current graph. If the graph
+         * is not compatible with the new class, undefined is returned.
+         *
+         * @example
+         * ```typescript
+         * if (graph === undefined || !graph.is(FlowGraph)) {
+         *     return undefined;
+         * }
+         * return node.as(FlowGraph);
+         * ```
+         *
+         * Can be simplified to:
+         * ```typescript
+         * return node?.tryAs(FlowGraph);
+         * ```
+         *
+         * @param GraphType The graph type to change the functionality class into.
+         * @returns The graph, wrapped in the new functionality class, or undefined if
+         * the graph is not compatible with the type.
+         */
+        tryAs<
+            D2 extends BaseGraph.Data,
+            S2 extends BaseGraph.ScratchData,
+            G2 extends BaseGraph.Class<D2, S2>,
+        >(GraphType: Graph<D2, S2, G2>): G2 | undefined {
+            if (!this.is(GraphType)) {
+                return undefined;
+            }
+            return this.as(GraphType);
+        }
+
+        /**
          * Checks if the type of the graph is compatible with several
          * types, calling a callback for the first match. See
          * {@link Graph.Case} for the syntax of each case.
@@ -346,7 +378,7 @@ namespace BaseGraph {
         /**
          * Creates a collection from an array of nodes.
          * Given that the array may be empty, passing the NodeType is mandatory.
-         * 
+         *
          * @param NodeType The type of node to create a collection for.
          * @param nodes The nodes to create a collection from.
          * @returns A collection of the given type with the given nodes.
@@ -359,7 +391,7 @@ namespace BaseGraph {
         /**
          * Creates a collection from an array of edges.
          * Given that the array may be empty, passing the EdgeType is mandatory.
-         * 
+         *
          * @param EdgeType The type of edge to create a collection for.
          * @param edges The edges to create a collection from.
          * @returns A collection of the given type with the given edges.

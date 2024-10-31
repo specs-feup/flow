@@ -240,6 +240,25 @@ namespace BaseEdge {
         }
 
         /**
+         * Tries to change the functionality class of the current edge. If the edge
+         * is not compatible with the new class, undefined is returned.
+         *
+         * @param EdgeType The edge type to change the functionality class into.
+         * @returns The edge, wrapped in the new functionality class, or undefined if
+         * the edge is not compatible with the type.
+         */
+        tryAs<
+            D2 extends BaseEdge.Data,
+            S2 extends BaseEdge.ScratchData,
+            E2 extends BaseEdge.Class<D2, S2>,
+        >(EdgeType: Edge<D2, S2, E2>): E2 | undefined {
+            if (!this.is(EdgeType)) {
+                return undefined;
+            }
+            return this.as(EdgeType);
+        }
+
+        /**
          *  Checks if the type of the edge is compatible with several
          *  types, calling a callback for the first match. See
          *  {@link Edge.Case} for the syntax of each case.

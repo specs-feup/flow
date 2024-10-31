@@ -7,11 +7,11 @@ import { NodeCollection } from "lara-flow/graph/NodeCollection";
 
 /**
  * A graph for building CFGs, DFGs, CDFGs, SCGs, etc.
- * 
+ *
  * This graph is language and weaver agnostic. In fact,
  * it may contain custom nodes and edges not associated
  * with any language or weaver.
- * 
+ *
  * Note that this graph maintains a map from function names
  * to their respective nodes. While this is useful for
  * efficiency and for transformations to target the intended
@@ -34,7 +34,7 @@ namespace FlowGraph {
          *
          * @param name The name of the function. This name must be unique in the graph,
          * so it should be mangled if the use case permits overloading.
-         * @param node The node to initialize as the {@link FunctionNode}. If not 
+         * @param node The node to initialize as the {@link FunctionNode}. If not
          * provided, a new node will be created.
          * @returns The {@link FunctionNode} that was added.
          * @throws {} {@link LaraFlowError} if the function name already exists in the graph.
@@ -56,8 +56,8 @@ namespace FlowGraph {
 
         /**
          * Retrieves a {@link FunctionNode} from the graph by the name of the function.
-         * 
-         * If the function is not in the map, the node does not exist, or the node 
+         *
+         * If the function is not in the map, the node does not exist, or the node
          * is not a {@link FunctionNode}, `undefined` will be returned.
          *
          * @param name The name of the function.
@@ -66,16 +66,12 @@ namespace FlowGraph {
         getFunction(name: string): FunctionNode.Class | undefined {
             const id = this.data[FlowGraph.TAG].functions[name];
             if (id === undefined) return undefined;
-            const node = this.getNodeById(id);
-            if (node === undefined || !node.is(FunctionNode)) {
-                return undefined;
-            }
-            return node.as(FunctionNode);
+            return this.getNodeById(id)?.tryAs(FunctionNode);
         }
 
         /**
          * Checks if the graph has a function with the given name.
-         * 
+         *
          * The function must be in the map, the respective node must exist, and the node
          * must be a {@link FunctionNode} for this method to return `true`.
          *
@@ -90,17 +86,21 @@ namespace FlowGraph {
 
         /**
          * Retrieves all functions in the graph.
-         * 
+         *
          * The functions must be in the map, the respective nodes must exist, and the nodes
          * must be {@link FunctionNode} to be included in the collection.
-         * 
+         *
          * @returns A collection of all functions in the graph.
          */
-        get functions(): NodeCollection<FunctionNode.Data, FunctionNode.ScratchData, FunctionNode.Class> {
+        get functions(): NodeCollection<
+            FunctionNode.Data,
+            FunctionNode.ScratchData,
+            FunctionNode.Class
+        > {
             const nodes = Object.values(this.data[FlowGraph.TAG].functions)
-                .map(id => this.getNodeById(id))
-                .filter(node => node !== undefined && node.is(FunctionNode))
-                .map(node => node.as(FunctionNode));
+                .map((id) => this.getNodeById(id))
+                .filter((node) => node !== undefined && node.is(FunctionNode))
+                .map((node) => node.as(FunctionNode));
 
             return this.arrayCollection(FunctionNode, nodes);
         }
@@ -132,7 +132,7 @@ namespace FlowGraph {
             /**
              * Maps function name to its node id. A Record is used
              * instead of a Map so that it can be serialized.
-             * @todo se calhar criar listeners de nos/edges criados
+             * TODO se calhar criar listeners de nos/edges criados
              *       isso só seria viável se desse para colocar no
              *       data/scratch data (para nao depender da view)
              *       idealmente data, para ser serializavel

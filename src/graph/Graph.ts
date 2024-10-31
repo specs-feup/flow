@@ -121,20 +121,27 @@ namespace Graph {
 
     /**
      * Creates a type guard object for a graph type based on a tag, which is
-     * less verbose than the usual boilerplate for defining TypeGuards. 
-     * 
+     * less verbose than the usual boilerplate for defining TypeGuards.
+     *
      * @param tag The tag to check for in the data object.
      * @param version The version number for the graph type. In the future,
      * if breaking changes are needed (for example, adding a new field
-     * when there are already serialized graphs), this version number may 
+     * when there are already serialized graphs), this version number may
      * be increased. Utility functions to convert types from older versions
      * should be provided.
+     * @param isScratchDataCompatible An optional function to check if the
+     * scratch data is compatible with the edge type. If not provided, the
+     * scratch data is assumed to be compatible.
      * @returns A type guard object for the graph type.
      */
     export function TagTypeGuard<
         D extends BaseGraph.Data,
         S extends BaseGraph.ScratchData,
-    >(tag: string, version: string): TypeGuard<D, S> {
+    >(
+        tag: string,
+        version: string,
+        isScratchDataCompatible: (sData: BaseGraph.ScratchData) => boolean = () => true,
+    ): TypeGuard<D, S> {
         return {
             isDataCompatible(data: BaseGraph.Data): data is D {
                 const obj = (data as any)[tag];
@@ -142,7 +149,7 @@ namespace Graph {
             },
 
             isScratchDataCompatible(sData: BaseGraph.ScratchData): sData is S {
-                return true;
+                return isScratchDataCompatible(sData);
             },
         };
     }

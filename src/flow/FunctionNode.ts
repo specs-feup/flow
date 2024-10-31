@@ -66,11 +66,7 @@ namespace FunctionNode {
         get cfgEntryNode(): ControlFlowNode.Class | undefined {
             const id = this.data[TAG].cfgEntryNode;
             if (id === undefined) return undefined;
-            const node = this.graph.getNodeById(id);
-            if (node === undefined || !node.is(ControlFlowNode)) {
-                return undefined;
-            }
-            return node.as(ControlFlowNode);
+            return this.graph.getNodeById(id)?.tryAs(ControlFlowNode);
         }
 
         set cfgEntryNode(node: ControlFlowNode.Class | undefined) {

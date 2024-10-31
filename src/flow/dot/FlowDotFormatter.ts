@@ -12,8 +12,8 @@ import Node from "lara-flow/graph/Node";
 export default class FlowDotFormatter<
     G extends FlowGraph.Class = FlowGraph.Class,
 > extends DefaultDotFormatter<G> {
-    
-    // @todo make it so that they are easier to override
+    // TODO make it so that they are easier to override
+    // TODO maybe visually mark CFEndNode
     static functionDarkColor = "#7719b3";
     static functionColor = "#a020f0";
     static functionFontSize = "20";
@@ -79,10 +79,8 @@ export default class FlowDotFormatter<
         if (node.parent !== undefined) {
             return node.parent;
         }
-        if (node.is(ControlFlowNode)) {
-            return node.as(ControlFlowNode).function;
-        }
-        return undefined;
+
+        return node.tryAs(ControlFlowNode)?.function;
     }
 
     /**
