@@ -1,17 +1,22 @@
-import DotFormatter from "lara-flow/graph/dot/DotFormatter";
-import BaseEdge from "lara-flow/graph/BaseEdge";
-import BaseNode from "lara-flow/graph/BaseNode";
-import BaseGraph from "lara-flow/graph/BaseGraph";
-import Dot, { DotEdge, DotGraph, DotNode, DotSubgraph } from "lara-flow/graph/dot/dot";
-import { NodeCollection } from "lara-flow/graph/NodeCollection";
+import DotFormatter from "@specs-feup/lara-flow/graph/dot/DotFormatter";
+import BaseEdge from "@specs-feup/lara-flow/graph/BaseEdge";
+import BaseNode from "@specs-feup/lara-flow/graph/BaseNode";
+import BaseGraph from "@specs-feup/lara-flow/graph/BaseGraph";
+import Dot, {
+    DotEdge,
+    DotGraph,
+    DotNode,
+    DotSubgraph,
+} from "@specs-feup/lara-flow/graph/dot/dot";
+import { NodeCollection } from "@specs-feup/lara-flow/graph/NodeCollection";
 
 /**
  * The default formatter for converting a graph into a DOT string.
- * 
+ *
  * All nodes and all edges are present in the resulting graph. Nodes
  * that are parents are represented as clusters, with an appropriate
  * hack (invisible point node) to make the edges connect correctly.
- * 
+ *
  * @typeParam G - The type of the graph. This parameter exists so that
  * the formatter may be extended into a formatter that requires a more
  * specific graph type.

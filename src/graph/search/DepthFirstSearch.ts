@@ -1,6 +1,6 @@
-import BaseEdge from "lara-flow/graph/BaseEdge";
-import BaseNode from "lara-flow/graph/BaseNode";
-import Node from "lara-flow/graph/Node";
+import BaseEdge from "@specs-feup/lara-flow/graph/BaseEdge";
+import BaseNode from "@specs-feup/lara-flow/graph/BaseNode";
+import Node from "@specs-feup/lara-flow/graph/Node";
 
 /**
  * A depth-first search algorithm.

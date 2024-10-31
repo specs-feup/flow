@@ -1,10 +1,10 @@
-import LaraFlowError from "lara-flow/error/LaraFlowError";
-import BaseEdge from "lara-flow/graph/BaseEdge";
-import BaseGraph from "lara-flow/graph/BaseGraph";
-import BaseNode from "lara-flow/graph/BaseNode";
-import { EdgeCollection } from "lara-flow/graph/EdgeCollection";
-import Graph from "lara-flow/graph/Graph";
-import Node from "lara-flow/graph/Node";
+import LaraFlowError from "@specs-feup/lara-flow/error/LaraFlowError";
+import BaseEdge from "@specs-feup/lara-flow/graph/BaseEdge";
+import BaseGraph from "@specs-feup/lara-flow/graph/BaseGraph";
+import BaseNode from "@specs-feup/lara-flow/graph/BaseNode";
+import { EdgeCollection } from "@specs-feup/lara-flow/graph/EdgeCollection";
+import Graph from "@specs-feup/lara-flow/graph/Graph";
+import Node from "@specs-feup/lara-flow/graph/Node";
 import cytoscape from "@specs-feup/lara/api/libs/cytoscape-3.26.0.js";
 
 /**

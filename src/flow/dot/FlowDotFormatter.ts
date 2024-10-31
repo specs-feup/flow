@@ -1,13 +1,13 @@
-import CallEdge from "lara-flow/flow/CallEdge";
-import ControlFlowEdge from "lara-flow/flow/ControlFlowEdge";
-import ControlFlowNode from "lara-flow/flow/ControlFlowNode";
-import FlowGraph from "lara-flow/flow/FlowGraph";
-import FunctionNode from "lara-flow/flow/FunctionNode";
-import BaseEdge from "lara-flow/graph/BaseEdge";
-import BaseNode from "lara-flow/graph/BaseNode";
-import DefaultDotFormatter from "lara-flow/graph/dot/DefaultDotFormatter";
-import Edge from "lara-flow/graph/Edge";
-import Node from "lara-flow/graph/Node";
+import CallEdge from "@specs-feup/lara-flow/flow/CallEdge";
+import ControlFlowEdge from "@specs-feup/lara-flow/flow/ControlFlowEdge";
+import ControlFlowNode from "@specs-feup/lara-flow/flow/ControlFlowNode";
+import FlowGraph from "@specs-feup/lara-flow/flow/FlowGraph";
+import FunctionNode from "@specs-feup/lara-flow/flow/FunctionNode";
+import BaseEdge from "@specs-feup/lara-flow/graph/BaseEdge";
+import BaseNode from "@specs-feup/lara-flow/graph/BaseNode";
+import DefaultDotFormatter from "@specs-feup/lara-flow/graph/dot/DefaultDotFormatter";
+import Edge from "@specs-feup/lara-flow/graph/Edge";
+import Node from "@specs-feup/lara-flow/graph/Node";
 
 export default class FlowDotFormatter<
     G extends FlowGraph.Class = FlowGraph.Class,

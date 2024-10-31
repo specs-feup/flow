@@ -1,8 +1,7 @@
-
-import ControlFlowNode from "lara-flow/flow/ControlFlowNode";
-import FunctionNode from "lara-flow/flow/FunctionNode";
-import BaseNode from "lara-flow/graph/BaseNode";
-import Node from "lara-flow/graph/Node";
+import ControlFlowNode from "@specs-feup/lara-flow/flow/ControlFlowNode";
+import FunctionNode from "@specs-feup/lara-flow/flow/FunctionNode";
+import BaseNode from "@specs-feup/lara-flow/graph/BaseNode";
+import Node from "@specs-feup/lara-flow/graph/Node";
 
 namespace ControlFlowEndNode {
     export const TAG = "__clava_flow__control_flow_end_node";
@@ -41,7 +40,7 @@ namespace ControlFlowEndNode {
     export interface Data extends ControlFlowNode.Data {
         [TAG]: {
             version: typeof VERSION;
-        }
+        };
     }
 
     export interface ScratchData extends ControlFlowNode.ScratchData {}

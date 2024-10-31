@@ -1,7 +1,7 @@
 {
-    "name": "lara-flow",
+    "name": "@specs-feup/lara-flow",
     "version": "1.0.0",
-    "description": "ControlFlow and DataFlow graphs for Lara.",
+    "description": "Control-flow, Data-flow, static-call, and other graphs for Lara.",
     "type": "module",
     "parserOptions": {
         "project": [

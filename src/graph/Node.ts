@@ -1,7 +1,7 @@
-import BaseEdge from "lara-flow/graph/BaseEdge";
-import BaseGraph from "lara-flow/graph/BaseGraph";
-import BaseNode from "lara-flow/graph/BaseNode";
-import Graph from "lara-flow/graph/Graph";
+import BaseEdge from "@specs-feup/lara-flow/graph/BaseEdge";
+import BaseGraph from "@specs-feup/lara-flow/graph/BaseGraph";
+import BaseNode from "@specs-feup/lara-flow/graph/BaseNode";
+import Graph from "@specs-feup/lara-flow/graph/Graph";
 import cytoscape from "@specs-feup/lara/api/libs/cytoscape-3.26.0.js";
 
 /**

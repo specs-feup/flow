@@ -1,9 +1,9 @@
-import LaraFlowError from "lara-flow/error/LaraFlowError";
-import BaseGraph from "lara-flow/graph/BaseGraph";
-import BaseNode from "lara-flow/graph/BaseNode";
-import Edge from "lara-flow/graph/Edge";
-import { EdgeCollection } from "lara-flow/graph/EdgeCollection";
-import Graph from "lara-flow/graph/Graph";
+import LaraFlowError from "@specs-feup/lara-flow/error/LaraFlowError";
+import BaseGraph from "@specs-feup/lara-flow/graph/BaseGraph";
+import BaseNode from "@specs-feup/lara-flow/graph/BaseNode";
+import Edge from "@specs-feup/lara-flow/graph/Edge";
+import { EdgeCollection } from "@specs-feup/lara-flow/graph/EdgeCollection";
+import Graph from "@specs-feup/lara-flow/graph/Graph";
 import cytoscape from "@specs-feup/lara/api/libs/cytoscape-3.26.0.js";
 
 /**
@@ -60,7 +60,7 @@ namespace BaseEdge {
          * Use the scratch data object for temporary or non-serializable data.
          * For JSON serializable data, use {@link BaseEdge.Class.data}.
          *
-         * The scratch data is stored under the {@link Graph.scratchNamespace | lara-flow namespace}.
+         * The scratch data is stored under the {@link Graph.scratchNamespace | @specs-feup/lara-flow namespace}.
          *
          * @returns the scratch data object associated with this edge.
          */

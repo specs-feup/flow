@@ -1,22 +1,22 @@
-import CallEdge from "lara-flow/flow/CallEdge";
-import ControlFlowEdge from "lara-flow/flow/ControlFlowEdge";
-import ControlFlowNode from "lara-flow/flow/ControlFlowNode";
-import FlowDotFormatter from "lara-flow/flow/dot/FlowDotFormatter";
-import FlowGraph from "lara-flow/flow/FlowGraph";
-import FunctionNode from "lara-flow/flow/FunctionNode";
-import BaseEdge from "lara-flow/graph/BaseEdge";
-import BaseGraph from "lara-flow/graph/BaseGraph";
-import BaseNode from "lara-flow/graph/BaseNode";
-import DefaultDotFormatter from "lara-flow/graph/dot/DefaultDotFormatter";
-import DotFormatter from "lara-flow/graph/dot/DotFormatter";
-import { EdgeCollection } from "lara-flow/graph/EdgeCollection";
-import Graph from "lara-flow/graph/Graph";
-import IncrementingIdGenerator from "lara-flow/graph/id/IncrementingIdGenerator";
-import Node from "lara-flow/graph/Node";
-import { NodeCollection } from "lara-flow/graph/NodeCollection";
-import BreadthFirstSearch from "lara-flow/graph/search/BreadthFirstSearch";
-import DepthFirstSearch from "lara-flow/graph/search/DepthFirstSearch";
-import DijkstraSearch from "lara-flow/graph/search/DijkstraSearch";
+import CallEdge from "@specs-feup/lara-flow/flow/CallEdge";
+import ControlFlowEdge from "@specs-feup/lara-flow/flow/ControlFlowEdge";
+import ControlFlowNode from "@specs-feup/lara-flow/flow/ControlFlowNode";
+import FlowDotFormatter from "@specs-feup/lara-flow/flow/dot/FlowDotFormatter";
+import FlowGraph from "@specs-feup/lara-flow/flow/FlowGraph";
+import FunctionNode from "@specs-feup/lara-flow/flow/FunctionNode";
+import BaseEdge from "@specs-feup/lara-flow/graph/BaseEdge";
+import BaseGraph from "@specs-feup/lara-flow/graph/BaseGraph";
+import BaseNode from "@specs-feup/lara-flow/graph/BaseNode";
+import DefaultDotFormatter from "@specs-feup/lara-flow/graph/dot/DefaultDotFormatter";
+import DotFormatter from "@specs-feup/lara-flow/graph/dot/DotFormatter";
+import { EdgeCollection } from "@specs-feup/lara-flow/graph/EdgeCollection";
+import Graph from "@specs-feup/lara-flow/graph/Graph";
+import IncrementingIdGenerator from "@specs-feup/lara-flow/graph/id/IncrementingIdGenerator";
+import Node from "@specs-feup/lara-flow/graph/Node";
+import { NodeCollection } from "@specs-feup/lara-flow/graph/NodeCollection";
+import BreadthFirstSearch from "@specs-feup/lara-flow/graph/search/BreadthFirstSearch";
+import DepthFirstSearch from "@specs-feup/lara-flow/graph/search/DepthFirstSearch";
+import DijkstraSearch from "@specs-feup/lara-flow/graph/search/DijkstraSearch";
 
 namespace TGraph {
     export class Class<
@@ -110,7 +110,7 @@ namespace T2Node {
         }
 
         buildScratchData(scratchData: BaseNode.ScratchData): ScratchData {
-            return {...scratchData, piu: "piu"};
+            return { ...scratchData, piu: "piu" };
         }
     }
 
@@ -135,10 +135,7 @@ namespace T2Node {
 
 //=======================
 
-const graph = Graph
-    .create()
-    .init(new FlowGraph.Builder())
-    .as(FlowGraph);
+const graph = Graph.create().init(new FlowGraph.Builder()).as(FlowGraph);
 
 const f1 = graph.addFunction("f1");
 const f2 = graph.addFunction("f2");

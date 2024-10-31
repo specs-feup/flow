@@ -1,16 +1,16 @@
-import BaseEdge from "lara-flow/graph/BaseEdge";
-import BaseNode from "lara-flow/graph/BaseNode";
-import Node from "lara-flow/graph/Node";
-        
+import BaseEdge from "@specs-feup/lara-flow/graph/BaseEdge";
+import BaseNode from "@specs-feup/lara-flow/graph/BaseNode";
+import Node from "@specs-feup/lara-flow/graph/Node";
+
 /**
  * A breadth-first search algorithm.
- * 
+ *
  * Can have a custom propagation function to determine which edges to follow,
  * effectively pruning the search tree.
- * 
+ *
  * Can be set to be undirected, in which case it will also use incoming edges
  * to traverse the graph, disregarding edge direction.
- * 
+ *
  * @privateRemarks
  * TODO This implementation uses an array as a queue, which is not efficient.
  * A proper queue implementation should be used instead.

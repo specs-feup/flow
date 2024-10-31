@@ -1,6 +1,5 @@
-import BaseEdge from "lara-flow/graph/BaseEdge";
-import Edge from "lara-flow/graph/Edge";
-
+import BaseEdge from "@specs-feup/lara-flow/graph/BaseEdge";
+import Edge from "@specs-feup/lara-flow/graph/Edge";
 
 namespace CallEdge {
     export const TAG = "__lara_flow__call_edge";
@@ -9,9 +8,7 @@ namespace CallEdge {
     export class Class<
         D extends Data = Data,
         S extends ScratchData = ScratchData,
-    > extends BaseEdge.Class<D, S> {
-        
-    }
+    > extends BaseEdge.Class<D, S> {}
 
     export class Builder implements Edge.Builder<Data, ScratchData> {
         buildData(data: BaseEdge.Data): Data {

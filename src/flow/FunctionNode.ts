@@ -1,13 +1,13 @@
-import LaraFlowError from "lara-flow/error/LaraFlowError";
-import ControlFlowNode from "lara-flow/flow/ControlFlowNode";
-import FlowGraph from "lara-flow/flow/FlowGraph";
-import BaseNode from "lara-flow/graph/BaseNode";
-import Node from "lara-flow/graph/Node";
-import { NodeCollection } from "lara-flow/graph/NodeCollection";
+import LaraFlowError from "@specs-feup/lara-flow/error/LaraFlowError";
+import ControlFlowNode from "@specs-feup/lara-flow/flow/ControlFlowNode";
+import FlowGraph from "@specs-feup/lara-flow/flow/FlowGraph";
+import BaseNode from "@specs-feup/lara-flow/graph/BaseNode";
+import Node from "@specs-feup/lara-flow/graph/Node";
+import { NodeCollection } from "@specs-feup/lara-flow/graph/NodeCollection";
 
 /**
  * A node that represents a function. Its children may form a CFG.
- * 
+ *
  * Each FunctionNode must have a name that is unique in the graph.
  * You should mangle names in case of overloading or when you wish
  * to have multiple contexts of the same function as different nodes.
@@ -20,8 +20,6 @@ namespace FunctionNode {
         D extends Data = Data,
         S extends ScratchData = ScratchData,
     > extends BaseNode.Class<D, S> {
-        
-        
         /**
          * The name of the function. This name must be unique in the graph,
          * so it should be mangled if the use case permits overloading.
@@ -40,27 +38,27 @@ namespace FunctionNode {
          * @returns Itself, for chaining.
          * @throws {} {@link LaraFlowError} if the new function name already
          * exists in the graph. This should be seen as a logic error and
-         * should not be catched. Instead, ensure that no existing function 
+         * should not be catched. Instead, ensure that no existing function
          * shares the same name by renaming or removing.
          */
         renameFunction(name: string): this {
             if (this.graph.is(FlowGraph)) {
                 const graph = this.#expectMayRegister(name);
                 this.unregister();
-                graph
-                    .data[FlowGraph.TAG]
-                    .functions[name] = this.id;
+                graph.data[FlowGraph.TAG].functions[name] = this.id;
             }
             this.data[TAG].functionName = name;
             return this;
         }
 
-        get controlFlowNodes(): NodeCollection<ControlFlowNode.Data, ControlFlowNode.ScratchData, ControlFlowNode.Class> {
-            return this
-                .graph
-                .nodes
+        get controlFlowNodes(): NodeCollection<
+            ControlFlowNode.Data,
+            ControlFlowNode.ScratchData,
+            ControlFlowNode.Class
+        > {
+            return this.graph.nodes
                 .filterIs(ControlFlowNode)
-                .filter(n => n.data[ControlFlowNode.TAG].function === this.id);
+                .filter((n) => n.data[ControlFlowNode.TAG].function === this.id);
         }
 
         get cfgEntryNode(): ControlFlowNode.Class | undefined {
@@ -70,17 +68,24 @@ namespace FunctionNode {
         }
 
         set cfgEntryNode(node: ControlFlowNode.Class | undefined) {
-            if (node !== undefined && node.data[ControlFlowNode.TAG].function !== this.id) {
-                throw new LaraFlowError("Cannot set a CFG entry node that does not belong to this function.");
+            if (
+                node !== undefined &&
+                node.data[ControlFlowNode.TAG].function !== this.id
+            ) {
+                throw new LaraFlowError(
+                    "Cannot set a CFG entry node that does not belong to this function.",
+                );
             }
-            
+
             this.data[TAG].cfgEntryNode = node?.id;
         }
 
         #expectMayRegister(name: string): FlowGraph.Class {
-            const graph = this
-                .graph
-                .expect(FlowGraph, "register() must be called on a FunctionNode in a FlowGraph")
+            const graph = this.graph
+                .expect(
+                    FlowGraph,
+                    "register() must be called on a FunctionNode in a FlowGraph",
+                )
                 .as(FlowGraph);
             const node = graph.getFunction(name);
             if (node !== undefined && node.id !== this.id) {
@@ -92,14 +97,17 @@ namespace FunctionNode {
         }
 
         register() {
-            this.#expectMayRegister(this.functionName)
-                .data[FlowGraph.TAG]
-                .functions[this.functionName] = this.id;
+            this.#expectMayRegister(this.functionName).data[FlowGraph.TAG].functions[
+                this.functionName
+            ] = this.id;
         }
 
         unregister() {
             const graph = this.graph
-                .expect(FlowGraph, "unregister() must be called on a FunctionNode in a FlowGraph")
+                .expect(
+                    FlowGraph,
+                    "unregister() must be called on a FunctionNode in a FlowGraph",
+                )
                 .as(FlowGraph);
             const node = graph.getFunction(this.functionName);
             if (node === undefined || node.id !== this.id) {
@@ -109,11 +117,10 @@ namespace FunctionNode {
         }
 
         isRegistered(): boolean {
-            const id = this
-                .graph
-                .expect(FlowGraph, "isRegistered() must be called on a FunctionNode in a FlowGraph")
-                .data[FlowGraph.TAG]
-                .functions[this.functionName];
+            const id = this.graph.expect(
+                FlowGraph,
+                "isRegistered() must be called on a FunctionNode in a FlowGraph",
+            ).data[FlowGraph.TAG].functions[this.functionName];
             return id === this.id;
         }
     }
@@ -122,18 +129,18 @@ namespace FunctionNode {
         #functionName: string;
         /**
          * Initializing an existing node to be a FunctionNode will not
-         * update the graph's function map. As such, use of 
+         * update the graph's function map. As such, use of
          * {@link FlowGraph.Class.addFunction} is strongly encouraged
          * instead.
-         * 
-         * @param functionName The name of the function. This name must be 
-         * unique in the graph, so it should be mangled if the use case 
+         *
+         * @param functionName The name of the function. This name must be
+         * unique in the graph, so it should be mangled if the use case
          * permits overloading.
          */
         constructor(functionName: string) {
             this.#functionName = functionName;
         }
-        
+
         buildData(data: BaseNode.Data): Data {
             return {
                 ...data,

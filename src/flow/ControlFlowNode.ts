@@ -1,7 +1,7 @@
-import LaraFlowError from "lara-flow/error/LaraFlowError";
-import FunctionNode from "lara-flow/flow/FunctionNode";
-import BaseNode from "lara-flow/graph/BaseNode";
-import Node from "lara-flow/graph/Node";
+import LaraFlowError from "@specs-feup/lara-flow/error/LaraFlowError";
+import FunctionNode from "@specs-feup/lara-flow/flow/FunctionNode";
+import BaseNode from "@specs-feup/lara-flow/graph/BaseNode";
+import Node from "@specs-feup/lara-flow/graph/Node";
 
 /**
  * TODO

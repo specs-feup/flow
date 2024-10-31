@@ -1,6 +1,6 @@
-import BaseEdge from "lara-flow/graph/BaseEdge";
-import BaseNode from "lara-flow/graph/BaseNode";
-import Node from "lara-flow/graph/Node";
+import BaseEdge from "@specs-feup/lara-flow/graph/BaseEdge";
+import BaseNode from "@specs-feup/lara-flow/graph/BaseNode";
+import Node from "@specs-feup/lara-flow/graph/Node";
 
 /**
  * Represents a visit to a node during Dijkstra's algorithm.
@@ -20,7 +20,7 @@ export interface DijkstraSearchVisit extends Node.SearchVisit {
  *
  * Can be set to be undirected, in which case it will also use incoming edges
  * to traverse the graph, disregarding edge direction.
- * 
+ *
  * Weights must be non-negative.
  *
  * @privateRemarks
@@ -119,21 +119,32 @@ export default class DijkstraSearch implements Node.Search<DijkstraSearchVisit> 
 
         while (queue.length > 0) {
             const closest = queue.shift()!;
-            
-            yield { node: closest, path: paths.get(closest.id)!, index, distance: distances.get(closest.id)! };
+
+            yield {
+                node: closest,
+                path: paths.get(closest.id)!,
+                index,
+                distance: distances.get(closest.id)!,
+            };
             index++;
             visited.add(closest.id);
 
-            let neighbors: [BaseEdge.Class, BaseNode.Class][] = closest.outgoers.toArray().map(e => [e, e.target]);
+            let neighbors: [BaseEdge.Class, BaseNode.Class][] = closest.outgoers
+                .toArray()
+                .map((e) => [e, e.target]);
             if (!this.directed) {
-                const incomers: [BaseEdge.Class, BaseNode.Class][] = closest.incomers.toArray().map(e => [e, e.source]);
+                const incomers: [BaseEdge.Class, BaseNode.Class][] = closest.incomers
+                    .toArray()
+                    .map((e) => [e, e.source]);
                 neighbors.push(...incomers);
             }
-            neighbors = neighbors.filter(([e, n]) => this.propagate(e) && !visited.has(n.id));
+            neighbors = neighbors.filter(
+                ([e, n]) => this.propagate(e) && !visited.has(n.id),
+            );
             for (const [e, neighbor] of neighbors) {
                 const bestDist = distances.get(neighbor.id);
                 const newDist = distances.get(closest.id)! + this.weight(e);
-                
+
                 if (bestDist === undefined || newDist < bestDist) {
                     distances.set(neighbor.id, newDist);
                     paths.set(neighbor.id, [...paths.get(closest.id)!, e]);

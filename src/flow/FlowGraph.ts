@@ -1,9 +1,9 @@
-import LaraFlowError from "lara-flow/error/LaraFlowError";
-import FunctionNode from "lara-flow/flow/FunctionNode";
-import BaseGraph from "lara-flow/graph/BaseGraph";
-import BaseNode from "lara-flow/graph/BaseNode";
-import Graph from "lara-flow/graph/Graph";
-import { NodeCollection } from "lara-flow/graph/NodeCollection";
+import LaraFlowError from "@specs-feup/lara-flow/error/LaraFlowError";
+import FunctionNode from "@specs-feup/lara-flow/flow/FunctionNode";
+import BaseGraph from "@specs-feup/lara-flow/graph/BaseGraph";
+import BaseNode from "@specs-feup/lara-flow/graph/BaseNode";
+import Graph from "@specs-feup/lara-flow/graph/Graph";
+import { NodeCollection } from "@specs-feup/lara-flow/graph/NodeCollection";
 
 /**
  * A graph for building CFGs, DFGs, CDFGs, SCGs, etc.

@@ -1,5 +1,5 @@
-import BaseEdge from "lara-flow/graph/BaseEdge";
-import Edge from "lara-flow/graph/Edge";
+import BaseEdge from "@specs-feup/lara-flow/graph/BaseEdge";
+import Edge from "@specs-feup/lara-flow/graph/Edge";
 
 namespace ControlFlowEdge {
     export const TAG = "__lara_flow__control_flow_edge";
@@ -9,7 +9,6 @@ namespace ControlFlowEdge {
         D extends Data = Data,
         S extends ScratchData = ScratchData,
     > extends BaseEdge.Class<D, S> {
-        
         get isFake(): boolean {
             return this.data[TAG].isFake;
         }

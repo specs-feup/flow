@@ -1,16 +1,18 @@
-import Edge from "lara-flow/graph/Edge";
-import Node from "lara-flow/graph/Node";
+import Edge from "@specs-feup/lara-flow/graph/Edge";
+import Node from "@specs-feup/lara-flow/graph/Node";
 
 /**
  * An id generator that generates ids by incrementing a number. Can be used for
  * nodes and edges (the same instance can even be used for both simultaneously).
- * 
+ *
  * This generator is specially useful when deterministic ids are necessary.
  * Note that some transformations may create temporary nodes or edges, which, after
  * being removed, will not be reused, and may give the impression that the ids are not
  * sequential.
  */
-export default class IncrementingIdGenerator implements Node.IdGenerator, Edge.IdGenerator {
+export default class IncrementingIdGenerator
+    implements Node.IdGenerator, Edge.IdGenerator
+{
     /**
      * The current id.
      */
@@ -22,7 +24,7 @@ export default class IncrementingIdGenerator implements Node.IdGenerator, Edge.I
 
     /**
      * Creates a new instance of the id generator.
-     * 
+     *
      * @param prefix An optional prefix to be added to the generated ids.
      */
     constructor(prefix: string = "") {
