@@ -26,7 +26,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/Goncalerta/lara-flow.git"
+        "url": "git+https://github.com/specs-feup/flow.git"
     },
     "keywords": [
         "clava",
@@ -37,9 +37,9 @@
     ],
     "author": "",
     "bugs": {
-        "url": "https://github.com/Goncalerta/lara-flow/issues"
+        "url": "https://github.com/specs-feup/flow/issues"
     },
-    "homepage": "https://github.com/Goncalerta/lara-flow#readme",
+    "homepage": "https://github.com/specs-feup/flow#readme",
     "dependencies": {
         "cytoscape": "^3.30.3"
     },
