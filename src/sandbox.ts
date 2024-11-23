@@ -1,22 +1,22 @@
-import CallEdge from "@specs-feup/lara-flow/flow/CallEdge";
-import ControlFlowEdge from "@specs-feup/lara-flow/flow/ControlFlowEdge";
-import ControlFlowNode from "@specs-feup/lara-flow/flow/ControlFlowNode";
-import FlowDotFormatter from "@specs-feup/lara-flow/flow/dot/FlowDotFormatter";
-import FlowGraph from "@specs-feup/lara-flow/flow/FlowGraph";
-import FunctionNode from "@specs-feup/lara-flow/flow/FunctionNode";
-import BaseEdge from "@specs-feup/lara-flow/graph/BaseEdge";
-import BaseGraph from "@specs-feup/lara-flow/graph/BaseGraph";
-import BaseNode from "@specs-feup/lara-flow/graph/BaseNode";
-import DefaultDotFormatter from "@specs-feup/lara-flow/graph/dot/DefaultDotFormatter";
-import DotFormatter from "@specs-feup/lara-flow/graph/dot/DotFormatter";
-import { EdgeCollection } from "@specs-feup/lara-flow/graph/EdgeCollection";
-import Graph from "@specs-feup/lara-flow/graph/Graph";
-import IncrementingIdGenerator from "@specs-feup/lara-flow/graph/id/IncrementingIdGenerator";
-import Node from "@specs-feup/lara-flow/graph/Node";
-import { NodeCollection } from "@specs-feup/lara-flow/graph/NodeCollection";
-import BreadthFirstSearch from "@specs-feup/lara-flow/graph/search/BreadthFirstSearch";
-import DepthFirstSearch from "@specs-feup/lara-flow/graph/search/DepthFirstSearch";
-import DijkstraSearch from "@specs-feup/lara-flow/graph/search/DijkstraSearch";
+import CallEdge from "@specs-feup/flow/flow/CallEdge";
+import ControlFlowEdge from "@specs-feup/flow/flow/ControlFlowEdge";
+import ControlFlowNode from "@specs-feup/flow/flow/ControlFlowNode";
+import FlowDotFormatter from "@specs-feup/flow/flow/dot/FlowDotFormatter";
+import FlowGraph from "@specs-feup/flow/flow/FlowGraph";
+import FunctionNode from "@specs-feup/flow/flow/FunctionNode";
+import BaseEdge from "@specs-feup/flow/graph/BaseEdge";
+import BaseGraph from "@specs-feup/flow/graph/BaseGraph";
+import BaseNode from "@specs-feup/flow/graph/BaseNode";
+import DefaultDotFormatter from "@specs-feup/flow/graph/dot/DefaultDotFormatter";
+import DotFormatter from "@specs-feup/flow/graph/dot/DotFormatter";
+import { EdgeCollection } from "@specs-feup/flow/graph/EdgeCollection";
+import Graph from "@specs-feup/flow/graph/Graph";
+import IncrementingIdGenerator from "@specs-feup/flow/graph/id/IncrementingIdGenerator";
+import Node from "@specs-feup/flow/graph/Node";
+import { NodeCollection } from "@specs-feup/flow/graph/NodeCollection";
+import BreadthFirstSearch from "@specs-feup/flow/graph/search/BreadthFirstSearch";
+import DepthFirstSearch from "@specs-feup/flow/graph/search/DepthFirstSearch";
+import DijkstraSearch from "@specs-feup/flow/graph/search/DijkstraSearch";
 
 namespace TGraph {
     export class Class<
@@ -154,4 +154,4 @@ const cfe3 = graph.addEdge(cf2, cf2, "cfe3").init(new ControlFlowEdge.Builder())
 f1.cfgEntryNode = cf1.as(ControlFlowNode);
 
 const formatter = new FlowDotFormatter();
-graph.toFile(formatter, "out/graph.dot");
+graph.toFile(formatter, "out/graph3.dot");

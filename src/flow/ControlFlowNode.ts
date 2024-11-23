@@ -1,7 +1,9 @@
-import LaraFlowError from "@specs-feup/lara-flow/error/LaraFlowError";
-import FunctionNode from "@specs-feup/lara-flow/flow/FunctionNode";
-import BaseNode from "@specs-feup/lara-flow/graph/BaseNode";
-import Node from "@specs-feup/lara-flow/graph/Node";
+import LaraFlowError from "@specs-feup/flow/error/LaraFlowError";
+import ControlFlowEdge from "@specs-feup/flow/flow/ControlFlowEdge";
+import FunctionNode from "@specs-feup/flow/flow/FunctionNode";
+import BaseNode from "@specs-feup/flow/graph/BaseNode";
+import { EdgeCollection } from "@specs-feup/flow/graph/EdgeCollection";
+import Node from "@specs-feup/flow/graph/Node";
 
 /**
  * TODO
@@ -27,6 +29,14 @@ namespace ControlFlowNode {
                 );
             }
             return node.as(FunctionNode);
+        }
+
+        get cfgOutgoers(): EdgeCollection<
+            ControlFlowEdge.Data,
+            ControlFlowEdge.ScratchData,
+            ControlFlowEdge.Class
+        > {
+            return this.outgoers.filterIs(ControlFlowEdge).filter((e) => !e.isFake);
         }
 
         setAsEntryNode(): this {

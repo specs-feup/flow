@@ -1,6 +1,6 @@
-import BaseGraph from "@specs-feup/lara-flow/graph/BaseGraph";
-import { DotGraph } from "@specs-feup/lara-flow/graph/dot/dot";
-import Graph from "@specs-feup/lara-flow/graph/Graph";
+import BaseGraph from "@specs-feup/flow/graph/BaseGraph";
+import { DotGraph } from "@specs-feup/flow/graph/dot/dot";
+import Graph from "@specs-feup/flow/graph/Graph";
 
 /**
  * A formatter that converts a graph to a DOT string.

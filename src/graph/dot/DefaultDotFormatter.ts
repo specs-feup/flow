@@ -1,14 +1,14 @@
-import DotFormatter from "@specs-feup/lara-flow/graph/dot/DotFormatter";
-import BaseEdge from "@specs-feup/lara-flow/graph/BaseEdge";
-import BaseNode from "@specs-feup/lara-flow/graph/BaseNode";
-import BaseGraph from "@specs-feup/lara-flow/graph/BaseGraph";
+import DotFormatter from "@specs-feup/flow/graph/dot/DotFormatter";
+import BaseEdge from "@specs-feup/flow/graph/BaseEdge";
+import BaseNode from "@specs-feup/flow/graph/BaseNode";
+import BaseGraph from "@specs-feup/flow/graph/BaseGraph";
 import Dot, {
     DotEdge,
     DotGraph,
     DotNode,
     DotSubgraph,
-} from "@specs-feup/lara-flow/graph/dot/dot";
-import { NodeCollection } from "@specs-feup/lara-flow/graph/NodeCollection";
+} from "@specs-feup/flow/graph/dot/dot";
+import { NodeCollection } from "@specs-feup/flow/graph/NodeCollection";
 
 /**
  * The default formatter for converting a graph into a DOT string.

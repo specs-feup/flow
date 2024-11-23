@@ -1,9 +1,9 @@
-import LaraFlowError from "@specs-feup/lara-flow/error/LaraFlowError";
-import ControlFlowNode from "@specs-feup/lara-flow/flow/ControlFlowNode";
-import FlowGraph from "@specs-feup/lara-flow/flow/FlowGraph";
-import BaseNode from "@specs-feup/lara-flow/graph/BaseNode";
-import Node from "@specs-feup/lara-flow/graph/Node";
-import { NodeCollection } from "@specs-feup/lara-flow/graph/NodeCollection";
+import LaraFlowError from "@specs-feup/flow/error/LaraFlowError";
+import ControlFlowNode from "@specs-feup/flow/flow/ControlFlowNode";
+import FlowGraph from "@specs-feup/flow/flow/FlowGraph";
+import BaseNode from "@specs-feup/flow/graph/BaseNode";
+import Node from "@specs-feup/flow/graph/Node";
+import { NodeCollection } from "@specs-feup/flow/graph/NodeCollection";
 
 /**
  * A node that represents a function. Its children may form a CFG.

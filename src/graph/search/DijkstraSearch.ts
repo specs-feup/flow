@@ -1,6 +1,6 @@
-import BaseEdge from "@specs-feup/lara-flow/graph/BaseEdge";
-import BaseNode from "@specs-feup/lara-flow/graph/BaseNode";
-import Node from "@specs-feup/lara-flow/graph/Node";
+import BaseEdge from "@specs-feup/flow/graph/BaseEdge";
+import BaseNode from "@specs-feup/flow/graph/BaseNode";
+import Node from "@specs-feup/flow/graph/Node";
 
 /**
  * Represents a visit to a node during Dijkstra's algorithm.

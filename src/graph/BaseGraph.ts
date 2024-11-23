@@ -1,14 +1,13 @@
-import cytoscape from "@specs-feup/lara/api/libs/cytoscape-3.26.0.js";
-import { JavaClasses } from "@specs-feup/lara/api/lara/util/JavaTypes.js";
-import Graph from "@specs-feup/lara-flow/graph/Graph";
-import BaseNode from "@specs-feup/lara-flow/graph/BaseNode";
-import BaseEdge from "@specs-feup/lara-flow/graph/BaseEdge";
-import Io from "@specs-feup/lara/api/lara/Io.js";
-import LaraFlowError from "@specs-feup/lara-flow/error/LaraFlowError";
-import Edge from "@specs-feup/lara-flow/graph/Edge";
-import Node from "@specs-feup/lara-flow/graph/Node";
-import { NodeCollection } from "@specs-feup/lara-flow/graph/NodeCollection";
-import { EdgeCollection } from "@specs-feup/lara-flow/graph/EdgeCollection";
+import cytoscape from "cytoscape";
+import Graph from "@specs-feup/flow/graph/Graph";
+import BaseNode from "@specs-feup/flow/graph/BaseNode";
+import BaseEdge from "@specs-feup/flow/graph/BaseEdge";
+import LaraFlowError from "@specs-feup/flow/error/LaraFlowError";
+import Edge from "@specs-feup/flow/graph/Edge";
+import Node from "@specs-feup/flow/graph/Node";
+import { NodeCollection } from "@specs-feup/flow/graph/NodeCollection";
+import { EdgeCollection } from "@specs-feup/flow/graph/EdgeCollection";
+import fs from "fs";
 
 /**
  * The base {@link Graph | graph type}. All graph types must be subtypes of this type.
@@ -54,7 +53,7 @@ namespace BaseGraph {
          * Use the scratch data object for temporary or non-serializable data.
          * For JSON serializable data, use {@link BaseGraph.Class.data}.
          *
-         * The scratch data is stored under the {@link Graph.scratchNamespace | @specs-feup/lara-flow namespace}.
+         * The scratch data is stored under the {@link Graph.scratchNamespace | @specs-feup/flow namespace}.
          *
          * @returns the scratch data object associated with this graph.
          */
@@ -450,8 +449,8 @@ namespace BaseGraph {
          * @param filename The name of the file to write to.
          * @returns The file to where the contents where written.
          */
-        toFile(formatter: Graph.Formatter<this>, filename: string): JavaClasses.File {
-            return Io.writeFile(filename, this.toString(formatter));
+        toFile(formatter: Graph.Formatter<this>, filename: string) {
+            fs.writeFileSync(filename, this.toString(formatter));
         }
 
         /**
@@ -470,7 +469,7 @@ namespace BaseGraph {
      * However, importing a cytoscape object that does not respect these types may lead to
      * runtime errors on certain operations, such as adding a new node. In practice, its almost
      * impossible for that to happen unintentionally, as these fields are under the
-     * {@link Graph.scratchNamespace | @specs-feup/lara-flow namespace}.
+     * {@link Graph.scratchNamespace | @specs-feup/flow namespace}.
      */
     export const TypeGuard: Graph.TypeGuard<Data, ScratchData> = {
         isDataCompatible(data: BaseGraph.Data): data is Data {

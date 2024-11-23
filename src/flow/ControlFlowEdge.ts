@@ -1,5 +1,5 @@
-import BaseEdge from "@specs-feup/lara-flow/graph/BaseEdge";
-import Edge from "@specs-feup/lara-flow/graph/Edge";
+import BaseEdge from "@specs-feup/flow/graph/BaseEdge";
+import Edge from "@specs-feup/flow/graph/Edge";
 
 namespace ControlFlowEdge {
     export const TAG = "__lara_flow__control_flow_edge";

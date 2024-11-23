@@ -1,5 +1,5 @@
-import cytoscape from "@specs-feup/lara/api/libs/cytoscape-3.26.0.js";
-import BaseGraph from "@specs-feup/lara-flow/graph/BaseGraph";
+import cytoscape from "cytoscape";
+import BaseGraph from "@specs-feup/flow/graph/BaseGraph";
 
 /**
  * Represents a graph type. All graph types must be subtypes of {@link BaseGraph}.
@@ -31,7 +31,7 @@ type Graph<
 
 namespace Graph {
     /**
-     * Namespace to store scratch data in @specs-feup/lara-flow. Avoids collision with
+     * Namespace to store scratch data in @specs-feup/flow. Avoids collision with
      * cytoscape extensions.
      */
     export const scratchNamespace = "_lara_flow";

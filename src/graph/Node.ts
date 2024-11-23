@@ -1,8 +1,8 @@
-import BaseEdge from "@specs-feup/lara-flow/graph/BaseEdge";
-import BaseGraph from "@specs-feup/lara-flow/graph/BaseGraph";
-import BaseNode from "@specs-feup/lara-flow/graph/BaseNode";
-import Graph from "@specs-feup/lara-flow/graph/Graph";
-import cytoscape from "@specs-feup/lara/api/libs/cytoscape-3.26.0.js";
+import BaseEdge from "@specs-feup/flow/graph/BaseEdge";
+import BaseGraph from "@specs-feup/flow/graph/BaseGraph";
+import BaseNode from "@specs-feup/flow/graph/BaseNode";
+import Graph from "@specs-feup/flow/graph/Graph";
+import cytoscape from "cytoscape";
 
 /**
  * Represents a node type. All node types must be subtypes of {@link BaseNode}.

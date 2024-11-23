@@ -1,5 +1,5 @@
 {
-    "name": "@specs-feup/lara-flow",
+    "name": "@specs-feup/flow",
     "version": "1.0.0",
     "description": "Control-flow, Data-flow, static-call, and other graphs for Lara.",
     "type": "module",
@@ -41,9 +41,10 @@
     },
     "homepage": "https://github.com/Goncalerta/lara-flow#readme",
     "dependencies": {
-        "@specs-feup/lara": "^3.0.1"
+        "cytoscape": "^3.30.3"
     },
     "devDependencies": {
+        "@types/cytoscape": "^3.21.8",
         "@typescript-eslint/eslint-plugin": "^6.7.4",
         "@typescript-eslint/parser": "^6.7.4",
         "cross-env": "^7.0.3",

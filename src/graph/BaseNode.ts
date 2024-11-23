@@ -1,13 +1,13 @@
-import cytoscape from "@specs-feup/lara/api/libs/cytoscape-3.26.0.js";
-import Graph from "@specs-feup/lara-flow/graph/Graph";
-import Node from "@specs-feup/lara-flow/graph/Node";
-import BaseGraph from "@specs-feup/lara-flow/graph/BaseGraph";
-import BaseEdge from "@specs-feup/lara-flow/graph/BaseEdge";
-import LaraFlowError from "@specs-feup/lara-flow/error/LaraFlowError";
-import BreadthFirstSearch from "@specs-feup/lara-flow/graph/search/BreadthFirstSearch";
-import DepthFirstSearch from "@specs-feup/lara-flow/graph/search/DepthFirstSearch";
-import { NodeCollection } from "@specs-feup/lara-flow/graph/NodeCollection";
-import { EdgeCollection } from "@specs-feup/lara-flow/graph/EdgeCollection";
+import cytoscape from "cytoscape";
+import Graph from "@specs-feup/flow/graph/Graph";
+import Node from "@specs-feup/flow/graph/Node";
+import BaseGraph from "@specs-feup/flow/graph/BaseGraph";
+import BaseEdge from "@specs-feup/flow/graph/BaseEdge";
+import LaraFlowError from "@specs-feup/flow/error/LaraFlowError";
+import BreadthFirstSearch from "@specs-feup/flow/graph/search/BreadthFirstSearch";
+import DepthFirstSearch from "@specs-feup/flow/graph/search/DepthFirstSearch";
+import { NodeCollection } from "@specs-feup/flow/graph/NodeCollection";
+import { EdgeCollection } from "@specs-feup/flow/graph/EdgeCollection";
 
 /**
  * The base {@link Node | node type}. All node types must be subtypes of this type.
@@ -63,7 +63,7 @@ namespace BaseNode {
          * Use the scratch data object for temporary or non-serializable data.
          * For JSON serializable data, use {@link BaseEdge.Class.data}.
          *
-         * The scratch data is stored under the {@link Graph.scratchNamespace | @specs-feup/lara-flow namespace}.
+         * The scratch data is stored under the {@link Graph.scratchNamespace | @specs-feup/flow namespace}.
          *
          * @returns the scratch data object associated with this node.
          */

@@ -1,5 +1,5 @@
-import Edge from "@specs-feup/lara-flow/graph/Edge";
-import Node from "@specs-feup/lara-flow/graph/Node";
+import Edge from "@specs-feup/flow/graph/Edge";
+import Node from "@specs-feup/flow/graph/Node";
 
 /**
  * An id generator that generates ids by incrementing a number. Can be used for
