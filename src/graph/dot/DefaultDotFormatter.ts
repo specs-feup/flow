@@ -172,6 +172,7 @@ export default class DefaultDotFormatter<
      * @returns The resulting DOT edge.
      */
     edgeToDot(edge: BaseEdge.Class): DotEdge {
+        // TODO doesn't deal very well with self-edges in clusters
         const dot = Dot.edge(edge.source.id, edge.target.id, this.getEdgeAttrs(edge));
         if (this.isContainer(edge.target)) {
             dot.attr("lhead", "cluster_" + edge.target.id);

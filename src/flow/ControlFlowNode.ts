@@ -6,8 +6,6 @@ import { EdgeCollection } from "@specs-feup/flow/graph/EdgeCollection";
 import Node from "@specs-feup/flow/graph/Node";
 
 /**
- * TODO
- *
  * Each ControlFlowNode must belong to exactly one FunctionNode.
  * You may create a "global" FunctionNode for the flow that is not
  * part of any function (in languages such as python or javascript).

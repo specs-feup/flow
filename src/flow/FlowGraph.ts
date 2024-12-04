@@ -69,6 +69,14 @@ namespace FlowGraph {
             return this.getNodeById(id)?.tryAs(FunctionNode);
         }
 
+        getOrAddFunction(name: string): FunctionNode.Class {
+            const functionNode = this.getFunction(name);
+            if (functionNode === undefined) {
+                return this.addFunction(name);
+            }
+            return functionNode;
+        }
+
         /**
          * Checks if the graph has a function with the given name.
          *
@@ -132,10 +140,6 @@ namespace FlowGraph {
             /**
              * Maps function name to its node id. A Record is used
              * instead of a Map so that it can be serialized.
-             * TODO se calhar criar listeners de nos/edges criados
-             *       isso só seria viável se desse para colocar no
-             *       data/scratch data (para nao depender da view)
-             *       idealmente data, para ser serializavel
              */
             functions: Record<string, string>;
         };
