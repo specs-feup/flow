@@ -184,6 +184,15 @@ namespace Edge {
             target: BaseNode.Class,
         ): string;
     }
+
+    /**
+     * Returns the Data type of an edge class.
+     */
+    export type ExtractData<C> = C extends BaseEdge.Class<infer D, any> ? D : never;
+    /**
+     * Returns the ScratchData type of an edge class.
+     */
+    export type ExtractScratchData<C> = C extends BaseEdge.Class<any, infer S> ? S : never;
 }
 
 export default Edge;

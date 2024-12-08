@@ -105,7 +105,7 @@ namespace BaseNode {
         /**
          * @returns The ancestors (parents, parents' parents, etc.) of this node.
          */
-        get ancestors(): NodeCollection {
+        get ancestors(): NodeCollection<BaseNode.Class> {
             // Appears as deprecated because it is for internal use only
             return new NodeCollection(
                 this.#graph,
@@ -117,14 +117,14 @@ namespace BaseNode {
         /**
          * @return The children of this node.
          */
-        get children(): NodeCollection {
+        get children(): NodeCollection<BaseNode.Class> {
             return new NodeCollection(this.#graph, BaseNode.Class, this.#node.children());
         }
 
         /**
          * @returns The descendants (children, children's children, etc.) of this node.
          */
-        get descendants(): NodeCollection {
+        get descendants(): NodeCollection<BaseNode.Class> {
             // Appears as deprecated because it is for internal use only
             return new NodeCollection(
                 this.#graph,
@@ -364,7 +364,7 @@ namespace BaseNode {
         /**
          * @returns The edges that connect to this node.
          */
-        get incomers(): EdgeCollection {
+        get incomers(): EdgeCollection<BaseEdge.Class> {
             // Appears as deprecated because it is for internal use only
             return new EdgeCollection(
                 this.#graph,
@@ -377,7 +377,7 @@ namespace BaseNode {
          * @returns The predecessors of this node.
          * This repeatedly follows the sources of incoming edges.
          */
-        get predecessors(): NodeCollection {
+        get predecessors(): NodeCollection<BaseNode.Class> {
             // Appears as deprecated because it is for internal use only
             return new NodeCollection(
                 this.#graph,
@@ -389,7 +389,7 @@ namespace BaseNode {
         /**
          * @returns The edges that connect from this node.
          */
-        get outgoers(): EdgeCollection {
+        get outgoers(): EdgeCollection<BaseEdge.Class> {
             // Appears as deprecated because it is for internal use only
             return new EdgeCollection(
                 this.#graph,
@@ -402,7 +402,7 @@ namespace BaseNode {
          * @returns The successors of this node.
          * This repeatedly follows the targets of outgoing edges.
          */
-        get successors(): NodeCollection {
+        get successors(): NodeCollection<BaseNode.Class> {
             // Appears as deprecated because it is for internal use only
             return new NodeCollection(
                 this.#graph,
@@ -414,14 +414,14 @@ namespace BaseNode {
         /**
          * @returns The edges that are adjacent to this node.
          */
-        get adjacentEdges(): EdgeCollection {
+        get adjacentEdges(): EdgeCollection<BaseEdge.Class> {
             return this.incomers.union(this.outgoers);
         }
 
         /**
          * @returns The nodes that are adjacent to this node.
          */
-        get adjacentNodes(): NodeCollection {
+        get adjacentNodes(): NodeCollection<BaseNode.Class> {
             return this.incomers.sources.union(this.outgoers.targets);
         }
 
@@ -433,7 +433,7 @@ namespace BaseNode {
          * with this node.
          * @returns The edges that connect this node with the given nodes.
          */
-        edgesWith(nodes: NodeCollection | BaseNode.Class): EdgeCollection {
+        edgesWith(nodes: NodeCollection<BaseNode.Class> | BaseNode.Class): EdgeCollection<BaseEdge.Class> {
             // Appears as deprecated because it is for internal use only
             return new EdgeCollection(
                 this.#graph,
@@ -449,7 +449,7 @@ namespace BaseNode {
          * with this node.
          * @returns The edges from this node to the given nodes.
          */
-        edgesTo(nodes: NodeCollection | BaseNode.Class): EdgeCollection {
+        edgesTo(nodes: NodeCollection<BaseNode.Class> | BaseNode.Class): EdgeCollection<BaseEdge.Class> {
             // Appears as deprecated because it is for internal use only
             return new EdgeCollection(
                 this.#graph,
@@ -465,7 +465,7 @@ namespace BaseNode {
          * with this node.
          * @returns The edges from the given nodes to this node.
          */
-        edgesFrom(nodes: NodeCollection | BaseNode.Class): EdgeCollection {
+        edgesFrom(nodes: NodeCollection<BaseNode.Class> | BaseNode.Class): EdgeCollection<BaseEdge.Class> {
             // Appears as deprecated because it is for internal use only
             return new EdgeCollection(
                 this.#graph,
@@ -556,7 +556,7 @@ namespace BaseNode {
         /**
          * @returns A collection containing only this node.
          */
-        toCollection(): NodeCollection<D, S, this> {
+        toCollection(): NodeCollection<this, D, S> {
             // Appears as deprecated because it is for internal use only
             return new NodeCollection(
                 this.#graph,

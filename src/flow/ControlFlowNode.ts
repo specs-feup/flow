@@ -29,11 +29,7 @@ namespace ControlFlowNode {
             return node.as(FunctionNode);
         }
 
-        get cfgOutgoers(): EdgeCollection<
-            ControlFlowEdge.Data,
-            ControlFlowEdge.ScratchData,
-            ControlFlowEdge.Class
-        > {
+        get cfgOutgoers(): EdgeCollection<ControlFlowEdge.Class> {
             return this.outgoers.filterIs(ControlFlowEdge).filter((e) => !e.isFake);
         }
 

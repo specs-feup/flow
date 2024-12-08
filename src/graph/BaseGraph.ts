@@ -321,7 +321,7 @@ namespace BaseGraph {
         /**
          * @returns A collection of all nodes in the graph.
          */
-        get nodes(): NodeCollection {
+        get nodes(): NodeCollection<BaseNode.Class> {
             // Appears as deprecated because it is for internal use only
             return new NodeCollection(this, BaseNode.Class, this.#graph.nodes());
         }
@@ -329,7 +329,7 @@ namespace BaseGraph {
         /**
          * @returns A collection of all edges in the graph.
          */
-        get edges(): EdgeCollection {
+        get edges(): EdgeCollection<BaseEdge.Class> {
             // Appears as deprecated because it is for internal use only
             return new EdgeCollection(this, BaseEdge.Class, this.#graph.edges());
         }
@@ -339,10 +339,10 @@ namespace BaseGraph {
          * @returns An empty collection of the given type.
          */
         emptyCollection<
+            N extends BaseNode.Class<D, S>,
             D extends BaseNode.Data,
             S extends BaseNode.ScratchData,
-            N extends BaseNode.Class<D, S>,
-        >(NodeType: Node<D, S, N>): NodeCollection<D, S, N>;
+        >(NodeType: Node<D, S, N>): NodeCollection<N, D, S>;
         /**
          * @param EdgeType The type of edge to create an empty collection for.
          * @returns An empty collection of the given type.
@@ -351,10 +351,10 @@ namespace BaseGraph {
             D extends BaseEdge.Data,
             S extends BaseEdge.ScratchData,
             E extends BaseEdge.Class<D, S>,
-        >(EdgeType: Edge<D, S, E>): EdgeCollection<D, S, E>;
+        >(EdgeType: Edge<D, S, E>): EdgeCollection<E, D, S>;
         emptyCollection(
             Type: Node<any, any, any> | Edge<any, any, any>,
-        ): NodeCollection | EdgeCollection {
+        ): NodeCollection<BaseNode.Class> | EdgeCollection<BaseEdge.Class> {
             // Checks which constructor Type.Class is by constructing a dummy object.
             // This distinguishes node types from edge types.
             if (new Type.Class(this, {} as any) instanceof BaseNode.Class) {
@@ -386,7 +386,7 @@ namespace BaseGraph {
             D extends BaseNode.Data,
             S extends BaseNode.ScratchData,
             N extends BaseNode.Class<D, S>,
-        >(NodeType: Node<D, S, N>, nodes: N[]): NodeCollection<D, S, N>;
+        >(NodeType: Node<D, S, N>, nodes: N[]): NodeCollection<N, D, S>;
         /**
          * Creates a collection from an array of edges.
          * Given that the array may be empty, passing the EdgeType is mandatory.
@@ -399,11 +399,11 @@ namespace BaseGraph {
             D extends BaseEdge.Data,
             S extends BaseEdge.ScratchData,
             E extends BaseEdge.Class<D, S>,
-        >(EdgeType: Edge<D, S, E>, edges: E[]): EdgeCollection<D, S, E>;
+        >(EdgeType: Edge<D, S, E>, edges: E[]): EdgeCollection<E, D, S>;
         arrayCollection(
             Type: Node<any, any, any> | Edge<any, any, any>,
             elements: any[],
-        ): NodeCollection | EdgeCollection {
+        ): NodeCollection<BaseNode.Class> | EdgeCollection<BaseEdge.Class> {
             if (new Type.Class(this, {} as any) instanceof BaseNode.Class) {
                 if (elements.length === 0) {
                     return this.emptyCollection(Type as Node<any, any, any>);

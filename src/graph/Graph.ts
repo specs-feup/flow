@@ -207,6 +207,16 @@ namespace Graph {
     > {
         apply: (graph: G1) => G2;
     }
+
+    /**
+     * Returns the Data type of a graph class.
+     */
+    export type ExtractData<C> = C extends BaseGraph.Class<infer D, any> ? D : never;
+    /**
+     * Returns the ScratchData type of a graph class.
+     */
+    export type ExtractScratchData<C> =
+        C extends BaseGraph.Class<any, infer S> ? S : never;
 }
 
 export default Graph;

@@ -100,11 +100,7 @@ namespace FlowGraph {
          *
          * @returns A collection of all functions in the graph.
          */
-        get functions(): NodeCollection<
-            FunctionNode.Data,
-            FunctionNode.ScratchData,
-            FunctionNode.Class
-        > {
+        get functions(): NodeCollection<FunctionNode.Class> {
             const nodes = Object.values(this.data[FlowGraph.TAG].functions)
                 .map((id) => this.getNodeById(id))
                 .filter((node) => node !== undefined && node.is(FunctionNode))

@@ -114,7 +114,7 @@ namespace BaseEdge {
          * @returns The edges that connect the same nodes as this edge.
          * Direction is not taken into account.
          */
-        get parallelEdges(): EdgeCollection<D, S, this> {
+        get parallelEdges(): EdgeCollection<this, D, S> {
             // Appears as deprecated because it is for internal use only
             return new EdgeCollection(
                 this.#graph,
@@ -127,7 +127,7 @@ namespace BaseEdge {
          * @returns The edges that connect the same nodes as this edge.
          * Direction is taken into account.
          */
-        get codirectedEdges(): EdgeCollection<D, S, this> {
+        get codirectedEdges(): EdgeCollection<this, D, S> {
             // Appears as deprecated because it is for internal use only
             return new EdgeCollection(
                 this.#graph,
@@ -308,7 +308,7 @@ namespace BaseEdge {
         /**
          * @returns A collection containing only this edge.
          */
-        toCollection(): EdgeCollection<D, S, this> {
+        toCollection(): EdgeCollection<this, D, S> {
             // Appears as deprecated because it is for internal use only
             return new EdgeCollection(
                 this.#graph,

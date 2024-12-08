@@ -14,9 +14,9 @@ import cytoscape from "cytoscape";
  * is {@link BaseEdge}.
  */
 export class EdgeCollection<
-    D extends BaseEdge.Data = BaseEdge.Data,
-    S extends BaseEdge.ScratchData = BaseEdge.ScratchData,
-    E extends BaseEdge.Class<D, S> = BaseEdge.Class<D, S>,
+    E extends BaseEdge.Class<D, S>,
+    D extends BaseEdge.Data = Edge.ExtractData<E>,
+    S extends BaseEdge.ScratchData = Edge.ExtractScratchData<E>,
 > {
     /**
      * The graph that this edge is a part of.
@@ -113,10 +113,10 @@ export class EdgeCollection<
      * @returns A new collection containing the given edges.
      */
     static from<
+        E extends BaseEdge.Class<D, S>,
         D extends BaseEdge.Data,
         S extends BaseEdge.ScratchData,
-        E extends BaseEdge.Class<D, S>,
-    >(first: E, ...elements: E[]): EdgeCollection<D, S, E> {
+    >(first: E, ...elements: E[]): EdgeCollection<E, D, S> {
         for (const element of elements) {
             if (element.graph.toCy() !== first.graph.toCy()) {
                 throw new LaraFlowError(
@@ -141,7 +141,7 @@ export class EdgeCollection<
      * @param edges The cytoscape collection to create the collection from.
      * @returns A new collection containing the edges from the cytoscape collection.
      */
-    static fromCy(edges: cytoscape.EdgeCollection): EdgeCollection {
+    static fromCy(edges: cytoscape.EdgeCollection): EdgeCollection<BaseEdge.Class> {
         if (edges.length === 0) {
             throw new LaraFlowError(
                 "Cannot create collection from empty cytoscape collection",
@@ -230,7 +230,7 @@ export class EdgeCollection<
     /**
      * @returns The source nodes connected to the edges in this collection.
      */
-    get sources(): NodeCollection {
+    get sources(): NodeCollection<BaseNode.Class> {
         // Appears as deprecated because it is for internal use only
         return new NodeCollection(this.#graph, BaseNode.Class, this.#edges.sources());
     }
@@ -238,7 +238,7 @@ export class EdgeCollection<
     /**
      * @returns The target nodes connected to the edges in this collection.
      */
-    get targets(): NodeCollection {
+    get targets(): NodeCollection<BaseNode.Class> {
         // Appears as deprecated because it is for internal use only
         return new NodeCollection(this.#graph, BaseNode.Class, this.#edges.targets());
     }
@@ -256,7 +256,7 @@ export class EdgeCollection<
         E2 extends BaseEdge.Class<D2, S2>,
     >(
         EdgeType: Edge<D2, S2, E2>,
-    ): this is EdgeCollection<D2, S2, BaseEdge.Class<D2, S2>> {
+    ): this is EdgeCollection<BaseEdge.Class<D2, S2>, D2, S2> {
         for (let i = 0; i < this.length; i++) {
             if (!this.at(i)!.is(EdgeType)) {
                 return false;
@@ -275,10 +275,10 @@ export class EdgeCollection<
      * @returns The collection, with the new edge type.
      */
     filterIs<
+        E2 extends BaseEdge.Class<D2, S2>,
         D2 extends BaseEdge.Data,
         S2 extends BaseEdge.ScratchData,
-        E2 extends BaseEdge.Class<D2, S2>,
-    >(EdgeType: Edge<D2, S2, E2>): EdgeCollection<D2, S2, E2> {
+    >(EdgeType: Edge<D2, S2, E2>): EdgeCollection<E2, D2, S2> {
         const filtered = this.#edges.filter((node) =>
             new this.#edgeClass(this.#graph, node).is(EdgeType),
         );
@@ -297,7 +297,7 @@ export class EdgeCollection<
      */
     allAs<E extends BaseEdge.Class<D, S>>(EdgeType: {
         Class: Edge.Class<D, S, E>;
-    }): EdgeCollection<D, S, E> {
+    }): EdgeCollection<E, D, S> {
         // The following signature does not work
         // as<E extends BaseEdge.Class<D, S>>(EdgeType: Edge<D, S, N>): EdgeCollection<D, S, E> {
         // Appears as deprecated because it is for internal use only
@@ -321,13 +321,13 @@ export class EdgeCollection<
      * This error should be seen as a logic error and not catched.
      */
     expectAll<
+        E2 extends BaseEdge.Class<D2, S2>,
         D2 extends BaseEdge.Data,
         S2 extends BaseEdge.ScratchData,
-        E2 extends BaseEdge.Class<D2, S2>,
     >(
         EdgeType: Edge<D2, S2, E2>,
         message?: string | ((i: number) => string),
-    ): EdgeCollection<D2, S2, E2> {
+    ): EdgeCollection<E2, D2, S2> {
         for (let i = 0; i < this.length; i++) {
             if (!this.at(i)!.is(EdgeType)) {
                 if (message === undefined) {
@@ -354,10 +354,10 @@ export class EdgeCollection<
      * @returns Whether the elements in the collection are the same as the elements in the other collection.
      */
     same<
+        E2 extends BaseEdge.Class<D2, S2>,
         D2 extends BaseEdge.Data,
         S2 extends BaseEdge.ScratchData,
-        E2 extends BaseEdge.Class<D2, S2>,
-    >(other: EdgeCollection<D2, S2, E2>): boolean {
+    >(other: EdgeCollection<E2, D2, S2>): boolean {
         return this.#edges.same(other.toCy());
     }
 
@@ -368,10 +368,10 @@ export class EdgeCollection<
      * @returns Whether the collection contains the given edge or collection.
      */
     contains<
+        E2 extends BaseEdge.Class<D2, S2>,
         D2 extends BaseEdge.Data,
         S2 extends BaseEdge.ScratchData,
-        E2 extends BaseEdge.Class<D2, S2>,
-    >(elements: EdgeCollection<D2, S2, E2> | E2): boolean {
+    >(elements: EdgeCollection<E2, D2, S2> | E2): boolean {
         return this.#edges.contains(elements.toCy());
     }
 
@@ -382,10 +382,10 @@ export class EdgeCollection<
      * @returns Whether the collection contains any of the edges in the given collection.
      */
     containsAny<
+        E2 extends BaseEdge.Class<D2, S2>,
         D2 extends BaseEdge.Data,
         S2 extends BaseEdge.ScratchData,
-        E2 extends BaseEdge.Class<D2, S2>,
-    >(elements: EdgeCollection<D2, S2, E2>): boolean {
+    >(elements: EdgeCollection<E2, D2, S2>): boolean {
         return this.#edges.anySame(elements.toCy());
     }
 
@@ -401,8 +401,8 @@ export class EdgeCollection<
      * @throws {} {@link LaraFlowError} if the other collection is from a different graph.
      */
     union<D2 extends D, S2 extends S>(
-        other: EdgeCollection<D2, S2, BaseEdge.Class<D2, S2>>,
-    ): EdgeCollection<D, S, E>;
+        other: EdgeCollection<BaseEdge.Class<D2, S2>, D2, S2>,
+    ): EdgeCollection<E, D, S>;
     /**
      * Returns the union of this collection with another collection.
      * You may chain this method to union multiple collections.
@@ -416,10 +416,10 @@ export class EdgeCollection<
      * @throws {} {@link LaraFlowError} if the other collection is from a different graph.
      */
     union<D2 extends BaseEdge.Data, S2 extends BaseEdge.ScratchData>(
-        other: EdgeCollection<D2, S2, BaseEdge.Class<D2, S2>>,
-    ): EdgeCollection<D | D2, S | S2, BaseEdge.Class<D | D2, S | S2>>;
+        other: EdgeCollection<BaseEdge.Class<D2, S2>, D2, S2>,
+    ): EdgeCollection<BaseEdge.Class<D | D2, S | S2>, D | D2, S | S2>;
     union<D2 extends BaseEdge.Data, S2 extends BaseEdge.ScratchData>(
-        other: EdgeCollection<D2, S2, BaseEdge.Class<D2, S2>>,
+        other: EdgeCollection<BaseEdge.Class<D2, S2>, D2, S2>,
     ): EdgeCollection<any, any, any> {
         if (other.graph.toCy() !== this.graph.toCy()) {
             throw new LaraFlowError("Cannot union edges from different graphs");
@@ -441,8 +441,8 @@ export class EdgeCollection<
      * @returns A new collection containing the intersection of all edges.
      */
     intersection<D2 extends BaseEdge.Data, S2 extends BaseEdge.ScratchData>(
-        other: EdgeCollection<D2, S2, BaseEdge.Class<D2, S2>>,
-    ): EdgeCollection<D, S, E> {
+        other: EdgeCollection<BaseEdge.Class<D2, S2>, D2, S2>,
+    ): EdgeCollection<E, D, S> {
         // Appears as deprecated because it is for internal use only
         return new EdgeCollection(
             this.graph,
@@ -455,7 +455,7 @@ export class EdgeCollection<
      * @returns The complement of this collection with respect to the universe
      * of all edges in the graph.
      */
-    complement(): EdgeCollection {
+    complement(): EdgeCollection<BaseEdge.Class> {
         return this.graph.edges.difference(this);
     }
 
@@ -468,8 +468,8 @@ export class EdgeCollection<
      * that are not in the other collection.
      */
     difference<D2 extends BaseEdge.Data, S2 extends BaseEdge.ScratchData>(
-        other: EdgeCollection<D2, S2, BaseEdge.Class<D2, S2>>,
-    ): EdgeCollection<D, S, E> {
+        other: EdgeCollection<BaseEdge.Class<D2, S2>, D2, S2>,
+    ): EdgeCollection<E, D, S> {
         // Appears as deprecated because it is for internal use only
         return new EdgeCollection(
             this.graph,
@@ -492,8 +492,8 @@ export class EdgeCollection<
      * @throws {} {@link LaraFlowError} if the other collection is from a different graph.
      */
     symmetricDifference<D2 extends D, S2 extends S>(
-        other: EdgeCollection<D2, S2, BaseEdge.Class<D2, S2>>,
-    ): EdgeCollection<D, S, E>;
+        other: EdgeCollection<BaseEdge.Class<D2, S2>, D2, S2>,
+    ): EdgeCollection<E, D, S>;
     /**
      * Returns the symmetric difference of this collection with another collection.
      * This collection consists of the edges that are in either collection, but not
@@ -509,10 +509,10 @@ export class EdgeCollection<
      * @throws {} {@link LaraFlowError} if the other collection is from a different graph.
      */
     symmetricDifference<D2 extends BaseEdge.Data, S2 extends BaseEdge.ScratchData>(
-        other: EdgeCollection<D2, S2, BaseEdge.Class<D2, S2>>,
-    ): EdgeCollection<D | D2, S | S2, BaseEdge.Class<D | D2, S | S2>>;
+        other: EdgeCollection<BaseEdge.Class<D2, S2>, D2, S2>,
+    ): EdgeCollection<BaseEdge.Class<D | D2, S | S2>, D | D2, S | S2>;
     symmetricDifference<D2 extends BaseEdge.Data, S2 extends BaseEdge.ScratchData>(
-        other: EdgeCollection<D2, S2, BaseEdge.Class<D2, S2>>,
+        other: EdgeCollection<BaseEdge.Class<D2, S2>, D2, S2>,
     ): EdgeCollection<any, any, any> {
         if (other.graph.toCy() !== this.graph.toCy()) {
             throw new LaraFlowError("Cannot union edges from different graphs");
@@ -545,11 +545,11 @@ export class EdgeCollection<
         S2 extends BaseEdge.ScratchData,
         E2 extends BaseEdge.Class<D2, S2>,
     >(
-        other: EdgeCollection<D2, S2, E2>,
+        other: EdgeCollection<E2, D2, S2>,
     ): {
-        both: EdgeCollection<D, S, E>;
-        onlyLeft: EdgeCollection<D, S, E>;
-        onlyRight: EdgeCollection<D2, S2, E2>;
+        both: EdgeCollection<E, D, S>;
+        onlyLeft: EdgeCollection<E, D, S>;
+        onlyRight: EdgeCollection<E2, D2, S2>;
     } {
         const diff = this.toCy().diff(other.toCy());
         // Appears as deprecated because it is for internal use only
@@ -572,7 +572,7 @@ export class EdgeCollection<
      * @param f The comparison function to use for sorting.
      * @returns A new collection with the elements sorted.
      */
-    sort(f: (a: E, b: E) => number): EdgeCollection<D, S, E> {
+    sort(f: (a: E, b: E) => number): EdgeCollection<E, D, S> {
         // Appears as deprecated because it is for internal use only
         return new EdgeCollection(
             this.#graph,
@@ -702,7 +702,7 @@ export class EdgeCollection<
      * index of the current element, eles - The collection of elements being iterated.
      * @returns A new collection containing only the edges that satisfy the function.
      */
-    filter(f: (ele: E, i: number, eles: this) => boolean): EdgeCollection<D, S, E>;
+    filter(f: (ele: E, i: number, eles: this) => boolean): EdgeCollection<E, D, S>;
     /**
      * Returns a new collection containing only the edges that satisfy the
      * provided function.
@@ -715,11 +715,11 @@ export class EdgeCollection<
     filter<T>(
         f: (this: T, ele: E, i: number, eles: this) => boolean,
         thisArg: T,
-    ): EdgeCollection<D, S, E>;
+    ): EdgeCollection<E, D, S>;
     filter<T>(
         f: (ele: E, i: number, eles: this) => boolean,
         thisArg?: T,
-    ): EdgeCollection<D, S, E> {
+    ): EdgeCollection<E, D, S> {
         // Appears as deprecated because it is for internal use only
         return new EdgeCollection(
             this.#graph,
@@ -838,7 +838,7 @@ export class EdgeCollection<
      *            Use negative numbers to select from the end of an array.
      * @returns A new collection containing the selected elements.
      */
-    slice(start?: number, end?: number): EdgeCollection<D, S, E> {
+    slice(start?: number, end?: number): EdgeCollection<E, D, S> {
         // Appears as deprecated because it is for internal use only
         return new EdgeCollection(
             this.#graph,

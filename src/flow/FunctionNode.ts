@@ -51,11 +51,7 @@ namespace FunctionNode {
             return this;
         }
 
-        get controlFlowNodes(): NodeCollection<
-            ControlFlowNode.Data,
-            ControlFlowNode.ScratchData,
-            ControlFlowNode.Class
-        > {
+        get controlFlowNodes(): NodeCollection<ControlFlowNode.Class> {
             return this.graph.nodes
                 .filterIs(ControlFlowNode)
                 .filter((n) => n.data[ControlFlowNode.TAG].function === this.id);

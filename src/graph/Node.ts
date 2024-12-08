@@ -225,6 +225,15 @@ namespace Node {
          */
         index: number;
     }
+
+    /**
+     * Returns the Data type of a node class.
+     */
+    export type ExtractData<C> = C extends BaseNode.Class<infer D, any> ? D : never;
+    /**
+     * Returns the ScratchData type of a node class.
+     */
+    export type ExtractScratchData<C> = C extends BaseNode.Class<any, infer S> ? S : never;
 }
 
 export default Node;

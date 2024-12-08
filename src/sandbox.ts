@@ -3,20 +3,10 @@ import ControlFlowEdge from "@specs-feup/flow/flow/ControlFlowEdge";
 import ControlFlowNode from "@specs-feup/flow/flow/ControlFlowNode";
 import FlowDotFormatter from "@specs-feup/flow/flow/dot/FlowDotFormatter";
 import FlowGraph from "@specs-feup/flow/flow/FlowGraph";
-import FunctionNode from "@specs-feup/flow/flow/FunctionNode";
-import BaseEdge from "@specs-feup/flow/graph/BaseEdge";
 import BaseGraph from "@specs-feup/flow/graph/BaseGraph";
 import BaseNode from "@specs-feup/flow/graph/BaseNode";
-import DefaultDotFormatter from "@specs-feup/flow/graph/dot/DefaultDotFormatter";
-import DotFormatter from "@specs-feup/flow/graph/dot/DotFormatter";
-import { EdgeCollection } from "@specs-feup/flow/graph/EdgeCollection";
 import Graph from "@specs-feup/flow/graph/Graph";
-import IncrementingIdGenerator from "@specs-feup/flow/graph/id/IncrementingIdGenerator";
 import Node from "@specs-feup/flow/graph/Node";
-import { NodeCollection } from "@specs-feup/flow/graph/NodeCollection";
-import BreadthFirstSearch from "@specs-feup/flow/graph/search/BreadthFirstSearch";
-import DepthFirstSearch from "@specs-feup/flow/graph/search/DepthFirstSearch";
-import DijkstraSearch from "@specs-feup/flow/graph/search/DijkstraSearch";
 
 namespace TGraph {
     export class Class<

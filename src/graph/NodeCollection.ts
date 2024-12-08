@@ -13,9 +13,9 @@ import cytoscape from "cytoscape";
  * is {@link BaseNode}.
  */
 export class NodeCollection<
-    D extends BaseNode.Data = BaseNode.Data,
-    S extends BaseNode.ScratchData = BaseNode.ScratchData,
-    N extends BaseNode.Class<D, S> = BaseNode.Class<D, S>,
+    N extends BaseNode.Class<D, S>,
+    D extends BaseNode.Data = Node.ExtractData<N>,
+    S extends BaseNode.ScratchData = Node.ExtractScratchData<N>,
 > {
     /**
      * The graph that this node is a part of.
@@ -112,10 +112,10 @@ export class NodeCollection<
      * @returns A new collection containing the given nodes.
      */
     static from<
+        N extends BaseNode.Class<D, S>,
         D extends BaseNode.Data,
         S extends BaseNode.ScratchData,
-        N extends BaseNode.Class<D, S>,
-    >(first: N, ...elements: N[]): NodeCollection<D, S, N> {
+    >(first: N, ...elements: N[]): NodeCollection<N, D, S> {
         for (const element of elements) {
             if (element.graph.toCy() !== first.graph.toCy()) {
                 throw new LaraFlowError(
@@ -140,7 +140,7 @@ export class NodeCollection<
      * @param nodes The cytoscape collection to create the collection from.
      * @returns A new collection containing the nodes from the cytoscape collection.
      */
-    static fromCy(nodes: cytoscape.NodeCollection): NodeCollection {
+    static fromCy(nodes: cytoscape.NodeCollection): NodeCollection<BaseNode.Class> {
         if (nodes.length === 0) {
             throw new LaraFlowError(
                 "Cannot create collection from empty cytoscape collection",
@@ -229,7 +229,7 @@ export class NodeCollection<
     /**
      * @returns The parents of the nodes in this collection.
      */
-    get parents(): NodeCollection {
+    get parents(): NodeCollection<BaseNode.Class> {
         // Appears as deprecated because it is for internal use only
         return new NodeCollection(this.#graph, BaseNode.Class, this.#nodes.parents());
     }
@@ -238,7 +238,7 @@ export class NodeCollection<
      * @returns The ancestors (parents, parents' parents, etc.) of the nodes
      * in this collection.
      */
-    get ancestors(): NodeCollection {
+    get ancestors(): NodeCollection<BaseNode.Class> {
         // Appears as deprecated because it is for internal use only
         return new NodeCollection(this.#graph, BaseNode.Class, this.#nodes.ancestors());
     }
@@ -246,7 +246,7 @@ export class NodeCollection<
     /**
      * @returns The children of the nodes in this collection.
      */
-    get children(): NodeCollection {
+    get children(): NodeCollection<BaseNode.Class> {
         // Appears as deprecated because it is for internal use only
         return new NodeCollection(this.#graph, BaseNode.Class, this.#nodes.children());
     }
@@ -255,7 +255,7 @@ export class NodeCollection<
      * @returns The descendants (children, children's children, etc.) of the nodes
      * in this collection.
      */
-    get descendants(): NodeCollection {
+    get descendants(): NodeCollection<BaseNode.Class> {
         // Appears as deprecated because it is for internal use only
         return new NodeCollection(this.#graph, BaseNode.Class, this.#nodes.descendants());
     }
@@ -263,7 +263,7 @@ export class NodeCollection<
     /**
      * @returns The edges coming into the nodes in this collection.
      */
-    get incomers(): EdgeCollection {
+    get incomers(): EdgeCollection<BaseEdge.Class> {
         // Appears as deprecated because it is for internal use only
         return new EdgeCollection(
             this.#graph,
@@ -276,7 +276,7 @@ export class NodeCollection<
      * @returns The predecessors of the nodes in this collection.
      * This repeatedly follows the sources of incoming edges.
      */
-    get predecessors(): NodeCollection {
+    get predecessors(): NodeCollection<BaseNode.Class> {
         // Appears as deprecated because it is for internal use only
         return new NodeCollection(
             this.#graph,
@@ -288,7 +288,7 @@ export class NodeCollection<
     /**
      * @returns The edges coming out of the nodes in this collection.
      */
-    get outgoers(): EdgeCollection {
+    get outgoers(): EdgeCollection<BaseEdge.Class> {
         // Appears as deprecated because it is for internal use only
         return new EdgeCollection(
             this.#graph,
@@ -301,7 +301,7 @@ export class NodeCollection<
      * @returns The successors of the nodes in this collection.
      * This repeatedly follows the targets of outgoing edges.
      */
-    get successors(): NodeCollection {
+    get successors(): NodeCollection<BaseNode.Class> {
         // Appears as deprecated because it is for internal use only
         return new NodeCollection(
             this.#graph,
@@ -313,14 +313,14 @@ export class NodeCollection<
     /**
      * @returns The edges that are adjacent to a node in this collection.
      */
-    get adjacentEdges(): EdgeCollection {
+    get adjacentEdges(): EdgeCollection<BaseEdge.Class> {
         return this.incomers.union(this.outgoers);
     }
 
     /**
      * @returns The nodes that are adjacent to a node in this collection.
      */
-    get adjacentNodes(): NodeCollection {
+    get adjacentNodes(): NodeCollection<BaseNode.Class> {
         return this.incomers.sources.union(this.outgoers.targets);
     }
 
@@ -332,7 +332,7 @@ export class NodeCollection<
      * with this collection.
      * @returns The edges that connect this collection with the given nodes.
      */
-    edgesWith(nodes: NodeCollection | BaseNode.Class): EdgeCollection {
+    edgesWith(nodes: NodeCollection<BaseNode.Class> | BaseNode.Class): EdgeCollection<BaseEdge.Class> {
         // Appears as deprecated because it is for internal use only
         return new EdgeCollection(
             this.#graph,
@@ -348,7 +348,7 @@ export class NodeCollection<
      * with this collection.
      * @returns The edges from this collection to the given nodes.
      */
-    edgesTo(nodes: NodeCollection | BaseNode.Class): EdgeCollection {
+    edgesTo(nodes: NodeCollection<BaseNode.Class> | BaseNode.Class): EdgeCollection<BaseEdge.Class> {
         // Appears as deprecated because it is for internal use only
         return new EdgeCollection(
             this.#graph,
@@ -364,7 +364,7 @@ export class NodeCollection<
      * with this collection.
      * @returns The edges from the given nodes to this collection.
      */
-    edgesFrom(nodes: NodeCollection | BaseNode.Class): EdgeCollection {
+    edgesFrom(nodes: NodeCollection<BaseNode.Class> | BaseNode.Class): EdgeCollection<BaseEdge.Class> {
         // Appears as deprecated because it is for internal use only
         return new EdgeCollection(
             this.#graph,
@@ -381,12 +381,12 @@ export class NodeCollection<
      * @returns Whether the node is compatible with the given type.
      */
     allAre<
+        N2 extends BaseNode.Class<D2, S2>,
         D2 extends BaseNode.Data,
         S2 extends BaseNode.ScratchData,
-        N2 extends BaseNode.Class<D2, S2>,
     >(
         NodeType: Node<D2, S2, N2>,
-    ): this is NodeCollection<D2, S2, BaseNode.Class<D2, S2>> {
+    ): this is NodeCollection<BaseNode.Class<D2, S2>, D2, S2> {
         for (let i = 0; i < this.length; i++) {
             if (!this.at(i)!.is(NodeType)) {
                 return false;
@@ -405,10 +405,10 @@ export class NodeCollection<
      * @returns The collection, with the new node type.
      */
     filterIs<
+        N2 extends BaseNode.Class<D2, S2>,
         D2 extends BaseNode.Data,
         S2 extends BaseNode.ScratchData,
-        N2 extends BaseNode.Class<D2, S2>,
-    >(NodeType: Node<D2, S2, N2>): NodeCollection<D2, S2, N2> {
+    >(NodeType: Node<D2, S2, N2>): NodeCollection<N2, D2, S2> {
         const filtered = this.#nodes.filter((node) =>
             new this.#nodeClass(this.#graph, node).is(NodeType),
         );
@@ -427,7 +427,7 @@ export class NodeCollection<
      */
     allAs<N extends BaseNode.Class<D, S>>(NodeType: {
         Class: Node.Class<D, S, N>;
-    }): NodeCollection<D, S, N> {
+    }): NodeCollection<N, D, S> {
         // The following signature does not work
         // as<N extends BaseNode.Class<D, S>>(NodeType: Node<D, S, N>): NodeCollection<D, S, N> {
         // Appears as deprecated because it is for internal use only
@@ -451,13 +451,13 @@ export class NodeCollection<
      * This error should be seen as a logic error and not catched.
      */
     expectAll<
+        N2 extends BaseNode.Class<D2, S2>,
         D2 extends BaseNode.Data,
         S2 extends BaseNode.ScratchData,
-        N2 extends BaseNode.Class<D2, S2>,
     >(
         NodeType: Node<D2, S2, N2>,
         message?: string | ((i: number) => string),
-    ): NodeCollection<D2, S2, N2> {
+    ): NodeCollection<N2, D2, S2> {
         for (let i = 0; i < this.length; i++) {
             if (!this.at(i)!.is(NodeType)) {
                 if (message === undefined) {
@@ -484,10 +484,10 @@ export class NodeCollection<
      * @returns Whether the elements in the collection are the same as the elements in the other collection.
      */
     same<
+        N2 extends BaseNode.Class<D2, S2>,
         D2 extends BaseNode.Data,
         S2 extends BaseNode.ScratchData,
-        N2 extends BaseNode.Class<D2, S2>,
-    >(other: NodeCollection<D2, S2, N2>): boolean {
+    >(other: NodeCollection<N2, D2, S2>): boolean {
         return this.#nodes.same(other.toCy());
     }
 
@@ -498,10 +498,10 @@ export class NodeCollection<
      * @returns Whether the collection contains the given node or collection.
      */
     contains<
+        N2 extends BaseNode.Class<D2, S2>,
         D2 extends BaseNode.Data,
         S2 extends BaseNode.ScratchData,
-        N2 extends BaseNode.Class<D2, S2>,
-    >(elements: NodeCollection<D2, S2, N2> | N2): boolean {
+    >(elements: NodeCollection<N2, D2, S2> | N2): boolean {
         return this.#nodes.contains(elements.toCy());
     }
 
@@ -512,10 +512,10 @@ export class NodeCollection<
      * @returns Whether the collection contains any of the nodes in the given collection.
      */
     containsAny<
+        N2 extends BaseNode.Class<D2, S2>,
         D2 extends BaseNode.Data,
         S2 extends BaseNode.ScratchData,
-        N2 extends BaseNode.Class<D2, S2>,
-    >(elements: NodeCollection<D2, S2, N2>): boolean {
+    >(elements: NodeCollection<N2, D2, S2>): boolean {
         return this.#nodes.anySame(elements.toCy());
     }
 
@@ -531,8 +531,8 @@ export class NodeCollection<
      * @throws {} {@link LaraFlowError} if the other collection is from a different graph.
      */
     union<D2 extends D, S2 extends S>(
-        other: NodeCollection<D2, S2, BaseNode.Class<D2, S2>>,
-    ): NodeCollection<D, S, N>;
+        other: NodeCollection<BaseNode.Class<D2, S2>, D2, S2>,
+    ): NodeCollection<N, D, S>;
     /**
      * Returns the union of this collection with another collection.
      * You may chain this method to union multiple collections.
@@ -546,10 +546,10 @@ export class NodeCollection<
      * @throws {} {@link LaraFlowError} if the other collection is from a different graph.
      */
     union<D2 extends BaseNode.Data, S2 extends BaseNode.ScratchData>(
-        other: NodeCollection<D2, S2, BaseNode.Class<D2, S2>>,
-    ): NodeCollection<D | D2, S | S2, BaseNode.Class<D | D2, S | S2>>;
+        other: NodeCollection<BaseNode.Class<D2, S2>, D2, S2>,
+    ): NodeCollection<BaseNode.Class<D | D2, S | S2>, D | D2, S | S2>;
     union<D2 extends BaseNode.Data, S2 extends BaseNode.ScratchData>(
-        other: NodeCollection<D2, S2, BaseNode.Class<D2, S2>>,
+        other: NodeCollection<BaseNode.Class<D2, S2>, D2, S2>,
     ): NodeCollection<any, any, any> {
         if (other.graph.toCy() !== this.graph.toCy()) {
             throw new LaraFlowError("Cannot union nodes from different graphs");
@@ -571,8 +571,8 @@ export class NodeCollection<
      * @returns A new collection containing the intersection of all nodes.
      */
     intersection<D2 extends BaseNode.Data, S2 extends BaseNode.ScratchData>(
-        other: NodeCollection<D2, S2, BaseNode.Class<D2, S2>>,
-    ): NodeCollection<D, S, N> {
+        other: NodeCollection<BaseNode.Class<D2, S2>, D2, S2>,
+    ): NodeCollection<N, D, S> {
         // Appears as deprecated because it is for internal use only
         return new NodeCollection(
             this.graph,
@@ -585,7 +585,7 @@ export class NodeCollection<
      * @returns The complement of this collection with respect to the universe
      * of all nodes in the graph.
      */
-    complement(): NodeCollection {
+    complement(): NodeCollection<BaseNode.Class> {
         return this.graph.nodes.difference(this);
     }
 
@@ -598,8 +598,8 @@ export class NodeCollection<
      * that are not in the other collection.
      */
     difference<D2 extends BaseNode.Data, S2 extends BaseNode.ScratchData>(
-        other: NodeCollection<D2, S2, BaseNode.Class<D2, S2>>,
-    ): NodeCollection<D, S, N> {
+        other: NodeCollection<BaseNode.Class<D2, S2>, D2, S2>,
+    ): NodeCollection<N, D, S> {
         // Appears as deprecated because it is for internal use only
         return new NodeCollection(
             this.graph,
@@ -622,8 +622,8 @@ export class NodeCollection<
      * @throws {} {@link LaraFlowError} if the other collection is from a different graph.
      */
     symmetricDifference<D2 extends D, S2 extends S>(
-        other: NodeCollection<D2, S2, BaseNode.Class<D2, S2>>,
-    ): NodeCollection<D, S, N>;
+        other: NodeCollection<BaseNode.Class<D2, S2>, D2, S2>,
+    ): NodeCollection<N, D, S>;
     /**
      * Returns the symmetric difference of this collection with another collection.
      * This collection consists of the nodes that are in either collection, but not
@@ -639,10 +639,10 @@ export class NodeCollection<
      * @throws {} {@link LaraFlowError} if the other collection is from a different graph.
      */
     symmetricDifference<D2 extends BaseNode.Data, S2 extends BaseNode.ScratchData>(
-        other: NodeCollection<D2, S2, BaseNode.Class<D2, S2>>,
-    ): NodeCollection<D | D2, S | S2, BaseNode.Class<D | D2, S | S2>>;
+        other: NodeCollection<BaseNode.Class<D2, S2>, D2, S2>,
+    ): NodeCollection<BaseNode.Class<D | D2, S | S2>, D | D2, S | S2>;
     symmetricDifference<D2 extends BaseNode.Data, S2 extends BaseNode.ScratchData>(
-        other: NodeCollection<D2, S2, BaseNode.Class<D2, S2>>,
+        other: NodeCollection<BaseNode.Class<D2, S2>, D2, S2>,
     ): NodeCollection<any, any, any> {
         if (other.graph.toCy() !== this.graph.toCy()) {
             throw new LaraFlowError("Cannot union nodes from different graphs");
@@ -675,11 +675,11 @@ export class NodeCollection<
         S2 extends BaseNode.ScratchData,
         N2 extends BaseNode.Class<D2, S2>,
     >(
-        other: NodeCollection<D2, S2, N2>,
+        other: NodeCollection<N2, D2, S2>,
     ): {
-        both: NodeCollection<D, S, N>;
-        onlyLeft: NodeCollection<D, S, N>;
-        onlyRight: NodeCollection<D2, S2, N2>;
+        both: NodeCollection<N, D, S>;
+        onlyLeft: NodeCollection<N, D, S>;
+        onlyRight: NodeCollection<N2, D2, S2>;
     } {
         const diff = this.toCy().diff(other.toCy());
         // Appears as deprecated because it is for internal use only
@@ -702,7 +702,7 @@ export class NodeCollection<
      * @param f The comparison function to use for sorting.
      * @returns A new collection with the elements sorted.
      */
-    sort(f: (a: N, b: N) => number): NodeCollection<D, S, N> {
+    sort(f: (a: N, b: N) => number): NodeCollection<N, D, S> {
         // Appears as deprecated because it is for internal use only
         return new NodeCollection(
             this.#graph,
@@ -737,11 +737,7 @@ export class NodeCollection<
      * @returns The common ancestors of all nodes in the collection,
      * starting with the closest and getting progressively farther.
      */
-    commonAncestors(): NodeCollection<
-        BaseNode.Data,
-        BaseNode.ScratchData,
-        BaseNode.Class
-    > {
+    commonAncestors(): NodeCollection<BaseNode.Class> {
         // Appears as deprecated because it is for internal use only
         return new NodeCollection(
             this.#graph,
@@ -869,7 +865,7 @@ export class NodeCollection<
      * index of the current element, eles - The collection of elements being iterated.
      * @returns A new collection containing only the nodes that satisfy the function.
      */
-    filter(f: (ele: N, i: number, eles: this) => boolean): NodeCollection<D, S, N>;
+    filter(f: (ele: N, i: number, eles: this) => boolean): NodeCollection<N, D, S>;
     /**
      * Returns a new collection containing only the nodes that satisfy the
      * provided function.
@@ -882,11 +878,11 @@ export class NodeCollection<
     filter<T>(
         f: (this: T, ele: N, i: number, eles: this) => boolean,
         thisArg: T,
-    ): NodeCollection<D, S, N>;
+    ): NodeCollection<N, D, S>;
     filter<T>(
         f: (ele: N, i: number, eles: this) => boolean,
         thisArg?: T,
-    ): NodeCollection<D, S, N> {
+    ): NodeCollection<N, D, S> {
         // Appears as deprecated because it is for internal use only
         return new NodeCollection(
             this.#graph,
@@ -1005,7 +1001,7 @@ export class NodeCollection<
      *            Use negative numbers to select from the end of an array.
      * @returns A new collection containing the selected elements.
      */
-    slice(start?: number, end?: number): NodeCollection<D, S, N> {
+    slice(start?: number, end?: number): NodeCollection<N, D, S> {
         // Appears as deprecated because it is for internal use only
         return new NodeCollection(
             this.#graph,

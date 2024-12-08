@@ -129,7 +129,7 @@ export default class DefaultDotFormatter<
      * @param node The node to get the contained nodes of.
      * @returns The nodes that are contained by the given node.
      */
-    containedNodes(node: BaseNode.Class): NodeCollection {
+    containedNodes(node: BaseNode.Class): NodeCollection<BaseNode.Class> {
         return node.graph.nodes.filter((n) => this.getContainer(n)?.id === node.id);
     }
 
