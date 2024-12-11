@@ -14,8 +14,6 @@
         "build:watch": "tsc --watch",
         "lint": "eslint .",
         "format": "prettier --write .",
-        "sandbox": "cross-env DEBUG=\"*\" npx clava out/src/sandbox.js -- clang in/sandbox",
-        "sandbox:watch": "cross-env DEBUG=\"*\" npx clava out/src/sandbox.js -w out/src -w in/sandbox -- clang in/sandbox",
         "docs": "typedoc --out docs"
     },
     "exports": {
@@ -28,14 +26,8 @@
         "type": "git",
         "url": "git+https://github.com/specs-feup/flow.git"
     },
-    "keywords": [
-        "clava",
-        "rust",
-        "c",
-        "borrow checker",
-        "static analysis"
-    ],
-    "author": "",
+    "keywords": [],
+    "author": "Pedro Gonçalo Correia",
     "bugs": {
         "url": "https://github.com/specs-feup/flow/issues"
     },
