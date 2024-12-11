@@ -10,6 +10,30 @@ import DefaultDotFormatter from "@specs-feup/flow/graph/dot/DefaultDotFormatter"
 import Edge from "@specs-feup/flow/graph/Edge";
 import Node from "@specs-feup/flow/graph/Node";
 
+/**
+ * A formatter for converting a flow graph into a DOT string.
+ *
+ * {@link ControlFlowNode | ControlFlowNodes} are visualized as contained
+ * inside their respective {@link FunctionNode | FunctionNode}, unless an
+ * explicit parent is specified.
+ * 
+ * The {@link ControlFlowEndNode | ControlFlowEndNode} is visualized as a
+ * distinguished special symbol. The entry control-flow node is represented
+ * like a regular control-flow node, but with a double border. If a
+ * {@link ControlFlowNode | ControlFlowNode} has more than one non-fake outgoing edge,
+ * it appears diamond-shaped to represent its conditional nature.
+ * 
+ * A {@link FunctionNode | FunctionNode} has its name as the label, while a
+ * {@link ControlFlowNode | ControlFlowNode} has its id as the label. These labels
+ * may (and usually should) be overridden by a subclass or an instance.
+ * 
+ * Colors help distinguish between different types of nodes and edges.
+ * {@link ControlFlowEdge.Class.isFake | fake edges} appear with a dashed line.
+ *
+ * @typeParam G - The type of the graph. This parameter exists so that
+ * the formatter may be extended into a formatter that requires a more
+ * specific graph type.
+ */
 export default class FlowDotFormatter<
     G extends FlowGraph.Class = FlowGraph.Class,
 > extends DefaultDotFormatter<G> {
