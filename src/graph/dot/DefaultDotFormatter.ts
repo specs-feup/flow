@@ -39,6 +39,10 @@ export default class DefaultDotFormatter<
      * relationships.
      */
     getContainer: (node: BaseNode.Class) => BaseNode.Class | undefined;
+    /**
+     * The attributes to add to the graph.
+     */
+    getGraphAttrs: () => Record<string, string>;
 
     /**
      * The default attributes of a node.
@@ -71,6 +75,15 @@ export default class DefaultDotFormatter<
     }
 
     /**
+     * The default attributes of a graph.
+     *
+     * @returns The attributes of the graph.
+     */
+    static defaultGetGraphAttrs(): Record<string, string> {
+        return { compound: "true" };
+    }
+
+    /**
      * Creates a new default DOT formatter.
      *
      * @param getNodeAttrs The attributes to add to each node. If not provided,
@@ -83,11 +96,13 @@ export default class DefaultDotFormatter<
         getNodeAttrs?: (node: BaseNode.Class) => Record<string, string>,
         getEdgeAttrs?: (edge: BaseEdge.Class) => Record<string, string>,
         getContainer?: (node: BaseNode.Class) => BaseNode.Class | undefined,
+        getGraphAttrs?: () => Record<string, string>,
     ) {
         super();
         this.getNodeAttrs = getNodeAttrs ?? DefaultDotFormatter.defaultGetNodeAttrs;
         this.getEdgeAttrs = getEdgeAttrs ?? DefaultDotFormatter.defaultGetEdgeAttrs;
         this.getContainer = getContainer ?? DefaultDotFormatter.defaultGetContainer;
+        this.getGraphAttrs = getGraphAttrs ?? DefaultDotFormatter.defaultGetGraphAttrs;
     }
 
     /**
@@ -119,6 +134,22 @@ export default class DefaultDotFormatter<
     addEdgeAttrs(f: (edge: BaseEdge.Class) => Record<string, string>): this {
         const old = this.getEdgeAttrs;
         this.getEdgeAttrs = (edge) => ({ ...old(edge), ...f(edge) });
+        return this;
+    }
+
+    /**
+     * Adds attributes to the graph. Only overrides the attributes that are
+     * explicitly set by the function, leaving the others unchanged.
+     *
+     * For completely overriding the previous attributes, just set
+     * {@link getGraphAttrs} directly.
+     *
+     * @param f The function that adds attributes to the graph.
+     * @returns The same formatter, for chaining.
+     */
+    addGraphAttrs(f: () => Record<string, string>): this {
+        const old = this.getGraphAttrs;
+        this.getGraphAttrs = () => ({ ...old(), ...f() });
         return this;
     }
 
@@ -212,7 +243,7 @@ export default class DefaultDotFormatter<
      * @returns The resulting DOT graph.
      */
     toDot(graph: G): DotGraph {
-        const dot = Dot.graph().graphAttr("compound", "true");
+        const dot = Dot.graph().graphAttrs(this.getGraphAttrs());
 
         for (const node of graph.nodes.filter((node) => !this.isContained(node))) {
             if (this.isContainer(node)) {
