@@ -1,7 +1,9 @@
-import { fileURLToPath } from "url";
-
 export default {
-    extends: [fileURLToPath(import.meta.resolve("lara-js/typedoc.base.json"))],
+    // Ref: https://github.com/Gerrit0/typedoc-packages-example
+    $schema: "https://typedoc.org/schema.json",
+    theme: "default",
+    entryPointStrategy: "expand",
+    includeVersion: true,
     entryPoints: ["src/"],
     tsconfig: "tsconfig.json",
     intentionallyNotExported: ["_Case"],
