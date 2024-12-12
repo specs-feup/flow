@@ -69,6 +69,14 @@ namespace FlowGraph {
             return this.getNodeById(id)?.tryAs(FunctionNode);
         }
 
+        /**
+         * Retrieves a {@link FunctionNode} from the graph by the name of the function.
+         * If the function does not exist, a new node will be created, updating the
+         * function map.
+         * 
+         * @param name The name of the function.
+         * @returns The {@link FunctionNode} that was retrieved or created.
+         */
         getOrAddFunction(name: string): FunctionNode.Class {
             const functionNode = this.getFunction(name);
             if (functionNode === undefined) {

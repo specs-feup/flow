@@ -6,7 +6,8 @@ import Node from "@specs-feup/flow/graph/Node";
 import { NodeCollection } from "@specs-feup/flow/graph/NodeCollection";
 
 /**
- * A node that represents a function. Its children may form a CFG.
+ * A node that represents a function. A CFG subgraph may be associated
+ * with it.
  *
  * Each FunctionNode must have a name that is unique in the graph.
  * You should mangle names in case of overloading or when you wish
@@ -21,7 +22,7 @@ namespace FunctionNode {
         S extends ScratchData = ScratchData,
     > extends BaseNode.Class<D, S> {
         /**
-         * The name of the function. This name must be unique in the graph,
+         * @returns The name of the function. This name must be unique in the graph,
          * so it should be mangled if the use case permits overloading.
          */
         get functionName(): string {
@@ -51,18 +52,31 @@ namespace FunctionNode {
             return this;
         }
 
+        /**
+         * @returns The control flow nodes that belong to this function.
+         */
         get controlFlowNodes(): NodeCollection<ControlFlowNode.Class> {
             return this.graph.nodes
                 .filterIs(ControlFlowNode)
                 .filter((n) => n.data[ControlFlowNode.TAG].function === this.id);
         }
 
+        /**
+         * @returns The initial node of the function's CFG. This is the entry point
+         * of the function.
+         */
         get cfgEntryNode(): ControlFlowNode.Class | undefined {
             const id = this.data[TAG].cfgEntryNode;
             if (id === undefined) return undefined;
             return this.graph.getNodeById(id)?.tryAs(ControlFlowNode);
         }
 
+        /**
+         * Sets the initial node of the function's CFG. This is the entry point
+         * of the function.
+         * 
+         * @param node The new entry node.
+         */
         set cfgEntryNode(node: ControlFlowNode.Class | undefined) {
             if (
                 node !== undefined &&
@@ -76,6 +90,14 @@ namespace FunctionNode {
             this.data[TAG].cfgEntryNode = node?.id;
         }
 
+        /**
+         * Auxiliary method to throw errors when trying to register a function
+         * in a context that does not allow it.
+         * 
+         * @throws {} {@link LaraFlowError} if the node is not part of a
+         * {@link FlowGraph} or if another function with the same name is
+         * already registered in the graph.
+         */
         #expectMayRegister(name: string): FlowGraph.Class {
             const graph = this.graph
                 .expect(
@@ -92,12 +114,27 @@ namespace FunctionNode {
             return graph;
         }
 
+        /**
+         * Registers the function in the graph, so that its name points
+         * to this node.
+         * 
+         * @throws {} {@link LaraFlowError} if the node is not part of a
+         * {@link FlowGraph} or if another function with the same name is
+         * already registered in the graph.
+         */
         register() {
             this.#expectMayRegister(this.functionName).data[FlowGraph.TAG].functions[
                 this.functionName
             ] = this.id;
         }
 
+        /**
+         * Unregisters the function from the graph, removing its name from
+         * the function map.
+         * 
+         * @throws {} {@link LaraFlowError} if the node is not part of a
+         * {@link FlowGraph}.
+         */
         unregister() {
             const graph = this.graph
                 .expect(
@@ -112,6 +149,12 @@ namespace FunctionNode {
             delete graph.data[FlowGraph.TAG].functions[this.functionName];
         }
 
+        /**
+         * @returns Whether this function is registered in the graph.
+         * 
+         * @throws {} {@link LaraFlowError} if the node is not part of a
+         * {@link FlowGraph}.
+         */
         isRegistered(): boolean {
             const id = this.graph.expect(
                 FlowGraph,
@@ -163,6 +206,13 @@ namespace FunctionNode {
             /**
              * The name of the function. This name must be unique in the graph,
              * so it should be mangled if the use case permits overloading.
+             * 
+             * The field {@link BaseNode.Data.parent} is not used so as to give
+             * the developer more flexibility in the decision of what constitutes
+             * a parent-child relationship. If desired that the {@link ControlFlowNode}
+             * is a direct child of its {@link FunctionNode}, one may iterate
+             * over the graph's {@link ControlFlowNode | ControlFlowNodes} and
+             * set {@link BaseNode.Data.parent} to the value of this field.
              */
             functionName: string;
             /**

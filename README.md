@@ -1,6 +1,6 @@
 # flow
 
-It's primary purpose is control-flow, data-flow, static-call, and other graphs for [lara](https://github.com/specs-feup/lara-framework). As it does not actually depend on lara, it can also be used simply as a cytoscape abstraction for other graph purposes with increased type safety and structure.
+The primary purpose of this library is control-flow, data-flow, static-call, and other graphs for [lara](https://github.com/specs-feup/lara-framework). As it does not actually depend on lara, it can also be used simply as a cytoscape abstraction for other graph purposes with increased type safety and structure.
 
 ## Guides and documentation
 
@@ -9,7 +9,7 @@ It's primary purpose is control-flow, data-flow, static-call, and other graphs f
 
 ## Development setup
 
-To start development, create a new folder with the following package.json:
+To start development on an unpublished version, create a new folder with the following package.json:
 
 ```json
 {

@@ -3,6 +3,16 @@ import FunctionNode from "@specs-feup/flow/flow/FunctionNode";
 import BaseNode from "@specs-feup/flow/graph/BaseNode";
 import Node from "@specs-feup/flow/graph/Node";
 
+/**
+ * A control flow node that represents the end of a function.
+ * The existence of such a node is not strictly mandatory,
+ * as any node with no outgoing edges is semantically interpreted
+ * as exiting the function.
+ * 
+ * However, for convention and clarity, it is strongly recommended to
+ * include exactly one node of this type, and connect all nodes
+ * that exit the function to it.
+ */
 namespace ControlFlowEndNode {
     export const TAG = "__clava_flow__control_flow_end_node";
     export const VERSION = "1";
@@ -15,6 +25,9 @@ namespace ControlFlowEndNode {
     export class Builder implements Node.Builder<Data, ScratchData> {
         #controlFlowNodeBuilder: ControlFlowNode.Builder;
 
+        /**
+         * @param functionNode The function node that this node belongs to.
+         */
         constructor(functionNode: FunctionNode.Class) {
             this.#controlFlowNodeBuilder = new ControlFlowNode.Builder(functionNode);
         }

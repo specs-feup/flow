@@ -6,9 +6,12 @@ import { EdgeCollection } from "@specs-feup/flow/graph/EdgeCollection";
 import Node from "@specs-feup/flow/graph/Node";
 
 /**
- * Each ControlFlowNode must belong to exactly one FunctionNode.
- * You may create a "global" FunctionNode for the flow that is not
- * part of any function (in languages such as python or javascript).
+ * Represents a node in the control-flow subgraph of a {@link FunctionNode}.
+ * 
+ * Each ControlFlowNode must belong to exactly one {@link FunctionNode}. For languages
+ * with global statements that are executed outside a function (such as python
+ * or javascript), a {@link FunctionNode} representing the "global"
+ * control-flow of each file should be created.
  */
 namespace ControlFlowNode {
     export const TAG = "__lara_flow__control_flow_node";
@@ -18,6 +21,9 @@ namespace ControlFlowNode {
         D extends Data = Data,
         S extends ScratchData = ScratchData,
     > extends BaseNode.Class<D, S> {
+        /**
+         * @returns The {@link FunctionNode} that this node belongs to.
+         */
         get function(): FunctionNode.Class {
             const id = this.data[TAG].function;
             const node = this.graph.getNodeById(id);
@@ -29,10 +35,22 @@ namespace ControlFlowNode {
             return node.as(FunctionNode);
         }
 
+        /**
+         * @returns The non-fake {@link ControlFlowEdge | ControlFlowEdges}
+         * that go from this node to another node. These are the possible
+         * control flow paths that can potentially be taken from this node
+         * at runtime.
+         */
         get cfgOutgoers(): EdgeCollection<ControlFlowEdge.Class> {
             return this.outgoers.filterIs(ControlFlowEdge).filter((e) => !e.isFake);
         }
 
+        /**
+         * Sets this node as the {@link FunctionNode.Data.cfgEntryNode | entry node}
+         * of the function it belongs to.
+         * 
+         * @returns itself, for method chaining.
+         */
         setAsEntryNode(): this {
             this.function.data[FunctionNode.TAG].cfgEntryNode = this.id;
             return this;
@@ -42,6 +60,9 @@ namespace ControlFlowNode {
     export class Builder implements Node.Builder<Data, ScratchData> {
         #function: FunctionNode.Class;
 
+        /**
+         * @param functionNode The function node that this node belongs to.
+         */
         constructor(functionNode: FunctionNode.Class) {
             this.#function = functionNode;
         }

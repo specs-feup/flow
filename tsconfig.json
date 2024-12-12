@@ -15,7 +15,6 @@
         "paths": {
             "@specs-feup/flow/*": ["./src/*.ts"]
         }
-        //"esModuleInterop": true
     },
     "exclude": ["node_modules", "out"]
 }

@@ -1,6 +1,14 @@
 import BaseEdge from "@specs-feup/flow/graph/BaseEdge";
 import Edge from "@specs-feup/flow/graph/Edge";
 
+/**
+ * This edge type is most commonly used to connect two {@link FunctionNode | FunctionNodes}.
+ * It represents that the incoming function might call the outgoing function.
+ * 
+ * For certain use cases, it may also be acceptable for this edge type to connect a 
+ * {@link ControlFlowNode | ControlFlowNode} to a {@link FunctionNode | FunctionNode},
+ * representing that at that control flow point in specific, the function might be called.
+ */
 namespace CallEdge {
     export const TAG = "__lara_flow__call_edge";
     export const VERSION = "1";
