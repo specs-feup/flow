@@ -2,7 +2,7 @@
     "compilerOptions": {
         "target": "ES2022",
         "module": "NodeNext",
-        "outDir": "out/src",
+        //"outDir": "out/src",
         "declaration": true,
         "strict": true,
         "allowJs": false,
@@ -13,8 +13,9 @@
         "forceConsistentCasingInFileNames": true,
         "noFallthroughCasesInSwitch": true,
         "paths": {
-            "@specs-feup/flow/*": ["./src/*.ts"]
+            "@specs-feup/flow/*": ["./src-code/*.ts"]
         }
-    },
-    "exclude": ["node_modules", "out"]
+    }
+    //,
+    //"exclude": ["node_modules", "out"]
 }
