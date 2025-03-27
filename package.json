@@ -1,6 +1,9 @@
 {
     "name": "@specs-feup/flow",
-    "version": "1.0.0",
+    "version": "1.0.1",
+    "publishConfig": {
+        "access": "public"
+    },
     "description": "Control-flow, Data-flow, static-call, and other graphs for Lara.",
     "type": "module",
     "parserOptions": {
