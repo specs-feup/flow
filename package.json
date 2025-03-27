@@ -1,11 +1,21 @@
 {
     "name": "@specs-feup/flow",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "publishConfig": {
         "access": "public"
     },
     "description": "Control-flow, Data-flow, static-call, and other graphs for Lara.",
     "type": "module",
+    "files": [
+        "code",
+        "src-code",
+        ".gitignore",
+        "LICENSE",
+        "package.json",
+        "README.md",
+        "tsconfig.json",
+        "typedoc.config.js"
+    ],
     "parserOptions": {
         "project": [
             "./*/tsconfig.json",
