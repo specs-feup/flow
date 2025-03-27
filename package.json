@@ -1,11 +1,21 @@
 {
     "name": "@specs-feup/flow",
-    "version": "1.0.1",
+    "version": "1.0.3",
     "publishConfig": {
         "access": "public"
     },
     "description": "Control-flow, Data-flow, static-call, and other graphs for Lara.",
     "type": "module",
+    "files": [
+        "code",
+        "src-code",
+        ".gitignore",
+        "LICENSE",
+        "package.json",
+        "README.md",
+        "tsconfig.json",
+        "typedoc.config.js"
+    ],
     "parserOptions": {
         "project": [
             "./*/tsconfig.json",
@@ -13,7 +23,7 @@
         ]
     },
     "scripts": {
-        "build": "tsc",
+        "build": "tsc -b src-code",
         "build:watch": "tsc --watch",
         "lint": "eslint .",
         "format": "prettier --write .",
@@ -21,8 +31,8 @@
     },
     "exports": {
         "./*": {
-            "types": "./out/src/*.d.ts",
-            "default": "./out/src/*.js"
+            "types": "./code/*.d.ts",
+            "default": "./code/*.js"
         }
     },
     "repository": {
