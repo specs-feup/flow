@@ -5,7 +5,7 @@ The primary purpose of this library is control-flow, data-flow, static-call, and
 ## Guides and documentation
 
 - For beginners, the [tutorial slides](https://docs.google.com/presentation/d/12MFa4gRFgww5UEhwkhwruNa6gSwKDVUk7iUVO5qNzwc/edit?usp=sharing) can be a good starting point, as it introduces the main capabilities and concepts of the library, with simple and intuitive examples of how to use it.
-- For a more thorough description, check out the [documentation page](https://specs-feup.github.io/modules/flow.html).
+- For a more thorough description, check out the [documentation page](https://specs-feup.github.io/modules/_specs_feup_flow.html).
 
 ## Development setup
 
@@ -16,7 +16,7 @@ To start development on an unpublished version, create a new folder with the fol
     "name": "my-workspace",
     "type": "module",
     "workspaces": [
-        "flow",
+        "flow"
     ]
 }
 ```
